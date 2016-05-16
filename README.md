@@ -9,3 +9,6 @@ Coursera's Heterogeneous Parallel Programming (taught by Wen-mei W. Hwu) suggest
 -    http://gd.tuwien.ac.at/languages/c/cref-mleslie/CONTRIB/SAWTELL/intro.html
 -    http://en.wikibooks.org/wiki/C_Programming
 -    http://www.cprogramming.com/
+
+### Pointers (for Computational Physics)
+
