@@ -9,6 +9,8 @@
   Program to read and echo data from command line
 */
 
+#include <stdio.h>
+
 int main(int argc, char *argv[])
 {
   int i;
