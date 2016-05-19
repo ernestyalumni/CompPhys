@@ -84,4 +84,35 @@ $ LD_LIBRARY_PATH=/usr/local/lib
 $ export LD_LIBRARY_PATH
 $ ./a.out
 ```
-and then the matrices.c script executed as desired.  
+and then the matrices.c script executed as desired.
+
+### Setting the bash profile so you don't have to do the temporary solution above
+
+I tried to look at these links:
+- [2.3 Shared Libraries](https://www.gnu.org/software/gsl/manual/html_node/Shared-Libraries.html)
+- [Setting PATH and LD_LIBRARY_PATH for the bash shell](http://taopm.sourceforge.net/docs/online_userman/UserManual_13.html)
+- [How to set the environmental variable LD_LIBRARY_PATH in linux](http://stackoverflow.com/questions/13428910/how-to-set-the-environmental-variable-ld-library-path-in-linux)
+
+The commands the links suggested, respectively are:
+```
+$ LD_LIBRARY_PATH=/usr/local/lib
+$ export LD_LIBRARY_PATH
+$ ./example
+
+$ gcc -static example.o -lgsl -lgslcblas -lm
+```
+"To avoid this error, either modify the system dynamic linker configuration5 or define the shell variable `LD_LIBRARY_PATH` to include the directory where the library is installed."
+
+
+```
+echo $LD_LIBRARY_PATH
+
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+export LD_LIBRARY_PATH
+```
+
+Ultimately, I did this
+```
+export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+```
+According to this page: [including usr/local/lib directory](http://www.linuxquestions.org/questions/linux-software-2/including-usr-local-lib-directory-272610/)
