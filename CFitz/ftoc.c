@@ -1,8 +1,10 @@
-/* repeat.c */
+/* ftoc.c */
 /*
   Fitzpatrick.  Computational Physics.  329.pdf
-  2.15 Command Line Parameters pp. 77
+  2.15 Command Line Parameters pp. 78
   
+  EY suffix means, this is my own changes, to explore what char *argv[] means
+
   "
   The main() function may optionally possess special arguments which allow parameters
   to be passed to this function from the operating system.  There are 2 such arguments,
@@ -24,18 +26,36 @@
 */
 
 /*
-  Program to read and echo data from command line
+  Program to convert temperature in Fahrenheit input
+  on command line to temperature in Celsius
 */
 
+#include <stdlib.h>
 #include <stdio.h>
 
 int main(int argc, char *argv[])
 {
-  int i;
-  
-  for (i=1; i < argc; i++) printf("%s ", argv[i]);
-  printf("\n");
+  double deg_f, deg_c;
+
+  /* If no parameter passed to program print error
+     message and exit */
+  if (argc < 2)
+    {
+      printf("Usage: ftoc temperature\n");
+      exit(1);
+    }
+
+  /* Convert first command line parameter to double */
+  deg_f = atof(argv[1]);
+  /* Convert from Fahrenheit to Celsius */
+  deg_c = (5. /9. ) * (deg_f - 32.);
+
+  printf("%f degrees Fahrenheit equals %f degrees Celsius\n",
+	 deg_f, deg_c);
 
   return 0;
 }
 
+
+    
+	

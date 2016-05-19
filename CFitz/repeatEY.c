@@ -1,12 +1,14 @@
-/* repeat.c */
+/* repeatEY.c */
 /*
   Fitzpatrick.  Computational Physics.  329.pdf
   2.15 Command Line Parameters pp. 77
   
+  EY suffix means, this is my own changes, to explore what char *argv[] means
+
   "
   The main() function may optionally possess special arguments which allow parameters
   to be passed to this function from the operating system.  There are 2 such arguments,
-  convetionally called argc and argv.
+  conventionally called argc and argv.
   
   argc is an integer which is set to the number of parameters passed to main()
   
@@ -36,6 +38,23 @@ int main(int argc, char *argv[])
   for (i=1; i < argc; i++) printf("%s ", argv[i]);
   printf("\n");
 
+  //  char *argvEY[];  // obtain this error: repeatEY.c:41:9: error: array size missing in ‘argvEY’
+  //   char *argvEY[];
+  //       ^
+
+  char *argvEY[10];
+  //   *argvEY[5] =     { "Cash", "Rules", "everything", "around", "me" }   ; doesn't work
+  // error: error: expected expression before ‘{’ token
+  //  *argvEY[5] =     { 
+
+  argvEY[0] = "Cash"; argvEY[1] = "Rules"; argvEY[2] = "everything"; argvEY[3] = "around"; argvEY[4] = "me";  
+
+  printf("\n argvEY[1] = %d  &argvEY[1] = %X  argvEY = %X  *argvEY[1] = %d \n", argvEY[1], &argvEY[1], argvEY, *argvEY[1]);
+
+  printf("\n argvEY[1] = %s  &argvEY[1] = %X  argvEY = %X  *argvEY[1] = %X \n", argvEY[1], &argvEY[1], argvEY, *argvEY[1]);
+
+  // The point of this is practicing the concept of an array as a pointer to the first element of a memory block, that deferences to chars.  I found it difficult to understand; I've tried to think of this in terms of category theory to alleviate this (cf. ML.pdf of the MLgrabbag repository, ernestyalumni).  
+  
   return 0;
 }
 
