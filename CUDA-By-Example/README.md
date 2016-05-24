@@ -5,4 +5,11 @@ I also cloned in this same repository the github repository from [jiekebo](https
 
 ## Note on examples out of CUDA by Example
 
-It seems that a header file `book.h` out of the `common` subdirectory is needed to run the scripts.  I've tried to write my own scripts without needing the `book.h` header.  However, it's found in jiekebo's repository and in this repository, in the subdirectory (from here) `CUDA-By-Example`.  I don't know the rationale behind `book.h` or why the authors made you need it for their examples (as I am reading the book, it's not explained (!!!)).  
+It seems that a header file `book.h` out of the `common` subdirectory is needed to run the scripts.  I've tried to write my own scripts without needing the `book.h` header.  However, it's found in jiekebo's repository and in this repository, in the subdirectory (from here) `CUDA-By-Example`.  I don't know the rationale behind `book.h` or why the authors made you need it for their examples (as I am reading the book, it's not explained (!!!)).
+
+## Dictionary between files on this github subdirectory to code in **CUDA By Example**, *Sanders and Kandrot*
+
+| filename | pp. | (Sub)Section |
+| -------- | --- | ------------ |
+| [add-pass.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/add-pass.cu) | 25 | 3.2.3 Passing Parameters |
+
