@@ -955,6 +955,73 @@ cf. C$++$ extensions for C according to Fitzpatrick \cite{Fitz}
 \end{itemize}
 
 
+\part{C++ and Computational Physics}
+
+cf. 2.1.1 Scientific hello world from Hjorth-Jensen (2015) \cite{Hjor2015}
+
+in C, 
+\begin{lstlisting}
+  int main (int argc, char* argv[])
+\end{lstlisting}
+\verb|argc| stands for number of command-line arguments \\
+\verb|argv| is vector of strings containing the command-line arguments with \\
+\phantom{argv} \verb|argv[0]| containing name of program \\
+\phantom{argv} \verb|argv[1] , argv[2], ... | are command-line args, i.e. the number of lines of input to the program
+
+``To obtain an executable file for a C++ program'' (i.e. compile (???)), 
+\begin{lstlisting}
+  gcc -c -Wall myprogram.c
+  gcc -o myprogram myprogram.o
+\end{lstlisting}
+\verb|-Wall| means warning is issued in case of non-standard language \\
+\verb|-c| means compilation only \\
+\verb|-o| links produced object file \verb|myprogram.o| and produces executable \verb|myprogram|
+
+\subsubsection{Create \verb|makefile|}
+
+\begin{lstlisting}
+  # General makefile for c - choose PROG =  name of given program
+  
+  # Here we define compiler option, libraries and the target
+  CC= c++ -Wall
+  PROG= myprogram
+
+  # Here we make the executable file
+  ${PROG} :          ${PROG}.o
+                     ${CC} ${PROG}.o -o ${PROG}
+
+  # whereas here we create the object file
+
+  #{PROG}.o :        ${PROG}.cpp
+                     ${CC} -c ${PROG}.cpp
+\end{lstlisting}
+
+Here's what worked for me:
+\begin{lstlisting}
+CC= g++ -Wall
+PROG= program1
+
+# Here we make the executable file
+${PROG} :          ${PROG}.o
+        ${CC} ${PROG}.o -o ${PROG}
+
+# whereas here we create the object file
+
+${PROG}.o :        ${PROG}.cpp
+        ${CC} -c ${PROG}.cpp
+
+# EY : 20160602notice the different suffixes, and we see the pattern for the syntax
+
+# (note: the <tab> in the command line is necessary formake towork)
+# target: dependency1 dependency2 ...
+#         <tab> command
+\end{lstlisting}
+
+
+Hjorth-Jensen (2015) \cite{Hjor2015}
+
+
+
 \subsubsection{Need a CUDA, C, C$++$, IDE?  Try Eclipse!}
 
 This website has a clear, lucid, and pedagogical tutorial for using Eclipse: \href{https://www.fayewilliams.com/2011/06/28/creating-your-first-c-program-in-eclipse/}{Creating Your First C++ Program in Eclipse}.  But it looks like I had to pay.  Other than the well-written tips on the webpage, I looked up stackexchange for my Eclipse questions (I had difficulty with the Eclipse documentation).  
@@ -997,6 +1064,9 @@ CS229 Stanford University.  \url{http://cs229.stanford.edu/materials.html}
 
 \bibitem{Fitz}
 Richard Fitzpatrick.  ``Computational Physics.''  \url{http://farside.ph.utexas.edu/teaching/329/329.pdf}
+
+\bibitem{Hjor2015}
+ M. Hjorth-Jensen, \textbf{Computational Physics}, University of Oslo (2015) \url{http://www.mn.uio.no/fysikk/english/people/aca/mhjensen/}
 
 
 \bibitem{SK2010}
