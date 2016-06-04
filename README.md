@@ -1,6 +1,11 @@
 # CompPhys
 CompPhys - a Computational Physics repository
 
+## Contents
+
+- Cpp
+  * `Cpp/` directory has material based off on M. Hjorth-Jensen's **Computational Physics** [2015 lectures](https://github.com/CompPhysics/ComputationalPhysicsMSU/blob/master/doc/Lectures/lectures2015.pdf): what I did was to type up the (pedagogical) programs in the lectures, (try to) organize them so that you know which program corresponds to what part of the lectures (so that while you're reading the lectures, you can run the programs simultaneously), and compile and make sure they run (as I wanted them to run, myself).  
+
 ## C Resources
 
 Coursera's Heterogeneous Parallel Programming (taught by Wen-mei W. Hwu) suggested these links to brush up on [C programming](https://class.coursera.org/hetero-004/wiki/Introduction_to_C):
