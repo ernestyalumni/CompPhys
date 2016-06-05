@@ -41,7 +41,9 @@ cf. [C++ Operator Overloading in expression](http://stackoverflow.com/questions/
 
 Take a look at this link: [C++ Operator Overloading in expression](http://stackoverflow.com/questions/6377786/c-operator-overloading-in-expression).  This point isn't emphasized enough, as in Hjorth-Jensen (2015).  This makes doing something like  
 
-$d = a*c + d/b$
+```
+d = a*c + d/b
+```
 
 work the way we expect.  Kudos to user [fredoverflow](http://stackoverflow.com/users/252000/fredoverflow) for his answer:
 
@@ -54,8 +56,8 @@ Also, member functions should be marked `const` as well.''
 [C++ Rvalue References Explained](http://thbecker.net/articles/rvalue_references/section_01.html)
 
 Original definition of *lvalues* and *rvalues* from *C*:  
-*lvalue* - expression $e$ that may appear on the left or on the right hand side of an assignment  
-*rvalue* - expression that can only appear on right hand side of assignment $=$.
+*lvalue* - expression `e` that may appear on the left or on the right hand side of an assignment  
+*rvalue* - expression that can only appear on right hand side of assignment =.
 
 Examples:
 
@@ -75,7 +77,7 @@ Examples:
 ```
 
 In *C++*, this is still useful as a first, intuitive approach, but   
-*lvalue* - expression that refers to a memory location and allows us to take the address of that memory location via the $\&$ operator.  
+*lvalue* - expression that refers to a memory location and allows us to take the address of that memory location via the & operator.  
 *rvalue* - expression that's not a lvalue
 
-So $\&$ reference *functor* can't act on rvalue's.
+So & reference *functor* can't act on rvalue's.
