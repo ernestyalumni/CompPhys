@@ -22,7 +22,7 @@ See Hjorth-Jensen's lectures for 2015.
 | complex.h       | ./progs/ch03/  | 3       | 3.3.1   | 67        | header file for Complex class |
 | complex.cpp     | ./progs/ch03/  | 3       | 3.3.1   | 68        | contains Complex class |
 | customCC.cpp    | ./progs/ch03/  | 3       | 3.3.1   | 68        | contains `main()` to demonstrate Complex class |
-
+| Integrate.ipynb | ./             | 5       | 5.1     | 109-112   | jupyter (.ipynb) notebook to symbolic compute, using sympy, the derivation of trapezoid rule |
 
 ### Classes (C++)
 
