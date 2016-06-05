@@ -10,6 +10,12 @@
  */
 /*
   Example of program which uses our complex class
+  To compile, do this (for example):
+  $ g++ customCC.cpp complex.cpp
+  I believe you need to include all the files you need, with complex.cpp containing
+  the manually-crafted Complex class
+  in the g++ command
+  and you should be good to go! ./a.out
 */
 
 #include <iostream> /* cout cin*/
