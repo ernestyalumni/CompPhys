@@ -77,7 +77,7 @@ Complex Complex::add(Complex &rhs)
  *  the '+' operator so that we can use a simple command like c = a + b 
  *  to add two objects of type Complex.
  */
-Complex Complex::operator+ (Complex &rhs)
+Complex Complex::operator+ (const Complex &rhs) const
 {
   // (a + bi) + (c + di) = (a+c) + (b+d)i
   // double a  = r     ; double b = i;
@@ -90,7 +90,7 @@ Complex Complex::operator+ (Complex &rhs)
 }
 
 // Overloaded '-' operator
-Complex Complex::operator- (Complex &rhs)
+Complex Complex::operator- ( Complex &rhs) 
 {
   // (a + bi) - (c + di) = (a-c) + (b-d)i
   // double a = r     ; double b = i;
@@ -103,7 +103,7 @@ Complex Complex::operator- (Complex &rhs)
 }
 
 // Overloaded '*' operator
-Complex Complex::operator* (Complex &rhs)
+Complex Complex::operator* ( Complex &rhs) 
 {
   // (a + bi)*(c+di) = (ac-bd) + (ad+dc)i
   // double a  = r            ; double b = i;
@@ -123,7 +123,7 @@ Complex Complex::operator* (Complex &rhs)
   'this' in C++ is just a pointer to the current instance
 */
 
-Complex Complex::operator/ (Complex &rhs)
+Complex Complex::operator/ ( Complex &rhs) 
 {
   Complex c = rhs.conj();
   double n  = rhs.norm();
@@ -133,7 +133,7 @@ Complex Complex::operator/ (Complex &rhs)
   return ((*this) * c)/ pow(n,2.0);
 }
 
-Complex Complex::operator/ (double rhs)
+Complex Complex::operator/ ( double rhs) 
 {
   return Complex(r/rhs, i/rhs);
 }

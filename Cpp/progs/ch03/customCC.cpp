@@ -57,9 +57,11 @@ int main()
   bb.print();
 
   
-  dd = bb/aa ; // we add, multiply and divide 2 complex numbers
-  Complex tmp = aa*cc ; 
-  dd = dd + tmp ; 
+  //  dd = bb/aa ; // we add, multiply and divide 2 complex numbers
+  //  Complex tmp = aa*cc ; Once in the class definition in complex.cpp, using const, that
+  // the operation overloading of + then was made into a lvalue and not a rvalue, then
+  // it "acts the way it should".  
+  dd = bb/aa + aa*cc ; 
 
   cout << "Re(dd)=" << dd.Re() << ", Im(dd) = " << dd.Im() << endl; // write out the real and imaginary parts
   

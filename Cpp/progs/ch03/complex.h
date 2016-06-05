@@ -48,11 +48,11 @@ class Complex
 
   Complex add(Complex&);
 
-  Complex operator+ (Complex&);
-  Complex operator- (Complex&);
-  Complex operator* (Complex&);
-  Complex operator/ (Complex&);
-  Complex operator/ (double);
+  Complex operator+ (const Complex&) const;
+  Complex operator- ( Complex&) ;
+  Complex operator* ( Complex&) ;
+  Complex operator/ ( Complex&) ;
+  Complex operator/ ( double) ;
 
   Complex conj();
   double norm();
