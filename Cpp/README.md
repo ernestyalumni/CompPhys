@@ -19,4 +19,18 @@ See Hjorth-Jensen's lectures for 2015.
 | program7b.cpp   | ./progs/ch02/  | 2       | 2.5.2   | 34        | Pointers and arrays in C++ (further experimentation by me) |
 | usecomplex.cpp  | ./progs/ch03/  | 3       | 3.3.1   | 68        | Using standard template library (STL) for <complex>, complex<double>  |
 | usecomplexb.cpp | ./progs/ch03/  | 3       | 3.3.1   | 68        | More usage, such as x.real(), x.imag(), and exp(z) by me |
+| complex.h       | ./progs/ch03/  | 3       | 3.3.1   | 67        | header file for Complex class |
+| complex.cpp     | ./progs/ch03/  | 3       | 3.3.1   | 68        | contains Complex class |
+| customCC.cpp    | ./progs/ch03/  | 3       | 3.3.1   | 68        | contains `main()` to demonstrate Complex class |
 
+
+### Classes (C++)
+
+See `complex.h, complex.cpp, customCC.cpp` in `./progs/ch03` subdirectory for useful (pedagogical) examples.
+
+## header files
+
+Define header file (e.g. complex.h) which contains declarations of the class.
+The header file contains
+- class declaration (data and functions)
+- declaration of stand-alone functions, and all inlined functions,
