@@ -1018,7 +1018,448 @@ ${PROG}.o :        ${PROG}.cpp
 \end{lstlisting}
 
 
-Hjorth-Jensen (2015) \cite{Hjor2015}
+cf. 2.3.2 Machine numbers of Hjorth-Jensen (2015) \cite{Hjor2015}
+
+
+cf. 2.5.2 Pointers and arrays in C++ of Hjorth-Jensen (2015) \cite{Hjor2015}
+
+Initialization (diagram):
+\[
+  \begin{tikzpicture}
+  \matrix (m) [matrix of math nodes, row sep=1.4em, column sep=4em, minimum width=1em]
+  {
+    \& \text{var} = \verb|0x7ffc97efbd8c| & \text{pointer} = \& \text{var} = \verb|0x7ffc97efbd8c| \\
+     \text{Memory} & \text{pointer} \\
+    \text{ (memory) addresses } & \text{Obj}(\text{pointer}) \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$=$} (m-1-2)
+  ;
+  \path[->]
+  (m-2-1) edge node [auto] {$=$} (m-2-2)
+  (m-3-1) edge node [auto] {$=$} (m-3-2)
+  ;
+  \end{tikzpicture}
+\]
+
+Referencing and deferencing operations on pointers to variables
+\[
+\begin{aligned}
+  \begin{tikzpicture}
+  \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{var} & \& \text{var} = \verb|0x7ffc97egbd8c| \\
+    \text{var}, 421 & \text{True} \\
+    421 &  \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$=$} (m-1-2)
+  (m-2-1) edge node [auto] {$$} (m-1-1)
+  edge node [auto] {$==$} (m-2-2)
+  edge node [auto] {$$} (m-3-1)
+  ;
+  \end{tikzpicture}
+    & 
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{pointer} = \verb|0x7ffc97egbd8c| & 421 & \text{int} \\
+    \& \text{pointer} = \verb|0x7ffc97egbd8c| & & \\ 
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  edge node [auto] {\&} (m-2-1)
+  (m-1-2) edge node [auto] {\text{typedef}} (m-1-3)
+;  
+  \end{tikzpicture}   \\
+    \begin{tikzpicture}
+  \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{Types} &  \textbf{Memory}  \\
+    \textbf{Types} \otimes \mathbf{\textbf{Dat}} & \text{Boolean} = \lbrace \text{True}, \text{False} \rbrace  \\
+    \mathbf{\textbf{Dat}} &  \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$=$} (m-1-2)
+  (m-2-1) edge node [auto] {$$} (m-1-1)
+  edge node [auto] {$==$} (m-2-2)
+  edge node [auto] {$$} (m-3-1)
+  ;
+  \end{tikzpicture}
+    & 
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointer}  & \mathbf{\textbf{Dat}} & \mathbf{\textbf{Types}} \\
+    \mathbf{\textbf{Memory}} & & \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  edge node [auto] {\&} (m-2-1)
+  (m-1-2) edge node [auto] {\text{typedef}} (m-1-3)
+;  
+  \end{tikzpicture}   
+  \end{aligned}
+\]
+
+\subsection{Numerical differentiatio<n and interpolation (in C++)}
+
+cf. Chapter 3 ``Numerical differentiation and interpolation'' of Hjorth-Jensen (2015) \cite{Hjor2015}.
+
+This is how I understand it.
+
+Consider the Taylor expansion for $f(x) \in C^{\infty}(\mathbb{R})$:
+\[
+f(x) = f(x_0)  + \sum_{j=1}^{\infty} \frac{ f^{(j)}(x_0)}{j!} h^j 
+\]
+For $x = x_0 \pm h$,
+\[
+\begin{gathered}
+  f(x) = f(x_0 \pm h ) = f(x_0) + \sum_{j=1}^{\infty} \frac{ f^{(2j)}(x_0) }{(2j)!} h^{2j} \pm \sum_{j=1}^{\infty} \frac{ f^{(2j-1)}(x_0) }{(2j-1)!} h^{2j-1}
+\end{gathered}
+\]
+Then
+\[
+\begin{gathered}
+  f(x_0 + 2^kh) - f(x_0 - 2^kh) = 2\sum_{j=1}^{\infty} \frac{ f^{(2j-1)}}{(2j-1)!}(x_0) 2^{k(2j-1)} h^{2j-1} = \\
+  = 2\left[ f^{(1)}(x_0) 2^k h + \sum_{j=2}^{\infty} \frac{ f^{(2j-1)}(x_0)}{ (2j-1)!} 2^{k(2j-1)} h^{2j-1} \right] =  \\
+  = 2 \left[ f^{(1)}(x_0) 2^k h + \frac{ f^{(3)}(x_0)}{3!} 2^{k(3)} h^3 + \sum_{j=3}^{\infty} \frac{ f^{(2j-1)}(x_0) }{(2j-1)!} 2^{k(2j-1) } h^{2j-1} \right]
+\end{gathered}
+\]
+
+So for $k=1$,
+\[
+f(x_0 + h ) - f(x_0 - h ) = 2 \left[ f^{(1)}(x_0)h + \sum_{j=1}^{\infty} \frac{ f^{(2j+1)}(x_0) }{ (2j+1)!} h^{2j+1} \right]
+\]
+
+Now
+\[
+\begin{gathered}
+  f(x_0 + 2^kh) + f(x_0 - 2^kh) - 2f(x_0) = \\
+  = 2 \sum_{j=1}^{\infty} \frac{ f^{(2j)}(x_0) }{(2j)!} 2^{2jk} h^{2j} = \\
+  = 2 \left[ \frac{ f^{(2)}(x_0)}{2} 2^{2k} h^2 + \sum_{j=2}^{\infty} \frac{ f^{(2j)}(x_0) }{ (2j)!} 2^{2jk} h^{2j} \right] = \\
+  = 2 \left[ \frac{ f^{(2)}(x_0) }{2} 2^{2k} h^2 + \frac{ f^{(4)}(x_0)}{4!} 2^{4k} h^4 + \sum_{j=3}^{\infty} \frac{ f^{(2j)}(x_0) }{ (2j)!} 2^{2jk} h^{2j} \right]
+  \end{gathered}
+\]
+Thus for the case of $k=1$,
+\[
+f(x_0 + h )  + f(x_0 - h) - 2f(x_0) = f^{(2)}(x_0)h^2 + 2 \sum_{j=2}^{\infty} \frac{ f^{(2j)}(x_0)}{(2j)!} h^{2j}
+\]
+\[
+\begin{aligned}
+  & \frac{ f(x_0 +h) - f(x_0-h) }{ 2h} = f^{(1)}(x_0) + \sum_{j=1}^{\infty} \frac{ f^{(2j+1)}(x_0) }{(2j+1)!}h^{2j} \\ 
+  & \frac{ f(x_0 + h) + f(x_0 - h) - 2f(x_0) }{h^2} = f^{(2)}(x_0) + 2\sum_{j=2}^{\infty} \frac{ f^{(2(j+1) ) }(x_0)}{(2(j+1))!} h^{2j}
+  \end{aligned}
+\]
+
+A pattern now emerges on how to include more calculations at points $x_0, x_0 \pm 2^kh$ so to obtain better accuracy $O(h^l)$.  For instance,
+
+Given 5 pts. $\lbrace x_0, x_0 \pm h, x_0 \pm 2h \rbrace$,
+\[
+\begin{gathered}
+  f(x_0 + 2h) - f(x_0 -2h) = 2[ f^{(1)}(x_0) 2^1h + \frac{ f^{(3)}(x_0)}{3!} 2^3 h^3 + O(h^5) ] \\ 
+  f(x_0+ h) - f(x_0 - h) = 2[ f^{(1)}(x_0) h + \frac{ f^{(3)}(x_0)}{3!} h^3 + O(h^5)] \\
+  \Longrightarrow f'(x_0) = \frac{ f(x_0 - 2h) - 8f(x_0-h ) + 8f(x_0 + h) - f(x_0 + 2h) }{ 12h } + O(h^4)
+\end{gathered}
+\]
+
+Hjorth-Jensen (2015) \cite{Hjor2015} argues, on pp. 46-47, that the additional evaluations are time consuming, to obtain further accuracy, so it's a balance.
+
+To summarize, for $O(h^2)$ accuracy,
+\[
+\begin{aligned}
+  & \frac{ f(x_0 + h) - f(x_0-h) }{2h} = f^{(1)}(x_0) + \sum_{j=1}^{\infty} \frac{ f^{(2j+1)}(x_0 )}{(2j+1)!} h^{2j} & \qquad \, O(h^2) \\ 
+  & \frac{ f(x_0 + h) + f(x_0 -h) - 2f(x_0) }{h^2} = f^{(2)}(x_0) + 2\sum_{j=1}^{\infty} \frac{ f^{(2j+2)}(x_0) }{ (2j+2)!} h^{2j} & \qquad \, O(h^2)
+  \end{aligned}
+\]
+
+\section{Interpolation}
+
+cf. 3.2 Numerical Interpolation and Extrapolation of Hjorth-Jensen (2015) \cite{Hjor2015}
+
+Given $N+1$ pts. $\begin{aligned} & \quad \\
+  y_0 & = f(x_0) \\
+  y_1 & = f(x_1) \\
+  & \vdots \\
+  y_N & = f(x_N) \end{aligned}$, $x_i$'s distinct (none of $x_i$ values equal)
+
+We want a polynomial of degree $n$ s.t. $p(x)  \in \mathbb{R}[x]$
+
+\[
+p(x_i) = f(x_i) = y_i \qquad \, i = 0,1\dots N
+\]
+
+\[
+p(x) = a_0 + a_1(x-x_0) + \dots + a_i \prod_{j=0}^{i-1}(x-x_j) + \dots + a_N(x-x_0) \dots (x-x_{N-1}) = a_0 + \sum_{i=1}^N a_i \prod_{j=0}^{i-1}(x-x_j)
+\]
+\[
+\begin{aligned}
+  & a_0 = f(x_0) \\ 
+  & a_0 + a_1(x_1-x_0) = f(x_1) \\
+  & \vdots \\
+  & a_0 + \sum_{i=1}^k a_i \prod_{j=0}^{i-1} (x_k - x_j) = f(x_k)
+  \end{aligned}
+\]
+
+Hjorth-Jensen (2015) \cite{Hjor2015} mentions this Lagrange interpolation formula (I haven't found a good proof for it).  
+\begin{equation}
+\boxed{ p_N(x) = \sum_{i=0}^N \prod_{k\neq i} \frac{ x-x_k}{x_i - x_k} y_i  }
+\end{equation}
+
+\section{Classes (C++)}
+
+cf. \href{http://stackoverflow.com/questions/6377786/c-operator-overloading-in-expression}{C++ Operator Overloading in expression}
+
+Take a look at this link: \href{http://stackoverflow.com/questions/6377786/c-operator-overloading-in-expression}{C++ Operator Overloading in expression}.  This point isn't emphasized enough, as in Hjorth-Jensen (2015) \cite{Hjor2015}.  This makes doing something like
+\[
+d = a*c + d/b
+\]
+work the way we expect.  Kudos to user \href{http://stackoverflow.com/users/252000/fredoverflow}{fredoverflow} for his answer:
+
+``The expression \verb|(e_x*u_c)| is an rvalue, and references to non-const won't bind to rvalues.
+
+Also, member functions should be marked \verb|const| as well.''  
+
+\subsection{What are lvalues and rvalues in C and C++?}
+
+\href{http://thbecker.net/articles/rvalue_references/section_01.html}{C++ Rvalue References Explained}
+
+Original definition of \emph{lvalues} and \emph{rvalues} from \emph{C}: \\
+\emph{lvalue} - expression $e$ that may appear on the left or on the right hand side of an assignment \\
+\emph{rvalue} - expression that can only appear on right hand side of assignment $=$.
+
+Examples:
+
+\begin{lstlisting}
+  int a = 42;
+  int b = 43;
+
+  // a and b are both l-values
+  a = b; // ok
+  b = a; // ok
+  a = a * b; // ok
+
+  // a * b is an rvalue:
+  int c = a * b; // ok, rvalue on right hand side of assignment
+  a * b = 42; // error, rvalue on left hand side of assignment
+  
+  \end{lstlisting}
+
+In \emph{C++}, this is still useful as a first, intuitive approach, but \\
+\emph{lvalue} - expression that refers to a memory location and allows us to take the address of that memory location via the $\&$ operator. \\
+\emph{rvalue} - expression that's not a lvalue
+
+So $\&$ reference \emph{functor} can't act on rvalue's.
+
+
+
+\section{Numerical Integration}
+
+cf. 
+
+\section{Call by reference - Call by Value, Call by reference (in C and in C++)}
+
+cf. pp. 58, 2.10 Pointers Ch. 2 Scientific Programming in C, Fitzpatrick \cite{Fitz}
+\verb|printfact3.c|, \href{https://github.com/ernestyalumni/CompPhys/blob/master/CFitz/printfact3.c}{printfact3.c}
+
+pass pointer, pass by reference, call by pointer, call by reference 
+
+In C: 
+\begin{itemize}
+  \item  \emph{function prototype} - 
+\[
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointer}  &  \textbf{Types} \\
+    \textbf{Types}  & \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { \text{function}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+  \end{tikzpicture}   
+\qquad \qquad \, \,
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{pointer}  &  \text{void} \\
+    \text{double}  & \\ 
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] { \text{function}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+  \end{tikzpicture}   
+\]
+$\Longrightarrow$ 
+\begin{lstlisting}
+void factorial(double *)
+  \end{lstlisting}
+where for factorial, it's just your choice of name for \emph{function}.  
+
+\item \emph{function definition} - 
+  \[
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointers}  &  \textbf{Types} \\
+    \textbf{Types}  & \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { \text{function}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+\end{tikzpicture}   \qquad  \,
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{pointer}  &  \text{void} \\
+    \text{double}  & \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { \text{function}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+  \end{tikzpicture}   \qquad \, \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{fact}  &  \text{void} \\
+    *\text{fact}  & \\ 
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] { \text{function}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+  \end{tikzpicture}   
+\]
+  $\Longrightarrow$
+\begin{lstlisting}
+  void function(double *fact) { ... }
+\end{lstlisting}
+
+\emph{Inside} the function definition,
+\[
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointer}  & \textbf{Dat}_{\text{lvalues}} & \textbf{Types} \\
+    \textbf{Memory} & & \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  edge node [auto] {\&} (m-2-1)
+  (m-1-2) edge node [auto] {\text{typedef}} (m-1-3)
+;  
+  \end{tikzpicture} \qquad \qquad \,   
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{fact}  & *\text{fact}  & \text{double} \\
+    \& \text{fact} & & \\ 
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  edge node [auto] {\&} (m-2-1)
+  (m-1-2) edge node [auto] {\text{typedef}} (m-1-3)
+;  
+  \end{tikzpicture}   
+  \]
+  and so, for instance, in the function definition, you can do things like this:
+  \begin{lstlisting}
+    *fact = 1
+    *fact *= (double) n 
+    \end{lstlisting}
+and so notice that from \verb|*fact = 1|, \verb|*fact| is a lvalue.  
+  \begin{itemize}
+  \item \emph{ function procedure }
+\[
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointer}  & \textbf{Dat}_{\text{lvalues}}     \\
+     \textbf{Memory} &  \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  edge node [auto] {\&} (m-2-1)
+  (m-1-2) [loop right] edge node [right] {\text{function procedure}} (m-1-2)
+;  
+  \end{tikzpicture}    \qquad \qquad \, 
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{fact}  & * \text{fact}     \\
+    \& \text{fact} &  \\ 
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  edge node [auto] {\&} (m-2-1)
+  (m-1-2) [loop right] edge node [right] {\text{function procedure}} (m-1-2)
+;  
+    \end{tikzpicture}
+\]
+$\Longrightarrow $
+\begin{lstlisting}
+  *fact *= (double) n 
+\end{lstlisting}
+    \end{itemize}
+
+\item ``Using'' the function, function ``instantiation'', ``calling'' the function, i.e. ``running'' the function
+  \[
+  \begin{aligned} 
+& \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{Types}  &  \textbf{Memory} &     \\
+                    & \textbf{pointers} & \textbf{Types}  \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$\&$} (m-1-2)
+  (m-1-2) edge node [auto] {$\cong$ } (m-2-2)
+  (m-2-2)  edge node [auto] {\text{function}} (m-2-3)
+  (m-1-1) [loop left] edge node [left] { \text{ function procedure } } (m-1-1)
+  ;  
+\end{tikzpicture} \qquad \, \\
+    & 
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{double}  &  \text{Memory} (\text{Obj}{Memory}) &     \\
+                    & \text{pointer} & \text{void}  \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$\&$} (m-1-2)
+  (m-1-2) edge node [auto] {$\cong$ } (m-2-2)
+  (m-2-2)  edge node [auto] {\text{function}} (m-2-3)
+  (m-1-1) [loop left] edge node [left] { \text{ function procedure } } (m-1-1)
+  ;  
+\end{tikzpicture} \qquad \, \\
+&
+ \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{fact}  &  \& \text{fact}  &     \\
+                    & \& \text{fact} & \text{function}(\& \text{ fact})  \\ 
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$\&$} (m-1-2)
+  (m-1-2) edge node [auto] {$\cong$ } (m-2-2)
+  (m-2-2)  edge node [auto] {\text{function}} (m-2-3)
+  (m-1-1) [loop left] edge node [left] { \text{ function procedure } } (m-1-1)
+  ;  
+\end{tikzpicture}
+\end{aligned}
+    \]
+    where, again simply note the notation, that we're using \emph{function} and \emph{factorial}, \emph{fact} for \emph{nameofpointer}, interchangeably: see \href{https://github.com/ernestyalumni/CompPhys/blob/master/CFitz/printfact3.c}{printfact3.c} for the example I'm referring to.
+
+    
+\end{itemize}
+
+
+
+
+
 
 
 
