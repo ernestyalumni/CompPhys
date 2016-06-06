@@ -14,5 +14,5 @@ You're (as I was) reading Fitzpatrick's excellent lecture notes (latest I found 
 | codename        | directory      | Chapter | Section | page (pp) | Description            |
 | --------------- | -------------- | :-----: | ------- | --------- | ---------------------- |
 | printfact3.c    | ./             | 2       | 2.10    | 58        | uses a pointer to pass back information from a function to its calling routine |
-
+| passfunction.c  | ./             | 2       | 2.10    | 61        | illustrates passing of function names as arguments to another function; pointer to a function passed to another function as an argument |
 
