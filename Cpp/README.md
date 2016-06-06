@@ -35,6 +35,15 @@ The header file contains
 - class declaration (data and functions)
 - declaration of stand-alone functions, and all inlined functions,
 
+To understand
+
+```
+#ifndef HEADERFILE_H  
+#define HEADERFILE_H  
+```
+
+See (http://stackoverflow.com/questions/1653958/why-are-ifndef-and-define-used-in-c-header-files) and (https://en.wikipedia.org/wiki/Include_guard).
+
 ### C++ Operator Overloading in expression; lvalues vs. rvalues
 
 cf. [C++ Operator Overloading in expression](http://stackoverflow.com/questions/6377786/c-operator-overloading-in-expression)
