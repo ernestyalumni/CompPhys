@@ -1102,7 +1102,7 @@ Referencing and deferencing operations on pointers to variables
   \end{aligned}
 \]
 
-\subsection{Numerical differentiatio<n and interpolation (in C++)}
+\subsection{Numerical differentiation and interpolation (in C++)}
 
 cf. Chapter 3 ``Numerical differentiation and interpolation'' of Hjorth-Jensen (2015) \cite{Hjor2015}.
 
@@ -1255,7 +1255,59 @@ So $\&$ reference \emph{functor} can't act on rvalue's.
 
 \section{Numerical Integration}
 
-cf. 
+\subsubsection{Trapezoid rule (or trapezoidal rule)}
+
+See \href{https://github.com/ernestyalumni/CompPhys/blob/master/Cpp/Integrate.ipynb}{Integrate.ipynb}.
+
+From there, consider integration on $[a,b]$, considering $h := \frac{b-a}{N}$, and $N+1$ (grid) points, $\lbrace a, a+h, a+2h, \dots , a+ jh, \dots , a+Nh = b\rbrace_{j=0 \dots N }$.
+
+Then $\frac{N}{2}$ pts. are our ``$x_0$''; $x_0$'s $= \lbrace a +h , a+3h, \dots , a+(2j-1)h, \dots , a+ \left( \frac{2 N}{2} - 1 \right)h \rbrace_{j=1 \dots \frac{N}{2} }$.
+
+Notice how we really need to care about if $N$ is even or not.  If $N$ is not even, then we'd have to deal with the integration at the integration limits and choosing what to do.  
+
+Then
+\[
+\begin{gathered}
+  \int_a^b f(x) dx = \sum_{j=1}^{N/2} \int_{a + (2j-1)h-h}^{a+(2j-1)h+h} f(x)dx = \sum_{j=1}^{N/2} \frac{h}{2} ( 2f(a+(2j-1)h ) + f(a+2(j-1)h) + f(a+2jh) ) = \\
+   = h(f(a)/2 + f(a+h) + \dots + f(b-h) + \frac{f(b)}{2} ) = h \left( \frac{f(a)}{2} + \sum_{j=1}^{N-1} f(a+jh) + \frac{f(b)}{2} \right)
+  \end{gathered}
+\]
+
+\subsubsection{Midpoint method or rectangle method}.
+
+Let $h := \frac{b-a}{N}$ be the step size.  The grid is as follows:
+\[
+\lbrace a , a +h , \dots , a + jh , \dots , a+Nh = b\rbrace_{j=0\dots N}
+\]
+The desired midpoint values are at the following $N$ points:
+\[
+\lbrace a + \frac{h}{2} , a + \frac{3}{2} h , \dots , a+\frac{(2j-1 ) h }{2} , \dots , a + \left( N - \frac{1}{2} \right) h \rbrace_{j=1 \dots N}
+\]
+and so
+\begin{equation}
+  \int_a^b f(x) dx \approx \sum_{j=1}^N f(x_j) h = \sum_{j=1}^N f\left( a + \frac{(2j-1) h}{2} \right)h 
+\end{equation}
+
+
+\subsubsection{Simpson rule}
+
+The idea is to take the next ``order'' in the Lagrange interpolation formula, the second-order polynomial, and then we can rederive Simpson's rule.  The algebra is worked out in \href{https://github.com/ernestyalumni/CompPhys/blob/master/Cpp/Integrate.ipynb}{Integrate.ipynb}.
+
+From there, then we can obtain Simpson's rule,
+\[
+\begin{gathered}
+  \int_a^b f(x)dx = \sum_{j=1}^{N/2} \int_{a + 2(j-1)h }^{a+2jh} f(x) dx = \sum_{j=1}^{N/2} \frac{h}{3} ( 4 f(a+(2j-1)h ) + f(a+2(j-1)h) + f(a+2jh) ) = \\
+  = \frac{h}{3} \left[ f(a) + f(b) + \sum_{j=1}^{N/2} 4f(a+(2j-1) h) + 2\sum_{j=1}^{N/2-1} f(a+2jh) \right]
+\end{gathered}
+\]
+
+\subsection{Gaussian Quadrature}
+
+cf. Hjorth-Jensen (2015) \cite{Hjor2015}, Section 5.3 Gaussian Quadrature, Chapter 5 Numerical Integration
+
+
+
+
 
 \section{Call by reference - Call by Value, Call by reference (in C and in C++)}
 
@@ -1456,9 +1508,600 @@ $\Longrightarrow $
     
 \end{itemize}
 
+Again, \emph{in C}, consider \emph{a pointer to a function} passed to another function as an argument.  Take a look at \href{https://github.com/ernestyalumni/CompPhys/blob/master/CFitz/passfunction.c}{passfunction.c} simultaneously.
+
+\begin{itemize}
+\item  \emph{function prototype} -
+\[
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointer}  &  \textbf{Types} \\
+    \text{Mor}_{\textbf{Types}}  & \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { \text{hostfunction}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+  \end{tikzpicture}   
+\qquad \qquad \, \,
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{pointer}  &  \text{void} \\
+    \text{Mor}_{\textbf{Types}}(\text{double},\text{double})  & \\ 
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] { \text{hostfunction}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+  \end{tikzpicture}   
+\]
+$\Longrightarrow$
+\begin{lstlisting}
+  void hostfunction(double (*)(double))
+\end{lstlisting}
+We could further generalize this syntax, simply for syntax and notation sake, as such:
+\[
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointer}  &  \textbf{Types} \\
+    \text{Mor}_{\textbf{Types}}  & \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { \text{hostfunction}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+  \end{tikzpicture}   
+\qquad \qquad \, \,
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{pointer}  &  \text{data-type} \\
+    \text{Mor}_{\textbf{Types}}(\text{typei},\text{typef})  & \\ 
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] { \text{hostfunction}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+  \end{tikzpicture}   
+\]
+$\Longrightarrow$
+\begin{lstlisting}
+  data-type hostfunction(typef (*)(typei))
+\end{lstlisting}
+
+For practice, consider more than 1 argument in our function, and the other argument, for practice, is a pointer, we're ``passing by reference.''
+
+\[
+\begin{aligned}
+  & 
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    & \textbf{pointers} \times \textbf{pointers}  &   & \textbf{Types} \\
+    \textbf{pointers} &  & \textbf{pointers} & \\      
+    \text{Mor}_{\textbf{Types}}  &  & \textbf{Types} &  \\ 
+  };
+  \path[->]
+  (m-1-2) edge node [auto] { \text{hostfunction}} (m-1-4)
+  (m-1-2) edge node [auto] { $\text{pr}_1$ } (m-2-1)
+  edge node [auto] { $\text{pr}_2$ } (m-2-3)
+  (m-2-1) edge node [auto] {*} (m-3-1)
+  (m-2-3) edge node [auto] {*} (m-3-3)
+  ;  
+  \end{tikzpicture}   
+\qquad \qquad \, \, \\
+&
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    & pointer \times pointer  &   & \text{void} \\
+    pointer &  & pointers & \\      
+    \text{Mor}_{\textbf{Types}}(\text{double},\text{double})  &  & \text{double} &  \\ 
+  };
+  \path[|->]
+  (m-1-2) edge node [auto] { \text{hostfunction}} (m-1-4)
+  (m-1-2) edge node [auto] { $\text{pr}_1$ } (m-2-1)
+  edge node [auto] { $\text{pr}_2$ } (m-2-3)
+  (m-2-1) edge node [auto] {*} (m-3-1)
+  (m-2-3) edge node [auto] {*} (m-3-3)
+  ;  
+  \end{tikzpicture}   
+\end{aligned}
+\]
+$\Longrightarrow$
+\begin{lstlisting}
+void hostfunction( double (*)(double), double *)
+\end{lstlisting}
+\item \emph{function definition}
+
+  \[
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointers}  &  \textbf{Types} \\
+    \text{Mor}_{\textbf{Types}}  & \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { \text{hostfunction}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+\end{tikzpicture}   \qquad  \,
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{pointer}  &  \text{void} \\
+    \text{Mor}_{\textbf{Types}}(\text{double},\text{double})  & \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { \text{hostfunction}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+  \end{tikzpicture}   \qquad \, \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{fun}  &  \text{void} \\
+    *\text{fun}  & \\ 
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] { \text{hostfunction}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+  \end{tikzpicture}   
+\]
+  $\Longrightarrow$
+\begin{lstlisting}
+  void hostfunction(double (*fun)(double)) { ... }
+\end{lstlisting}
+
+\item \emph{Inside} the function definition,
+\[
+\begin{aligned}
+  & 
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{Types}  &  \textbf{Types} & \textbf{Types} \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { $*\text{fun}$} (m-1-2)
+  (m-1-2) edge node [auto] {$=$} (m-1-3)
+;  
+\end{tikzpicture} \quad \, \\
+& 
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{double}  &  \text{double} & \text{double} \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { $*\text{fun}$} (m-1-2)
+  (m-1-2) edge node [auto] {$=$} (m-1-3)
+;  
+\end{tikzpicture}   \quad \, \\
+&
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    x  &  (*\text{fun})(x) & y = (*\text{fun})(x) \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] { $*\text{fun}$} (m-1-2)
+  (m-1-2) edge node [auto] {$=$} (m-1-3)
+;  
+  \end{tikzpicture}   
+\end{aligned}
+\]
+$\Longrightarrow $
+\begin{lstlisting}
+y = (*fun)(x)
+  \end{lstlisting}
+\item ``Using'' the function - the \emph{actual} syntax for ``passing'' a function into a function is interesting (peculiar?): you only need the \emph{name} of the function.
+
+  Let's quickly recall how a function is prototyped, ``declared'' (or, i.e., defined), and used:
+  \begin{itemize}
+  \item \emph{function prototype} -
+    \[
+\begin{aligned}
+  &
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{Types} & \textbf{Types} \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { $\text{fun}1$} (m-1-2)
+;  
+  \end{tikzpicture}   
+  \qquad \, \\
+  &
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{double} & \text{double} \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { $\text{fun}1$} (m-1-2)
+;  
+  \end{tikzpicture}   
+\end{aligned}
+    \]
+    $\Longrightarrow $
+    \begin{lstlisting}
+      double fun1(double)
+    \end{lstlisting}
+  \item \emph{ function definition } -
+    \[
+\begin{aligned}
+  &
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{Types} & \textbf{Types} \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { $\text{fun}1$} (m-1-2)
+;  
+  \end{tikzpicture}   
+  \qquad \, \\
+  &
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{double} & \text{double} \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { $\text{fun}1$} (m-1-2)
+;  
+  \end{tikzpicture}
+  \qquad \, \\
+  &
+    \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    z & 3.0 z*z - z (= 3z^2 - z) \\ 
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] { $\text{fun}1$} (m-1-2)
+;  
+  \end{tikzpicture}   
+\end{aligned}
+    \]
+    $\Longrightarrow $
+    \begin{lstlisting}
+      double fun1(double z) { ... }
+    \end{lstlisting}
+    \item Using function - \verb| fun1(z) |
+
+        \end{itemize}
+  and so
+  \[
+\text{fun}1 \in \text{Mor}_{\textbf{Types}}(\text{double},\text{double})
+\]
+
+And so again, it's interesting in terms of syntax that all you need is the \emph{name} of the function to pass into the arguments of the ``host function'' when using the host function:
+\[
+\begin{gathered}
+    \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+  \text{Mor}_{\textbf{Types}} & \textbf{Types} \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { $\text{hostfunction}$} (m-1-2)
+;  
+  \end{tikzpicture}   
+    \\
+        \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+  \text{Mor}_{\textbf{Types}}(\text{double},\text{double}) & \text{void} \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] { $\text{hostfunction}$} (m-1-2)
+;  
+        \end{tikzpicture}   \\
+                \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+  \text{fun}1 & \text{hostfunction}(\text{fun}1) \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] { $\text{hostfunction}$} (m-1-2)
+;  
+  \end{tikzpicture}   
+  \end{gathered}
+\]
+$\Longrightarrow$
+\begin{lstlisting}
+hostfunction(fun1)
+  \end{lstlisting}
+
+\end{itemize}
+
+\subsubsection{C++ extensions, or how C++ pass by reference (pass a pointer to argument) vs. C}
+
+Recall how C passes by reference, and look at Fitzpatrick \cite{Fitz}, pp. 83-84 for the \verb|square| function:
+
+\begin{itemize}
+  \item  \emph{function prototype} - 
+\[
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointer}  &  \textbf{Types} \\
+    \textbf{Types}  & \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { \text{square}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+  \end{tikzpicture}   
+\qquad \qquad \, \,
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{pointer}  &  \text{void} \\
+    \text{double}  & \\ 
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] { \text{square}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+  \end{tikzpicture}   
+\]
+$\Longrightarrow$ 
+\begin{lstlisting}
+void square(double *)
+  \end{lstlisting}
+
+\item \emph{function definition} - 
+  \[
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointers}  &  \textbf{Types} \\
+    \textbf{Types}  & \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { \text{square}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+\end{tikzpicture}   \qquad  \,
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{pointer}  &  \text{void} \\
+    \text{double}  & \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { \text{function}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+  \end{tikzpicture}   \qquad \, \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    y  &  \text{void} \\
+    *y  & \\ 
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] { \text{square}} (m-1-2)
+  edge node [auto] {*} (m-2-1)
+;  
+  \end{tikzpicture}   
+\]
+  $\Longrightarrow$
+\begin{lstlisting}
+  void square(double *y) { ... }
+\end{lstlisting}
+
+\emph{Inside} the function definition,
+\[
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointer}  & \textbf{Dat}_{\text{lvalues}} & \textbf{Types} \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  (m-1-2) edge node [auto] {\text{typedef}} (m-1-3)
+;  
+  \end{tikzpicture} \qquad \qquad \,   
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    y  & *y  & \text{double} \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  (m-1-2) edge node [auto] {\text{typedef}} (m-1-3)
+;  
+  \end{tikzpicture}   
+  \]
+  and so, for instance, in the function definition, you can do things like this:
+  \begin{lstlisting}
+    *y = x*x
+    \end{lstlisting}
+
+\item ``Using'' the function, function ``instantiation'', ``calling'' the function, i.e. ``running'' the function
+  \[
+  \begin{aligned} 
+& \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{Types}  &  \textbf{Memory} &     \\
+                    & \textbf{pointers} & \textbf{Types}  \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$\&$} (m-1-2)
+  (m-1-2) edge node [auto] {$\cong$ } (m-2-2)
+  (m-2-2)  edge node [auto] {\text{square}} (m-2-3)
+  (m-1-1) [loop left] edge node [left] { \text{ function procedure } } (m-1-1)
+  ;  
+\end{tikzpicture} \qquad \, \\
+    & 
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{double}  &  \text{Memory} (\text{Obj}{Memory}) &     \\
+                    & \text{pointer} & \text{void}  \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$\&$} (m-1-2)
+  (m-1-2) edge node [auto] {$\cong$ } (m-2-2)
+  (m-2-2)  edge node [auto] {\text{square}} (m-2-3)
+  (m-1-1) [loop left] edge node [left] { \text{ function procedure } } (m-1-1)
+  ;  
+\end{tikzpicture} \qquad \, \\
+&
+ \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{res}  &  \& \text{res}  &     \\
+                    & \& \text{res} & \text{square}(\& \text{res})  \\ 
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$\&$} (m-1-2)
+  (m-1-2) edge node [auto] {$\cong$ } (m-2-2)
+  (m-2-2)  edge node [auto] {\text{square}} (m-2-3)
+  (m-1-1) [loop left] edge node [left] { \text{ function procedure } } (m-1-1)
+  ;  
+\end{tikzpicture}
+\end{aligned}
+    \]
+    
+\end{itemize}
+
+However, in \emph{C++}, a lot of the dereferencing $*$ and referencing $\&$ is not explicitly said so in the syntax.  In this syntax, passing by reference is indicated by prepending the $\&$ ampersand to the variable name, in function declaration (prototype and definition).  We don't have to explicitly deference the argument in the function (it's done behind the scene) and syntax-wise (it seems), we only have to refer to the argument by regular local name.
+
+Indeed, the syntax appears ``shortcutted'' greatly:
+\begin{itemize}
+  \item  \emph{function prototype} - 
+\[
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointer} \times \textbf{Types}  &  \textbf{Types} \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { \text{function}} (m-1-2)
+;  
+  \end{tikzpicture}   
+\qquad \qquad \, \,
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{pointer}, \text{double}  &  \text{void} \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] { \text{square}} (m-1-2)
+;  
+  \end{tikzpicture}   
+\]
+$\Longrightarrow$ 
+\begin{lstlisting}
+void function(double &)
+  \end{lstlisting}
+
+\item \emph{function definition} - 
+  \[
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointers}\times \textbf{Types}  &  \textbf{Types} \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { \text{square}} (m-1-2)
+;  
+\end{tikzpicture}   \qquad  \,
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{pointer},\text{double}  &  \text{void} \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { \text{function}} (m-1-2)
+;  
+  \end{tikzpicture}   \qquad \, \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+   \&, y  &  \text{function}(\text{double} \; \& y) \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] { \text{function}} (m-1-2)
+;  
+  \end{tikzpicture}   
+\]
+  $\Longrightarrow$
+\begin{lstlisting}
+  void function(double &y) { ... }
+\end{lstlisting}
+
+\emph{Inside} the function definition,
+\[
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{double}   & \text{double} \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$\text{End}(\text{double},\text{double})$} (m-1-2)
+;  
+  \end{tikzpicture} \qquad \qquad \,   
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    y  & y = x*x \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$\text{End}(\text{double},\text{double})$} (m-1-2)
+;  
+  \end{tikzpicture}   
+  \]
+  and so, for instance, in the function definition, you can do things like this:
+  \begin{lstlisting}
+    y = x*x
+    \end{lstlisting}
+with no deferencing needed.  
+\item ``Using'' the function, function ``instantiation'', ``calling'' the function, i.e. ``running'' the function
+  \[
+  \begin{aligned} 
+& \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{Types}  &  \textbf{Types}      \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$\text{function}$} (m-1-2)
+  ;  
+\end{tikzpicture} \qquad \,      
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{double}  &  \text{void}  \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$\text{function}$} (m-1-2)
+  ;  
+\end{tikzpicture} \qquad \, 
+ \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \text{res}  &   \text{function}(\text{res})       \\
+                     };
+  \path[|->]
+  (m-1-1) edge node [auto] {$\text{function}$} (m-1-2)
+  ;  
+\end{tikzpicture}
+\end{aligned}
+    \]
+    
+\end{itemize}
 
 
-
+Fitzpatrick \cite{Fitz} mentions using \verb|inline| for short functions, no more than 3 lines long, because of memory cost of calling a function.  
 
 
 
