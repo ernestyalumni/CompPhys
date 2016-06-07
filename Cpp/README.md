@@ -23,6 +23,9 @@ See Hjorth-Jensen's lectures for 2015.
 | complex.cpp     | ./progs/ch03/  | 3       | 3.3.1   | 68        | contains Complex class |
 | customCC.cpp    | ./progs/ch03/  | 3       | 3.3.1   | 68        | contains `main()` to demonstrate Complex class |
 | Integrate.ipynb | ./             | 5       | 5.1     | 109-112   | jupyter (.ipynb) notebook to symbolic compute, using sympy, the derivation of trapezoid rule |
+| program1.cpp    | ./progs/ch05/  | 5       | 5.3.6   | 127       | example using trapezoid rule, Simpson's rule, Gauss-Legendre method|
+| integrate1d.h   | ./progs/ch05/  | 5       | 5.3.6   | 127       | header file for 1-dimensional numerical integration routines, only |
+| integrate1d.cpp | ./progs/ch05/  | 5       | 5.3.6   | 127       | function definitions for 1-dimensional numerical integration routines, only |
 
 ### Classes (C++)
 
@@ -90,3 +93,46 @@ In *C++*, this is still useful as a first, intuitive approach, but
 *rvalue* - expression that's not a lvalue
 
 So & reference *functor* can't act on rvalue's.
+
+### Results of Numerical Integration
+
+See the lecture notes (2015) of Hjorth-Jensen; pp. 128, Ch. 5 Numerical Integration, Tables 5.2-5.3.  I wanted to reproduce those results.
+
+My thought is that making a "smaller" file containing only the 1-dimensional (numerical) integration routines would be more useful (pedagogically).  Hence, including `integrate1d.h` header file in the working directory, you'd compile
+
+```
+g++ program1.cpp integrate1d.cpp
+```
+
+i.e. compile `program1.cpp` with `integrate1d.cpp` and then one can integrate your desired integrand, by including those "integrate1d" files.
+
+My results are as follows:
+
+For $\int_1^{100} \exp{(-x)/x \, dx$,
+
+| N        | Trapezoid     | Simpson  | Rectangular | Gauss-Legendre |
+| -------- | ------------- | :------: | ----------  | -------------- |
+| 10       | 1.82102       | 0.607023 | 0.00433585  | 0.146045       |
+| 20       | 0.912678      | 0.306397 | 0.0442333   | 0.217809       |
+| 40       | 0.478456      | 0.181965 | 0.123049    | 0.219383       |
+| 100      | 0.273724      | 0.170579 | 0.194204    | 0.219384       |
+| 1000     | 0.219984      | 0.213317 | 0.219084    | 0.219384       |
+
+For $\int_0^3 1/(2+x^2) \, dx$,
+
+| N        | Trapezoid     | Simpson  | Rectangular | Gauss-Legendre |
+| -------- | ------------- | :------: | ----------  | -------------- |
+| 10       | 0.798861      | 0.769685 | 0.824581    | 0.799233       |
+| 20       | 0.79914       | 0.78446  | 0.812373    | 0.799233       |
+| 40       | 0.799209      | 0.791846 | 0.805925    | 0.799233       |
+| 100      | 0.799229      | 0.796278 | 0.80194     | 0.799233       |
+| 1000     | 0.799233      | 0.798937 | 0.799505    | 0.799233       |
+
+
+
+
+
+
+
+
+
