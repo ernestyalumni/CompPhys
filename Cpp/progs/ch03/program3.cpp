@@ -26,7 +26,7 @@
 */
 using namespace std;
 #include <iostream>
-#include <fstream>
+#include <fstream>  /* ofstream */
 #include <iomanip>
 #include <cmath>
 #include <cstdlib> /* exit */
