@@ -17,6 +17,8 @@ See Hjorth-Jensen's lectures for 2015.
 | program1.cpp    | ./progs/ch02/  | 2       | 2.1.1   | 10        | Scientific Hello World!|
 | program7.cpp    | ./progs/ch02/  | 2       | 2.5.2   | 34        | Pointers and arrays in C++ |
 | program7b.cpp   | ./progs/ch02/  | 2       | 2.5.2   | 34        | Pointers and arrays in C++ (further experimentation by me) |
+| program1.cpp    | ./progs/ch03/  | 3       | 3.1.1.1 | 51        | calculates second derivative of exp(x); take note of C style file IO |
+| program3.cpp    | ./progs/ch03/  | 3       | 3.1.1.4 | 54        | calculates second derivative of exp(x); take note of C++ style file IO |
 | usecomplex.cpp  | ./progs/ch03/  | 3       | 3.3.1   | 68        | Using standard template library (STL) for <complex>, complex<double>  |
 | usecomplexb.cpp | ./progs/ch03/  | 3       | 3.3.1   | 68        | More usage, such as x.real(), x.imag(), and exp(z) by me |
 | complex.h       | ./progs/ch03/  | 3       | 3.3.1   | 67        | header file for Complex class |
@@ -26,6 +28,57 @@ See Hjorth-Jensen's lectures for 2015.
 | program1.cpp    | ./progs/ch05/  | 5       | 5.3.6   | 127       | example using trapezoid rule, Simpson's rule, Gauss-Legendre method|
 | integrate1d.h   | ./progs/ch05/  | 5       | 5.3.6   | 127       | header file for 1-dimensional numerical integration routines, only |
 | integrate1d.cpp | ./progs/ch05/  | 5       | 5.3.6   | 127       | function definitions for 1-dimensional numerical integration routines, only |
+
+### File I/O in C and C++
+
+cf. `program1.cpp` in `./progs/ch03` subdirectory; pp. 51 Subsection 3.1.1.1 Initializations and main program, Ch. 3 Numerical differentiation and interpolation of Hjorth-Jensen (2015); [CompPhysics/ComputationalPhysicsMSU/doc/Programs/LecturePrograms/programs/Classes/cpp/
+](https://github.com/CompPhysics/ComputationalPhysicsMSU/blob/master/doc/Programs/LecturePrograms/programs/Classes/cpp/program1.cpp)
+
+Take a look at `program1.cpp`.  It appears that the "C"-style file IO is first considered.  Reading this wikipedia article on [C file input/output](https://en.wikipedia.org/wiki/C_file_input/output) helped me understand what was used here.
+
+`FILE` - known as a file *handle*, abstract reference to a resource, this is an "opaque type" - points to some unspecified type - containing information about a file or text stream, and we can do IO (input output) operations on.
+
+So `FILE *output_file;` declares a pointer `output_file` to a `FILE`. 
+
+`stdio.h` contains `fopen`, `fprintf`, `fclose`:
+- `fopen` - opens a file
+- `fprintf` - prints formatted byte/wchar_t output to stdout, file stream, or buffer; syntax:
+
+```
+int fprintf_s(FILE *restrict stream, const char *restrict format, ...);
+```
+cf. http://en.cppreference.com/w/c/io/fprintf
+
+- `fclose` - closes a file
+
+cf. `program3.cpp` in `./progs/ch03` subdirectory, pp. 54-55, Subsection 3.1.1.4 The output function of Hjorth-Jensen (2015), [CompPhysics/ComputationalPhysicsMSU/doc/Programs/LecturePrograms/programs/Classes/cpp/
+](https://github.com/CompPhysics/ComputationalPhysicsMSU/blob/master/doc/Programs/LecturePrograms/programs/Classes/cpp/program3.cpp)
+
+#### `<fstream>` header
+
+cf. http://www.cplusplus.com/reference/fstream/
+
+`<fstream>` in `#include <fstream>` is a header providing file stream classes.  So apparently, for narrow characters [`char`], there is `fstream` (input/output file stream class) and `ofstream` (output file stream).
+
+In `program3.cpp`, `ofile` is an "instance" of class `ofstream`:
+
+```
+ofstream ofile;
+```
+Here are examples of using this class `ofstream` (in this particular situation, its "instance" is called `ofile`):
+
+```
+ofile.open(outfilename);
+ofile.close();
+```
+and then the actual "outputting":
+
+```
+ofile << setw(15) << setprecision(8) << log10(h_step[i]);
+ofile << setw(15) << setprecision(8) << epsilon << endl;
+```
+
+`setw` is a class belonging to `<iomanip>`.  It stands for **Set field width** and sets the *field width* to be used on output operations (cf. http://www.cplusplus.com/reference/iomanip/setw/ ).  
 
 ### Classes (C++)
 
