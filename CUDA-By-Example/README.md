@@ -9,7 +9,8 @@ It seems that a header file `book.h` out of the `common` subdirectory is needed 
 
 ## Dictionary between files on this github subdirectory to code in **CUDA By Example**, *Sanders and Kandrot*
 
-| filename | pp. | (Sub)Section |
-| -------- | --- | ------------ |
-| [add-pass.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/add-pass.cu) | 25 | 3.2.3 Passing Parameters |
-
+| filename |   pp.  | (Sub)Section             | Description                  |
+| -------- | :----: | :--------------------:   | :--------------------------: |
+| [add-pass.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/add-pass.cu) |  25  | 3.2.3 Passing Parameters |
+| [cpuvecsum.c](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/cpuvecsum.c) |  40  | 4.2.1 Summing Vectors    | Sum vectors as an C array    |
+| [gpuvecsum.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpuvecsum.cu) | 41 | 4.2.1 Summing Vectors    | Sum arrays as vectors in GPU |
