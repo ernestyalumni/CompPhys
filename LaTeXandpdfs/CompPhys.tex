@@ -1974,6 +1974,8 @@ void square(double *)
     
 \end{itemize}
 
+\subsubsection{C++ syntax for dealing with passing pointers (and arrays) into functions}
+
 However, in \emph{C++}, a lot of the dereferencing $*$ and referencing $\&$ is not explicitly said so in the syntax.  In this syntax, passing by reference is indicated by prepending the $\&$ ampersand to the variable name, in function declaration (prototype and definition).  We don't have to explicitly deference the argument in the function (it's done behind the scene) and syntax-wise (it seems), we only have to refer to the argument by regular local name.
 
 Indeed, the syntax appears ``shortcutted'' greatly:
@@ -1996,7 +1998,7 @@ Indeed, the syntax appears ``shortcutted'' greatly:
     \text{pointer}, \text{double}  &  \text{void} \\
   };
   \path[|->]
-  (m-1-1) edge node [auto] { \text{square}} (m-1-2)
+  (m-1-1) edge node [auto] { \text{function}} (m-1-2)
 ;  
   \end{tikzpicture}   
 \]
@@ -2100,6 +2102,25 @@ with no deferencing needed.
     
 \end{itemize}
 
+\subsubsection{C++ note on arrays}
+
+For dealing with arrays, Stroustrup (2013) \cite{Stro2013}, on pp. 12 of Chapter 1 The Basics, Section 1.8 Pointers, Arrays, and References, does the following:
+
+\begin{itemize}
+\item \emph{array declaration} -
+  \begin{lstlisting}
+    type a[n]; // type[n]; array of n type's
+  \end{lstlisting}
+\item ``Using'' arrays in function prototypes, i.e. passing into arguments of functions for \emph{function prototypes}
+  \begin{lstlisting}
+    data-type function( type * arrayname)
+    \end{lstlisting}
+\item ``Using'' arrays when ``using'' functions, i.e. passing into arguments when a function is ``called'' or ``executed''
+  \begin{lstlisting}
+    function( arrayname )
+  \end{lstlisting}
+  \end{itemize}
+
 
 Fitzpatrick \cite{Fitz} mentions using \verb|inline| for short functions, no more than 3 lines long, because of memory cost of calling a function.  
 
@@ -2123,7 +2144,206 @@ So once a file builds and it's good, I, in Terminal, \verb|cp| the file into my 
 Now with my file saved (for example, \verb|helloworldkernel.cu|), then I can delete it, without fear, from my, say, \verb|cuda-workplace|, from the right side, ``C/C$++$ Projects'' window in Eclipse.   
 
 \section{On CUDA By Example}
+Take a look at 3.2.2 A Kernel Call, a Hello World in CUDA C, with a simple kernel, on pp. 23 of Sanders and Kandrot (2010) \cite{SK2010} and on github, [helloworldkernel.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/helloworldkernel.cu).  Let's work out the functor interpretation for practice.
+
+\begin{itemize}
+\item \emph{function definition} - \[
+  \begin{gathered}
+    \textbf{Types} \xrightarrow{ \text{ kernel } } \textbf{Types } \\ 
+    \text{void} \xrightarrow{ \text{kernel } } \text{ void }
+  \end{gathered}
+  \]
+  where \verb|kernel| $\in $ \verb|__global__| \\
+  $\Longrightarrow $
+  \begin{lstlisting}
+    __global__ void kernel(void) { }
+  \end{lstlisting}
+
+CUDA C adds the \verb|__global__| qualifier to standard C to \emph{alert the compiler that the function}, \verb|kernelfunction|, should be compiled to run on the \emph{device}, not the host (pp. 24 \cite{SK2010}).    
+\item ``Using'', ``calling'', ``running'' function -
+  \[
+\begin{aligned}
+  & <<<>>>: (n_{\text{block}} , n_{\text{threads}}) \times \text{kernelfunction} \mapsto \text{kernelfunction}<<<n_{\text{block}}, n_{\text{threads}}>>> \in \text{End}(\text{Dat}_{\textbf{Types}}) \\
+  & <<<>>>:\mathbb{N}^+ \times \mathbb{N}^+ \times \text{Mor}_{\text{GPU}} \to \text{End}(\text{Dat}_{GPU})
+  \end{aligned}
+\]
+$\Longrightarrow$
+\begin{lstlisting}
+  kernel<<<1,1>>>();
+  \end{lstlisting}
+  \end{itemize}
+
 cf. 3.2.3 Passing Parameters of Sanders and Kandrot (2010) \cite{SK2010}
+
+Taking a look at [add-passb.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/add-passb.cu), let's work out the functor interpretation of \verb|cudaMalloc|, \verb|cudaMemcpy|.
+
+In \verb|main|, ``declaring'' a pointer:
+\begin{lstlisting}
+  int *dev_c
+\end{lstlisting}
+$\Longleftarrow$
+\[
+\begin{gathered}
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointers}  &   \textbf{Dat}_{\text{lvalues}} & \textbf{Types}      \\    
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  (m-1-2) edge node [auto] {\text{typedef}} (m-1-3)
+  ;  
+\end{tikzpicture} \\
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \verb|dev_c|  &   * \verb|dev_c| & \text{int}      \\    
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  (m-1-2) edge node [auto] {\text{typedef}} (m-1-3)
+  ;  
+\end{tikzpicture}
+  \end{gathered}
+\]
+We can also do, note, the \verb|sizeof| function (which is a well-defined mapping, for once) on $\text{Obj}\textbf{Types}$:
+\[
+\begin{gathered}
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointers}  &   \textbf{Dat}_{\text{lvalues}} & \textbf{Types} & \mathbb{N}^+     \\    
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  (m-1-2) edge node [auto] {\text{typedef}} (m-1-3)
+  (m-1-3) edge node [auto] {\text{sizeof}} (m-1-4)
+  ;  
+\end{tikzpicture} \\
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \verb|dev_c|  &   * \verb|dev_c| & \text{int} & \text{sizeof}(\text{int})     \\    
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  (m-1-2) edge node [auto] {\text{typedef}} (m-1-3)
+  (m-1-3) edge node [auto] {\text{sizeof}} (m-1-4)
+  ;  
+\end{tikzpicture}
+  \end{gathered}
+\]
+
+Consider what Sanders and Kandrot says about the pointer to the pointer that (you want to) holds the address of the newly allocated memory. \cite{SK2010}  Consider this diagram:
+
+\[
+\begin{aligned}
+  & \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointers}  &   \textbf{pointers} & \textbf{Types}      \\    
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  (m-1-2) edge node [auto] {$*$} (m-1-3)
+  ;  
+\end{tikzpicture} \\
+& \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointer}  &   \textbf{pointer} & \text{void}      \\    
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  (m-1-2) edge node [auto] {$*$} (m-1-3)
+  ;  
+  \end{tikzpicture} \\
+  & \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2em, column sep=4em, minimum width=1em]
+  {
+    \& \verb|dev_c|  &   *(\& \verb|dev_c| ) & (\text{void} **)(\& \verb|dev_c|)      \\    
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  (m-1-2) edge node [auto] {$*$} (m-1-3)
+  ;  
+\end{tikzpicture}
+\end{aligned}
+\]
+I propose that what \verb|cudaMalloc| does (actually) is the following:
+
+\[
+\begin{gathered}
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=4em, minimum width=1em]
+  {
+    \textbf{Memory}_{\text{GPU}}  &   \textbf{pointers} & \textbf{pointers} & \textbf{Types}      \\    
+    & \textbf{pointers}_{\text{GPU}} & \textbf{Types} & \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$\text{cudaMalloc}$} (m-1-2)
+  (m-1-2) edge node [auto] {$*$} (m-1-3)
+  edge node [right] {$*$} (m-2-2)
+  (m-2-2) edge node [auto] {$*$} (m-2-3)
+  (m-1-3) edge node [auto] {$*$} (m-1-4)
+  ;  
+\end{tikzpicture} \\
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=4em, minimum width=1em]
+  {
+    \text{Memory address}_{\text{GPU}}  &   \& \verb|dev_c|  & *(\& \verb|dev_c| ) & (\text{void} **)(\& \verb|dev_c|)      \\    
+    & \verb|dev_c| & *\verb|dev_c| & \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$\text{cudaMalloc}$} (m-1-2)
+  (m-1-2) edge node [auto] {$*$} (m-1-3)
+  edge node [right] {$*$} (m-2-2)
+  (m-2-2) edge node [auto] {$*$} (m-2-3)
+  (m-1-3) edge node [auto] {$*$} (m-1-4)
+  ;  
+\end{tikzpicture} 
+  \end{gathered}
+\]
+\verb|dev_c| is now a \emph{device pointer}, available to kernel functions on the GPU.
+
+Syntax-wise, we can relate this diagram to the corresponding function ``usage'':
+\[
+\begin{gathered}
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointers} \times \mathbb{N}^+  & \verb|cudaError_r|  \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$\text{cudaMalloc}$} (m-1-2)
+  ;  
+\end{tikzpicture} 
+\\
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=4em, minimum width=1em]
+  {
+((\text{void} **)(\& \verb|dev_c|), (\text{sizeof}(\text{int})) ) & \text{cudaSuccess (for example)} \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$\text{cudaMalloc}$} (m-1-2)
+  ;  
+\end{tikzpicture} 
+  \end{gathered}
+\] $\Longrightarrow$
+\begin{lstlisting}
+  cudaMalloc((void**)&dev_c, sizeof(int))
+  \end{lstlisting}
+
+For practice, consider now \verb|cudaMemcpy| in the functor interpretation, and its definition as such:
+
+\verb|cudaMemcpy| is a ``functor category'', s.t. we equip the functor \verb|cudaMemcpy| with a collection of objects $\text{Obj}_{\text{cudaMemcpy}}$, s.t., for example, \verb|cudaMemcpyDevicetoHost| $\in \text{Obj}_{\text{cudaMemcpy}}$, where
+\[
+( \,  \text{cudaMemcpy}(-,-,n_{\text{thread}}, \text{cudaMemcpyDevicetoHost}): \textbf{Memory}_{GPU} \to \textbf{Memory}_{CPU} \, ) \in \text{Hom}(\textbf{Memory}_{GPU}, \textbf{Memory}_{CPU} )
+\]
+where $\text{Obj}\textbf{Memory}_{GPU}  \equiv $ collection of all possible memory (addresses) on GPU.
+
+It should be noted that, syntax-wise, $\& c \in \text{Obj}\textbf{Memory}_{CPU}$ and $\& c$ belongs in the ``first slot'' of the arguments for $\text{cudaMemcpy}$, whereas \verb|dev_c| $\in \textbf{pointers}_{GPU}$ a \emph{device pointer}, is ``passed in'' to the ``second slot'' of the arguments for $\text{cudaMemcpy}$.  
+
 
 
 
@@ -2152,7 +2372,9 @@ Richard Fitzpatrick.  ``Computational Physics.''  \url{http://farside.ph.utexas.
 \bibitem{Hjor2015}
  M. Hjorth-Jensen, \textbf{Computational Physics}, University of Oslo (2015) \url{http://www.mn.uio.no/fysikk/english/people/aca/mhjensen/}
 
-
+\bibitem{Stro2013}
+ Bjarne Stroustrup.  \textbf{A Tour of C++} (C++ In-Depth Series). Addison-Wesley Professional.   2013. 
+ 
 \bibitem{SK2010}
 Jason Sanders, Edward Kandrot.  \textbf{CUDA by Example: An Introduction to General-Purpose GPU Programming} 1st Edition.  Addison-Wesley Professional; 1 edition (July 29, 2010).  ISBN-13: 978-0131387683
 
