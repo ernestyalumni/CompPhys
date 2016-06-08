@@ -18,5 +18,44 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | helloworld.cu  | 23     | 3.2.2 A Kernel Call      | Hello world in CUDA C        |
 | [add-pass.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/add-pass.cu) |  25  | 3.2.3 Passing Parameters | example of using cudaMalloc, cudaMemcpy, cudaFree |
 | [add-passb.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/add-passb.cu) |  25  | 3.2.3 Passing Parameters | example of using cudaMalloc, cudaMemcpy, cudaFree, with my changes, using my own errors.h header file |
+| query.cu       | 27     | 3.3 Querying Devices     | query each device and report the properties of each |
+| queryb.cu      | 32     | 3.3 Querying Devices     | query each device and report the properties of each |
 | [cpuvecsum.c](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/cpuvecsum.c) |  40  | 4.2.1 Summing Vectors    | Sum vectors as an C array    |
 | [gpuvecsum.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpuvecsum.cu) | 41 | 4.2.1 Summing Vectors    | Sum arrays as vectors in GPU |
+
+### Querying Devices
+cf. 3.3 Querying Devices of Sanders and Kandrot (2010).
+
+Take a look at `query.cu`.  
+
+It appears that `cudaDeviceCount` obtains the total number of devices.  For example, in my case, it is 1, so that `count == 1`.  `cudaGetDeviceProperties` retrieves the properties of a device (specified by that count number).  One of those properties is its name, evoked by `.name`.  In my case, for example, after compiling `query.cu` by doing `nvcc query.cu`, then running the executable, by doing `./a.out`, then I obtain:
+```
+Name: GeForce GTX 980 Ti
+```
+
+Then `queryb.cu` has further properties that you "evoke" by various "methods" of the class, e.g. `.name`, `.major`, `.minor`, etc.
+
+```
+    --- General Information for device 0 ---
+Name: GeForce GTX 980 Ti
+Compute capability: 5.2
+Clock rate:  1076000
+Device copy overlap:  Enabled
+Kernel execution timeout :  Enabled
+   --- Memory Information for device 0 ---
+Total global mem:      6441730048
+Total constant Mem:    65536
+Max mem pitch:         2147483647
+Texture Alignment:     512
+   --- MP Information for device 0 ---
+Multiprocessor count:  22
+Shared mem per mp:     49152
+Registers per mp:      65536
+Threads in warp:       32
+Max threads per block: 1024
+Max thread dimensions: (1024, 1024, 64) 
+Max grid dimensions:   (2147483647, 65535, 65535) 
+
+   --- Other Information for device 0 ---
+Max. 3D textures dimensions: (4096, 4096, 4096) 
+```
