@@ -15,7 +15,7 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | -------------- | :----: | :--------------------:   | :--------------------------: |
 | helloworld.c   | 22     | 3.2 A First Program      | Hello world in C             |
 | helloworld.cpp | 22     | 3.2 A First Program      | Hello world in C++; also in pp. 3, Section 1.3 Hello World! of Stroustrup (2013) |
-| helloworld.cpp | 23     | 3.2.2 A Kernel Call      | Hello world in CUDA C        |
+| helloworld.cu  | 23     | 3.2.2 A Kernel Call      | Hello world in CUDA C        |
 | [add-pass.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/add-pass.cu) |  25  | 3.2.3 Passing Parameters |
 | [cpuvecsum.c](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/cpuvecsum.c) |  40  | 4.2.1 Summing Vectors    | Sum vectors as an C array    |
 | [gpuvecsum.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpuvecsum.cu) | 41 | 4.2.1 Summing Vectors    | Sum arrays as vectors in GPU |
