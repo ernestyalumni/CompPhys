@@ -16,8 +16,11 @@ cf. Jason Sanders, Edward Kandrot. CUDA by Example: An Introduction to General-P
 ### `cpu_bitmap.h`
 This header file contains 1 struct `CPUBitmap`
 
-*Programming note* in the method `display_and_exit`, inside it, a `char* dummy = "";` is created, pointer to a `char`.  Remember the `const` so you'll never try to to write to this pointer.  
-cf. [Deprecated conversion from string literal to 'char*'](http://stackoverflow.com/questions/9650058/deprecated-conversion-from-string-literal-to-char)
+*Programming note* in the method `display_and_exit`, inside it, a `char* dummy = "";` is created, pointer to a `char`.  ~~Remember the `const` so you'll never try to to write to this pointer.~~  
+cf. [Deprecated conversion from string literal to 'char*'](http://stackoverflow.com/questions/9650058/deprecated-conversion-from-string-literal-to-char)  
+The resolution to this was here:  
+cf. [How does one represent the empty char?](http://stackoverflow.com/questions/18410234/how-does-one-represent-the-empty-char)  
+Representing an empty char as `""` was causing all the problems - doing this `\0` for an empty char made it much better for the compiler.  
 
 ### `cpu_anim.h` 
 - contains a struct `CPUAnimBitmap`

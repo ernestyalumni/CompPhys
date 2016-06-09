@@ -48,7 +48,7 @@ struct CPUBitmap {
 		bitmapExit = e;
 		
 		int c = 1;
-		const char* dummy = "";
+		char * dummy = '\0';
 		glutInit( &c, &dummy);
 		glutInitDisplayMode( GLUT_SINGLE | GLUT_RGBA );
 		glutInitWindowSize( x, y);
