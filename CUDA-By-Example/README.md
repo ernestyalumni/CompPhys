@@ -23,6 +23,7 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | [cpuvecsum.c](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/cpuvecsum.c) |  40  | 4.2.1 Summing Vectors    | Sum vectors as an C array    |
 | [cpuvecsum.cpp](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/cpuvecsum.cpp) |  40  | 4.2.1 Summing Vectors    | Sum vectors as an C++ array; see pp. 9-12 of 1.8 Pointers, Arrays, and References of Stroustrup (2013)     |
 | [gpuvecsum.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpuvecsum.cu) | 41 | 4.2.1 Summing Vectors    | Sum arrays as vectors in GPU |
+| [gpujulia.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpujulia.cu) | 46-57 | 4.2.2 A Fun Example    | Julia Sets! |
 
 ## Compiling and running these programs in CUDA C/C++
 
