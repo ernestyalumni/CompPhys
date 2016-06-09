@@ -1,9 +1,9 @@
-# `CUDAeglib` documentation/descriptions/explanations/breakdown
+# `common` - library or subdirectory that contains header files - documentation/descriptions/explanations/breakdown
 
 cf. Jason Sanders, Edward Kandrot. CUDA by Example: An Introduction to General-Purpose GPU Programming    
 [github:jiekebo/CUDA-By-Example/](https://github.com/jiekebo/CUDA-By-Example)
 
-## Dictionary/Index between files on this github subdirectory to code in **CUDA By Example**, *Sanders and Kandrot*
+## Dictionary/Index between (header) files on this github subdirectory to code in **CUDA By Example**, *Sanders and Kandrot*
 
 | filename     |   ppg(s).  | (Sub)Section | Description/Uses                  |
 | ------------ | :--------: | :----------: | :-------------------------------: |
