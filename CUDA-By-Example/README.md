@@ -31,7 +31,7 @@ Pretty graphics and animation keeps (me, at least) one motivated.
 
 From [`gpujulia.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpujulia.cu),
 
-![From `gpujulia.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/gpujuliaScreenshot%20from%202016-06-09%2001-02-14.png "From `gpujulia.cu`")
+![From `gpujulia.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/gpujuliaScreenshot%20from%202016-06-09%2001-02-14.png =600x600)
 
 ## Compiling and running these programs in CUDA C/C++
 
