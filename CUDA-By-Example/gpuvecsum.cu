@@ -32,7 +32,7 @@ int main(void) {
     // fill the arrays 'a' and 'b' on the CPU
     for (int i=0; i<N; i++) {
     	a[i] = -i;
-	b[i] = i*i;
+		b[i] = i*i;
 	  }
 
     // copy the arrays 'a' and 'b' to the GPU
