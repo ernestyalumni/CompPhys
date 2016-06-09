@@ -27,7 +27,7 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | [gpujuliab.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpujuliab.cu) | 46-57 | 4.2.2 A Fun Example    | Julia Sets! My own version, where you can set the scale factor when calling the executable (argv) |
 | gpuvecsumredux.cu  | 61-62 | 5.2.1 Vector Sums: Redux | GPU Vector Sums using Threads|
 | gpuvecsumredux2.cu  | 67-69 | 5.2.1 Vector Sums: Redux | GPU Vector Sums using Blocks and Threads|
-
+| gpuripple.cu  | 69-74 | 5.2.2 GPU Ripple Using Threads | Animated standing wave |
 
 ## Awesome gallery of results out of CUDA C/C++, CUDA By Examples
 
