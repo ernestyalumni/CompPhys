@@ -25,6 +25,14 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | [gpuvecsum.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpuvecsum.cu) | 41 | 4.2.1 Summing Vectors    | Sum arrays as vectors in GPU |
 | [gpujulia.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpujulia.cu) | 46-57 | 4.2.2 A Fun Example    | Julia Sets! |
 
+## Awesome gallery of results out of CUDA C/C++, CUDA By Examples
+
+Pretty graphics and animation keeps (me, at least) one motivated.
+
+From [`gpujulia.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpujulia.cu),
+
+![From `gpujulia.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/gpujuliaScreenshot%20from%202016-06-09%2001-02-14.png "From `gpujulia.cu`")
+
 ## Compiling and running these programs in CUDA C/C++
 
 Most of the time, these commands will work in compiling (`nvcc`) and running (`./a.out`) these programs (in this repository subdirectory `CUDA-By-Example`):  
