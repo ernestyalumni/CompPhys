@@ -24,6 +24,31 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | [cpuvecsum.cpp](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/cpuvecsum.cpp) |  40  | 4.2.1 Summing Vectors    | Sum vectors as an C++ array; see pp. 9-12 of 1.8 Pointers, Arrays, and References of Stroustrup (2013)     |
 | [gpuvecsum.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpuvecsum.cu) | 41 | 4.2.1 Summing Vectors    | Sum arrays as vectors in GPU |
 
+## Compiling and running these programs in CUDA C/C++
+
+Most of the time, these commands will work in compiling (`nvcc`) and running (`./a.out`) these programs (in this repository subdirectory `CUDA-By-Example`):  
+
+```
+nvcc filename.cu  
+./a.out  
+```  
+e.g.  
+```
+nvcc helloworldkernel.cu
+./a.out  
+```
+
+However, sometimes you'll need `glut`.  Look at the program's `include`'s and header files.
+
+By the way, on that note, in my experience with Fedora Linux 23, I found that `freeglut` RPM didn't have the header file `glut.h` I needed.  So then I had to install this RPM, `freeglut-devel`.  Then it had all the header files I needed.  cf. [How to Setup OpenGL (installing glut) on Linux and Compile Programs](http://sa-os.blogspot.com/2010/01/how-to-setup-opengl-on-linux-and.html).  I did this with `dnf list freeglut-devel` and `dnf install freeglut-devel.x86_64`.
+
+So for instance, for `gpujulia.cu`, you'll need to compile it with these flags for `nvcc` (`-l` is the short name for the flag for library, to specify libraries to be used in linking stage, without the library file extension; cf. [3.2.2. File and path specifications](http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/#axzz4B3AvO2IG):  
+
+```
+nvcc -lglut -lGL gpujulia.cu
+```
+
+
 ### Querying Devices
 cf. 3.3 Querying Devices of Sanders and Kandrot (2010).
 
