@@ -28,6 +28,7 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | gpuvecsumredux.cu  | 61-62 | 5.2.1 Vector Sums: Redux | GPU Vector Sums using Threads|
 | gpuvecsumredux2.cu  | 67-69 | 5.2.1 Vector Sums: Redux | GPU Vector Sums using Blocks and Threads|
 | gpuripple.cu  | 69-74 | 5.2.2 GPU Ripple Using Threads | Animated standing wave |
+| dotprod.cu    | 69-74 | 5.3.1 Dot product | illustrations sharing between threads in a block, novel dot product summation scheme, using `__shared__` |
 
 ## Awesome gallery of results out of CUDA C/C++, CUDA By Examples
 
