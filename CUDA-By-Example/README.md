@@ -24,6 +24,7 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | [cpuvecsum.cpp](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/cpuvecsum.cpp) |  40  | 4.2.1 Summing Vectors    | Sum vectors as an C++ array; see pp. 9-12 of 1.8 Pointers, Arrays, and References of Stroustrup (2013)     |
 | [gpuvecsum.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpuvecsum.cu) | 41 | 4.2.1 Summing Vectors    | Sum arrays as vectors in GPU |
 | [gpujulia.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpujulia.cu) | 46-57 | 4.2.2 A Fun Example    | Julia Sets! |
+| [gpujulia.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpujulia.cu) | 46-57 | 4.2.2 A Fun Example    | Julia Sets! My own version, where you can set the scale factor when calling the executable (argv) |
 
 ## Awesome gallery of results out of CUDA C/C++, CUDA By Examples
 
@@ -34,6 +35,11 @@ From [`gpujulia.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-
 <img src=https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/gpujuliaScreenshot%20from%202016-06-09%2001-02-14.png width=400 height=400 />
 
 ![From `gpujulia.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/gpujuliaScreenshot%20from%202016-06-09%2001-02-14.png "From gpujulia.cu")
+
+From [`gpujuliab.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpujuliab.cu), which you (and I) can open and change around the constants to obtain different Julia sets:
+
+<img src=https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/gpujuliabScreenshot%20from%202016-06-09%2003-06-37.png width=400 height=400 />
+
 
 ## Compiling and running these programs in CUDA C/C++
 
