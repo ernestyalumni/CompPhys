@@ -57,9 +57,13 @@ From [`sharedbitmap.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/C
 
 <img src=https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/sharedbitmapScreenshot%20from%202016-06-09%2017-23-53.png width=400 height=400 />
 
-From [`raytrace.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpuripple.cu), 40 spheres,
+From [`raytrace.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/raytrace.cu), 40 spheres,
 
 <img src=https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/raytraceScreenshot%20from%202016-06-10%2001-25-56.png width=400 height=400 />
+
+From [`rayconst.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/rayconst.cu), 50 spheres,
+
+<img src=https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/rayconstScreenshot%20from%202016-06-10%2002-00-25.png width=400 height=400 />
 
 
 ## Compiling and running these programs in CUDA C/C++
