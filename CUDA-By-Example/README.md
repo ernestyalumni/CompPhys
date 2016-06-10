@@ -30,7 +30,7 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | gpuripple.cu  | 69-74 | 5.2.2 GPU Ripple Using Threads | Animated standing wave |
 | dotprod.cu    | 69-74 | 5.3.1 Dot product | illustrations sharing between threads in a block, novel dot product summation scheme, using `__shared__` |
 | dotprodcpp.cu    | 69-74 | 5.3.1 Dot product | Same as `dotprod.cu` but I attempt to implement C++11 coding methods, such as `new` and `delete`, as opposed to `malloc` and `free` |
-
+| sharedbitmap.cu | 90-93 | 5.3.2 Shared Memory Bitmap | demonstrates usage of `__syncthreads();` |
 
 ## Awesome gallery of results out of CUDA C/C++, CUDA By Examples
 
@@ -45,6 +45,12 @@ From [`gpujulia.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-
 From [`gpujuliab.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpujuliab.cu), which you (and I) can open and change around the constants to obtain different Julia sets:
 
 <img src=https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/gpujuliabScreenshot%20from%202016-06-09%2003-06-37.png width=400 height=400 />
+
+From [`sharedbitmap.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/sharedbitmap.cu), which demonstrates correct usage of `__syncthreads()` of CUDA C:
+
+<img src=https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/sharedbitmapScreenshot%20from%202016-06-09%2017-23-53.png width=400 height=400 />
+
+
 
 
 ## Compiling and running these programs in CUDA C/C++
