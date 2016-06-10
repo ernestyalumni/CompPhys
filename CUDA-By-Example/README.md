@@ -31,6 +31,8 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | dotprod.cu    | 69-74 | 5.3.1 Dot product | illustrations sharing between threads in a block, novel dot product summation scheme, using `__shared__` |
 | dotprodcpp.cu    | 69-74 | 5.3.1 Dot product | Same as `dotprod.cu` but I attempt to implement C++11 coding methods, such as `new` and `delete`, as opposed to `malloc` and `free` |
 | sharedbitmap.cu | 90-93 | 5.3.2 Shared Memory Bitmap | demonstrates usage of `__syncthreads();` |
+| raytrace.cu     | 99-103 | 6.2.2 Ray Tracing on the GPU | ray tracing randomly placed, but *fixed* sphere, without using **constant memory** |
+| rayconst.cu     | 104-113 | 6.2.3 Ray Tracing with Constant Memory | ray tracing randomly placed, but *fixed* sphere, using **constant memory** |
 
 ## Awesome gallery of results out of CUDA C/C++, CUDA By Examples
 
@@ -46,12 +48,18 @@ From [`gpujuliab.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA
 
 <img src=https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/gpujuliabScreenshot%20from%202016-06-09%2003-06-37.png width=400 height=400 />
 
+From [`gpuripple.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpuripple.cu), I'll try to embed a Twitter "tweet" of the video:
+<blockquote class="twitter-video" data-lang="en"><p lang="pl" dir="ltr"><a href="https://twitter.com/GPUComputing">@GPUComputing</a> CUDA C program for waves on <a href="https://twitter.com/NVIDIAGeForce">@NVIDIAGeForce</a> GTX980ti on <a href="https://twitter.com/TitanusComputer">@TitanusComputer</a> <a href="https://t.co/i2PAzkTXia">https://t.co/i2PAzkTXia</a> <a href="https://t.co/FcaMNfx7SK">pic.twitter.com/FcaMNfx7SK</a></p>&mdash; Ernest Yeung (@ernestyalumni) <a href="https://twitter.com/ernestyalumni/status/741014181323759616">June 9, 2016</a></blockquote>
+<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+
 From [`sharedbitmap.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/sharedbitmap.cu), which demonstrates correct usage of `__syncthreads()` of CUDA C:
 
 <img src=https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/sharedbitmapScreenshot%20from%202016-06-09%2017-23-53.png width=400 height=400 />
 
-<blockquote class="twitter-video" data-lang="en"><p lang="pl" dir="ltr"><a href="https://twitter.com/GPUComputing">@GPUComputing</a> CUDA C program for waves on <a href="https://twitter.com/NVIDIAGeForce">@NVIDIAGeForce</a> GTX980ti on <a href="https://twitter.com/TitanusComputer">@TitanusComputer</a> <a href="https://t.co/i2PAzkTXia">https://t.co/i2PAzkTXia</a> <a href="https://t.co/FcaMNfx7SK">pic.twitter.com/FcaMNfx7SK</a></p>&mdash; Ernest Yeung (@ernestyalumni) <a href="https://twitter.com/ernestyalumni/status/741014181323759616">June 9, 2016</a></blockquote>
-<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+From [`raytrace.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpuripple.cu), 40 spheres,
+
+<img src=https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/raytraceScreenshot%20from%202016-06-10%2001-25-56.png width=400 height=400 />
 
 
 ## Compiling and running these programs in CUDA C/C++
