@@ -2272,7 +2272,7 @@ Consider what Sanders and Kandrot says about the pointer to the pointer that (yo
 \]
 I propose that what \verb|cudaMalloc| does (actually) is the following:
 
-\[
+\begin{equation}\label{Eq:cudaMallocmodel}
 \begin{gathered}
 \begin{tikzpicture}
  \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=4em, minimum width=1em]
@@ -2303,7 +2303,8 @@ I propose that what \verb|cudaMalloc| does (actually) is the following:
   ;  
 \end{tikzpicture} 
   \end{gathered}
-\]
+\end{equation}
+
 \verb|dev_c| is now a \emph{device pointer}, available to kernel functions on the GPU.
 
 Syntax-wise, we can relate this diagram to the corresponding function ``usage'':
@@ -2344,10 +2345,269 @@ where $\text{Obj}\textbf{Memory}_{GPU}  \equiv $ collection of all possible memo
 
 It should be noted that, syntax-wise, $\& c \in \text{Obj}\textbf{Memory}_{CPU}$ and $\& c$ belongs in the ``first slot'' of the arguments for $\text{cudaMemcpy}$, whereas \verb|dev_c| $\in \textbf{pointers}_{GPU}$ a \emph{device pointer}, is ``passed in'' to the ``second slot'' of the arguments for $\text{cudaMemcpy}$.  
 
+\subsection{Threads, Blocks, Grids}
 
+cf. Chapter 5 Thread Cooperation, Section 5.2. Splitting Parallel Blocks of Sanders and Kandrot (2010) \cite{SK2010}.
 
+Consider first a 1-dimensional block.
 
+\begin{itemize}
+\item \verb|threadIdx.x| $\Longleftarrow$ $M_x \equiv $ number of threads per block in $x$-direction.  Let $j_x = 0 \dots M_x-1$ be the index for the thread.  Note that $1 \leq M_x \leq M_x^{\text{max}}$, e.g. $M_x^{\text{max}} = 1024$, max. threads per block 
+\item \verb|blockIdx.x| $\Longleftarrow$ $N_x \equiv $ number of blocks in $x$-direction.  Let $i_x = 0\dots N_x-1$
+\item \verb|blockDim| stores number of threads along each dimension of the block $M_x$.  
+  \end{itemize}
 
+Then if we were to ``linearize'' or ``flatten'' in this $x$-direction,
+\[
+ k = j_x + i_x M_x
+ \]
+ where $k$ is the $k$th thread.  $k=0\dots N_xM_x -1$.
+
+ Suppose vector is of length $N$.  So we \emph{need} $N$ parallel threads to launch, in total. \\
+ e.g. if $M_x = 128$ threads per block, $N/128 = N/M_x$ blocks to get our total of $N$ threads running.
+
+ Wrinkle: integer division!  e.g. if $N=127 $, $\frac{N}{128} = 0$.
+
+ Solution: consider $\frac{N+127}{128}$ blocks.  If $N = l\cdot 128 + r$, $l\in \mathbb{N}$, $r = 0 \dots 127$.
+ \[
+ \begin{gathered}
+   \frac{N+127}{128} = \frac{ l \cdot 128 + r + 127 }{128} = \frac{ (l+1)128 + r- 1}{128} = \\
+   = l+1 + \frac{r-1}{128} = \begin{cases}
+     l & \text{ if } r= 0 \\
+     l+1 & \text{ if } r = 1 \dots 127
+     \end{cases}
+ \end{gathered}
+ \]
+ \[
+ \begin{gathered}
+   \frac{ N + (M_x - 1) }{M_x} = \frac{ l\cdot M_x + r+ M_x - 1}{M_x} = \frac{ (l+1)M_x + r-1 }{M_x} = \\
+   = l+1 + \frac{r-1}{M_x} = \begin{cases}
+     l & \text{ if } r = 0 \\
+     l +1 & \text{ if } r = 1 \dots M_x -1 
+     \end{cases}
+ \end{gathered}
+ \]
+ 
+ So $\frac{N+(M_x-1)}{M_x}$ is the smallest multiple of $M_x$ greater than or equal to $N$, so $\frac{N + (M_x- 1)}{M_x}$ \textbf{blocks are needed or more than needed to run a total of $N$ threads.}
+
+ 
+ Problem: Max. grid dim. in 1-direction is 65535, $\equiv N_i^{\text{max}}$.
+
+ So $\frac{ N+ (M_x-1)}{M_x} = N_i^{\text{max}} \Longrightarrow N = N_i^{\text{max}} M_x - (M_x-1) \leq N_i^{\text{max}} M_x$.  i.e. number of threads $N$ is limited by $N_i^{\text{max}} M_x$.
+
+ Solution.
+
+ \begin{itemize}
+ \item number of threads per block in $x$-direction $\equiv M_x \Longrightarrow $ \verb|blockDim.x| \\
+ \item number of blocks in grid $\equiv N_x \Longrightarrow $ \verb|gridDim.x| 
+ \item $N_x M_x$ total number of threads in $x$-direction.  Increment by $N_xM_x$.  So next scheduled execution by GPU at the $k= N_xM_x$ thread.  
+   \end{itemize}
+
+\subsection{(CUDA) Constant Memory}
+ 
+cf. Chapter 6 Constant Memory of Sanders and Kandrot (2010) \cite{SK2010}
+
+Refer to the ray tracing examples in Sanders and Kandrot (2010) \cite{SK2010}, and specifically, here: \href{https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/raytrace.cu}{raytrace.cu}, \href{https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/rayconst.cu}{rayconst.cu}.
+
+Without constant memory, then this had to be done: 
+
+\begin{itemize}
+\item \emph{definition} (in the code) - Consider $\textbf{struct}$ as a subcategory of $\textbf{Types}$ since $\textbf{struct}$ itself is a category, equipped with objects and functions (i.e. methods, modules, etc.).
+
+  So for $\textbf{struct}$, $\text{Obj}\textbf{struct} \ni $ \verb|Sphere|.
+  $\Longrightarrow $
+  \begin{lstlisting}
+    struct sphere { ... }
+  \end{lstlisting}
+\item Usage, ``instantiation'', i.e. creating, or ``making'' it (the \verb|struct|):
+
+  \[
+\begin{gathered}
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointers}     & \textbf{Types}  \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  ;  
+\end{tikzpicture}  \\
+\begin{aligned}
+  & \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointer}     & \textbf{struct}  \\
+    \textbf{Memory}_{CPU} &  \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  edge node [left] {$\&$} (m-2-1)
+  ;  
+\end{tikzpicture} \\
+& \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=4em, minimum width=1em]
+  {
+    s     & *s & \verb|Sphere|  \\
+    \textbf{Memory}\text{address}_{CPU} &  \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$*$} (m-1-2)
+  edge node [left] {$\&$} (m-2-1)
+  (m-1-2) edge node [auto] {$\text{typedef}$} (m-1-3)
+  ;  
+\end{tikzpicture} 
+  \end{aligned}
+  \end{gathered}
+\]
+$\Longrightarrow $
+\begin{lstlisting}
+  Sphere *s
+  \end{lstlisting}
+  \end{itemize}
+
+Recalling Eq. \ref{Eq:cudaMallocmodel}, for \verb|SPHERES| $== 40$ (i.e. for example, 40 spheres)
+\begin{lstlisting}
+  cudaMalloc((void **) &s, sizeof(Sphere)*SPHERES)
+  \end{lstlisting}
+$\Longleftarrow$
+
+\[
+\begin{gathered}
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=4em, minimum width=1em]
+  {
+    \textbf{Memory}_{\text{GPU}}  &   \textbf{pointers} & \textbf{pointers} & \textbf{Types}      \\    
+    & \textbf{pointers}_{\text{GPU}} & \textbf{Types} & \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$\text{cudaMalloc}$} (m-1-2)
+  (m-1-2) edge node [auto] {$*$} (m-1-3)
+  edge node [right] {$*$} (m-2-2)
+  (m-2-2) edge node [auto] {$*$} (m-2-3)
+  (m-1-3) edge node [auto] {$*$} (m-1-4)
+  ;  
+\end{tikzpicture} \\
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=4em, minimum width=1em]
+  {
+    \text{Memory address}_{\text{GPU}}  &   \& s  & *(\& s ) & (\text{void} **)(\& s )      \\    
+    & s & *s & \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$\text{cudaMalloc}$} (m-1-2)
+  (m-1-2) edge node [auto] {$*$} (m-1-3)
+  edge node [right] {$*$} (m-2-2)
+  (m-2-2) edge node [auto] {$*$} (m-2-3)
+  (m-1-3) edge node [auto] {$*$} (m-1-4)
+  ;  
+\end{tikzpicture} 
+  \end{gathered}
+\]
+and syntax-wise,
+\[
+\begin{gathered}
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=4em, minimum width=1em]
+  {
+    \textbf{pointers} \times \mathbb{N}^+     & \verb|cudaError_r|  \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {\text{cudaMalloc}} (m-1-2)
+  ;  
+\end{tikzpicture}  \\
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=4em, minimum width=1em]
+  {
+    ((\text{void} **)(\* s), \text{sizeof}(\text{Sphere}) * \text{SPHERES})     & \text{cudaSuccess (for example) }  \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {\text{cudaMalloc}} (m-1-2)
+  ;  
+\end{tikzpicture}  \\
+\end{gathered}
+\]
+
+Now consider
+\begin{lstlisting}
+  cudaMemcpy(s, temp_s, sizeof(Sphere) * SPHERES, cudaMemcpyHostToDevice)
+  \end{lstlisting}
+
+\[
+\begin{gathered}
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=12em, minimum width=1em]
+  {
+    \textbf{Memory}_{CPU}     & \textbf{Memory}_{GPU}  \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$\text{cudaMemcpy}(s, temps ,\text{sizeof}(\text{Sphere}) * \text{SPHERES}, \text{cudaMemcpyHostToDevice} ) $ } (m-1-2)
+  ;  
+\end{tikzpicture} \\
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=12em, minimum width=1em]
+  {
+    \textbf{Memory}\text{address}_{CPU}     & \textbf{Memory}\text{address}_{GPU}     \\
+    \verb|temp_s| & s \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$$} (m-1-2)
+  edge node [left] {$*$} (m-2-1)
+  (m-1-2) edge node [left] {$*$} (m-2-2)
+  (m-2-1) edge node [auto] {$$} (m-2-2)
+  ;  
+\end{tikzpicture} 
+  \end{gathered}
+\]
+
+The lesson then is this, in light of how long ray tracing takes with constant memory and without constant memory - \verb|cudaMemcpy| between host to device, CPU to GPU, is a costly operation.  Here, in this case, we're copying from the host memory to  memory on the GPU.  It copies to a global memory on the GPU.
+
+Now, using \textbf{constant memory}, \\
+we no longer need to do \verb|cudaMalloc|, allocate memory on the GPU, for $s$, pointer to a \verb|Sphere|.
+
+Instead, we have
+
+\begin{lstlisting}
+  __constant__ Sphere s[SPHERES];
+  \end{lstlisting}
+In this particular case, we want it to have global scope.  \\
+Note, it is still on host memory.
+
+Notice that
+\[
+\begin{gathered}
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=18em, minimum width=1em]
+  {
+    \textbf{Memory}_{CPU}     & \textbf{Memory}_{GPU}  \\
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$\text{cudaMemcpyHostToDevice}(-, - ,\text{sizeof}(\text{Sphere}) * \text{SPHERES}) $ } (m-1-2)
+  ;  
+\end{tikzpicture} \\
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=3.5em, column sep=18em, minimum width=1em]
+  {
+    \textbf{Memory}\text{address}_{CPU}     & \textbf{Memory}\text{adddress}_{GPU}  \\
+    \verb|temp_s| & s \\
+    \text{array of Sphere's} & \text{array of Sphere's} \\
+  };
+  \path[|->]
+  (m-1-1) edge node [auto] {$\text{cudaMemcpyHostToDevice}(-, - ,\text{sizeof}(\text{Sphere}) * \text{SPHERES}) $ } (m-1-2)
+  edge node [left] {$*$} (m-2-1)
+  (m-1-2) edge node [left] {$*$} (m-2-2)
+  (m-2-1) edge node [auto] {$$} (m-2-2)
+  edge node [left] {$\text{typedef}$} (m-3-1)
+  (m-2-2) edge node [left] {$\text{typedef}$} (m-3-2)
+  (m-3-1) edge node [auto] {$$} (m-3-2)
+  ;  
+\end{tikzpicture}
+\end{gathered}
+\]
+So notice that we have a bijection, and on one level, we can think of the bijection from \verb|temp_s|, an array of Sphere's to $s$, an array of Sphere's.  So notice that the types and memory size of \verb|temp_s| and $s$ must match. 
+
+And for this case, that's all there is to \emph{constant memory}.  What's going on involves the so-called \emph{warp}, a collection of threads, ``woven together'' and get executed in lockstep.  NVIDIA hardware broadcasts a single memory read to each half-warp. ``If every thread in a half-warp requests data from the same address in constant memory, your GPU will generate only a single read request and subsequently broadcast the data to every thread.'' (cf. Sanders and Kandrot (2010) \cite{SK2010}).  Furthermore, ``the hardware can aggressively cache the constant data on the GPU.''
+
+\subsection{(CUDA) Texture Memory}
 
 \end{multicols*}
 \begin{thebibliography}{9}
