@@ -50,7 +50,8 @@ From [`sharedbitmap.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/C
 
 <img src=https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/sharedbitmapScreenshot%20from%202016-06-09%2017-23-53.png width=400 height=400 />
 
-
+<blockquote class="twitter-video" data-lang="en"><p lang="pl" dir="ltr"><a href="https://twitter.com/GPUComputing">@GPUComputing</a> CUDA C program for waves on <a href="https://twitter.com/NVIDIAGeForce">@NVIDIAGeForce</a> GTX980ti on <a href="https://twitter.com/TitanusComputer">@TitanusComputer</a> <a href="https://t.co/i2PAzkTXia">https://t.co/i2PAzkTXia</a> <a href="https://t.co/FcaMNfx7SK">pic.twitter.com/FcaMNfx7SK</a></p>&mdash; Ernest Yeung (@ernestyalumni) <a href="https://twitter.com/ernestyalumni/status/741014181323759616">June 9, 2016</a></blockquote>
+<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 
 ## Compiling and running these programs in CUDA C/C++
