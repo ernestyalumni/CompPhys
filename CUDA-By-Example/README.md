@@ -33,6 +33,9 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | sharedbitmap.cu | 90-93 | 5.3.2 Shared Memory Bitmap | demonstrates usage of `__syncthreads();` |
 | raytrace.cu     | 99-103 | 6.2.2 Ray Tracing on the GPU | ray tracing randomly placed, but *fixed* sphere, without using **constant memory** |
 | rayconst.cu     | 104-113 | 6.2.3 Ray Tracing with Constant Memory | ray tracing randomly placed, but *fixed* sphere, using **constant memory** |
+| simpleheat.cu    | 117-125 | 7.3.1 Simple Heating Model, 7.3.2 Computing Temperature Updates | using global GPU memory for simple heating model, no texture memory involved |
+| heattexture1.cu  | 125-131 | 7.3.4 Using Texture Memory | Demonstrates 1-dim. texture memory |
+| heattexture2d.cu | 131-137 | 7.3.5 Using Two-Dimensional Texture Memory | Demonstrates 2-dim. texture memory |
 
 ## Awesome gallery of results out of CUDA C/C++, CUDA By Examples
 
