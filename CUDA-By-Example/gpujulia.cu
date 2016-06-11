@@ -37,9 +37,9 @@ __device__ int julia( int x, int y) {
   for (i=0; i<200; i++) {
     a = a*a + c;
     if (a.magnitude2() > 1000)
-      return 0;
+      return 0; // return 0 if it is not in set
   }
-  return 1;
+  return 1; // return 1 if point is in set
 }
 
 __global__ void kernel( unsigned char *ptr) {
@@ -50,7 +50,7 @@ __global__ void kernel( unsigned char *ptr) {
 
   // now calculate the value at that position
   int juliaValue = julia(x,y);
-  ptr[offset*4 + 0] = 255 * juliaValue;
+  ptr[offset*4 + 0] = 255 * juliaValue;  // red if julia() returns 1, black if pt. not in set
   ptr[offset*4 + 1] = 0;
   ptr[offset*4 + 2] = 0;
   ptr[offset*4 + 3] = 255;

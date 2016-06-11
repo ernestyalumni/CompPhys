@@ -1,8 +1,8 @@
 /* cf. Jason Sanders, Edward Kandrot. CUDA by Example: An Introduction to General-Purpose GPU Programming */
 /* 
 ** Chapter 6 Constant Memory and Events
-** 5.3 Shared Memory and Synchronization
-** 5.3.2 Shared Memory Bitmap
+** 6.2 Constant Memory
+** 6.2.2 Ray Tracing on the GPU
 */
 
 #include "cuda.h"
