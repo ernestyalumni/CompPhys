@@ -14,7 +14,7 @@ See Hjorth-Jensen's lectures for 2015.
 
 | codename        | directory      | Chapter | Section | page (pp) | Description            |
 | --------------- | -------------- | :-----: | ------- | --------- | ---------------------- |
-| argcargv.cpp    | ./progs/       |         |         |           | This is my own pedagogical example of using argc, argv in C++; it's also a good example of looping through an array as a pointer |
+| argcargv.cpp    | ./             |         |         |           | This is my own pedagogical example of using argc, argv in C++; it's also a good example of looping through an array as a pointer |
 | program1.cpp    | ./progs/ch02/  | 2       | 2.1.1   | 10        | Scientific Hello World!|
 | program7.cpp    | ./progs/ch02/  | 2       | 2.5.2   | 34        | Pointers and arrays in C++ |
 | program7b.cpp   | ./progs/ch02/  | 2       | 2.5.2   | 34        | Pointers and arrays in C++ (further experimentation by me) |
