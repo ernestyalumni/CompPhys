@@ -2363,6 +2363,36 @@ Then if we were to ``linearize'' or ``flatten'' in this $x$-direction,
  \]
  where $k$ is the $k$th thread.  $k=0\dots N_xM_x -1$.
 
+ Take a look at \href{https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/heattexture1.cu}{heattexture1.cu} which uses the GPU texture memory.  Look at how \verb|threadIdx|/\verb|blockIdx| is mapped to pixel position.
+
+ As an exercise, let's again rewrite the code in mathematical notation:
+ \begin{itemize}
+\item \verb|threadIdx.x| $\Longleftarrow j_x$, $0\leq j_x \leq M_x -1$ 
+\item \verb|blockIdx.x| $\Longleftarrow i_x$, $0\leq i_x \leq N_x -1$
+\item \verb|blockDim.x| $\Longleftarrow M_x$, number of threads along each dimension (here dimension $x$) of a block, $1 \leq M_x \leq M_x^{\text{max}} = 1024$
+\item \verb|gridDim.x| $\Longleftarrow N_x$, $1\leq N_x$
+   \end{itemize}
+ resulting in
+ \begin{itemize}
+ \item $k_x = j_x +i_x M_x$ $\Longrightarrow$
+   \begin{lstlisting}
+   int x =  threadIdx.x + blockIdx.x * blockDim.x ;
+     \end{lstlisting}
+\item $k_y = j_y +i_y M_y$ $\Longrightarrow$
+   \begin{lstlisting}
+   int y =  threadIdx.y + blockIdx.y * blockDim.y ;
+     \end{lstlisting}
+ \end{itemize}
+ and so for a ``flattened'' thread index $J \in \mathbb{N}$,
+ \[
+J = k_x + N_x\cdot M_x \cdot k_y
+\]
+$\Longrightarrow $
+\begin{lstlisting}
+  offset = x + y * blockDim.x * gridDim.x ;
+  \end{lstlisting}
+ 
+ 
  Suppose vector is of length $N$.  So we \emph{need} $N$ parallel threads to launch, in total. \\
  e.g. if $M_x = 128$ threads per block, $N/128 = N/M_x$ blocks to get our total of $N$ threads running.
 
@@ -2609,6 +2639,209 @@ And for this case, that's all there is to \emph{constant memory}.  What's going 
 
 \subsection{(CUDA) Texture Memory}
 
+\subsection{Do (smooth) manifolds admit a triangulation?}
+
+Topics in Geometric Topology (18.937)
+
+
+\href{http://www.math.harvard.edu/~lurie/937notes/937Lecture2.pdf}{Piecewise Linear Topology (Lecture 2)}
+
+\part{Computational Fluid Dynamics (CFD); Computational Methods} 
+
+\subsection{Convection (Discretized)}
+
+While I am following Lecture 7 of Darmofal (2005) \cite{Darm2005}, I will generalize to a ``foliated, spatial'' (smooth) manifold $N$, parametrized by time $t\in \mathbb{R}$, $\mathbb{R}\times N$, with $\text{dim}N = n = 1,2 \text{ or } 3$ and to \emph{CUDA} C/C++ parallel programming.
+
+Consider $n$-form $m \in \Omega^N(\mathbb{R}\times N)$, $\text{dim}N = n$.  Then
+\begin{equation}\label{Eq:massconservation}
+  \begin{gathered}
+    \frac{d}{dt} m = \frac{d}{dt} \int_V \rho \text{vol}^n = \int_V \mathcal{L}_{\frac{ \partial }{ \partial t} + \mathbf{u} } \rho \text{vol}^n = \int_V \frac{ \partial \rho }{ \partial t} \text{vol}^n + \mathbf{d}i_{\mathbf{u}} \rho \text{vol}^n = \int_V \left( \frac{ \partial \rho }{ \partial t} + \text{div}( \rho u ) \right) \text{vol}^n = \\
+    = \int_V \frac{ \partial \rho }{ \partial t} \text{vol}^n + \int_{\partial V} \rho i_{\mathbf{u}} \text{vol}^n = \dot{m}
+\end{gathered}
+  \end{equation}
+where recall
+\[
+\begin{aligned}
+  \text{div} : \mathfrak{X}(\mathbb{R}\times N) \to C^{\infty}(\mathbb{R} \times N ) \\ 
+ \text{div}(\rho \mathbf{u} ) = \frac{1}{\sqrt{g}} \frac{ \partial ( \sqrt{g} u^i \rho ) }{ \partial x^i } 
+  \end{aligned}
+\]
+
+\subsubsection{1-dimensional case for Convection from mass (scalar) conservation}
+
+Consider Cell $i$, between $x_{i-\frac{1}{2} }$ and $ x_{i+\frac{1}{2} }$, i.e. $[x_{i-\frac{1}{2} }, x_{i+\frac{1}{2} }]\subset \mathbb{R}$.  In this case, Eq. \ref{Eq:massconservation}, for mass conservation with sources, becomes
+\[
+\begin{gathered}
+  \int_V \frac{ \partial \rho}{ \partial t} \text{vol}^n + \int_{\partial V} \rho i_{\mathbf{u}} \text{vol}^n = \int_V \frac{ \partial \rho }{ \partial t} dx + \int_{\partial V} \rho u^i = \int_{x_L}^{x_R} \frac{ \partial \rho }{ \partial t} dx + (\rho(x_R)u(x_R) - \rho(x_L)u(x_L) ) = \frac{d}{dt} \int_{x_L}^{x_R} \rho(x) dx
+  \end{gathered}
+\]
+
+In the case of $\frac{d}{dt}m = 0$, on a single cell $i$,
+\[
+\begin{gathered}
+  \int_{x_{i-\frac{1}{2} }}^{x_{i+\frac{1}{2} } } \frac{ \partial \rho }{ \partial t} dx + \left. \rho(x) u(x) \right|_{x_i + \frac{1}{2} } - \left. \rho(x)u(x) \right|_{x_i-\frac{1}{2} } = 0 
+  \end{gathered}
+\]
+
+This is one of the first main approximations Darmofal (2015) \cite{Darm2005} makes, in Eq. 7.10, Section 7.3 Finite Volume Method for Convection, for the \emph{finite volume method}:
+\begin{equation}
+  \overline{m}_i := \frac{1}{\Delta x_i} \int_{x_{i - \frac{1}{2} }}^{x_{i+\frac{1}{2} } } \rho(x)dx
+\end{equation}
+where $\Delta x_i \equiv x_{i+\frac{1}{2}} - x_{i+\frac{1}{2}}$.
+
+And so
+\begin{equation}
+  \begin{gathered}
+    \Delta x_i \frac{\partial }{ \partial t} \overline{m}_i + \left. \rho(x)u(x) \right|_{x_{i+\frac{1}{2} } } - \left. \rho(x)u(x) \right|_{x_{i-\frac{1}{2} } } =0
+  \end{gathered}
+  \end{equation}
+We want to discretize this equation also in time.
+
+Consider as first approximation,
+\begin{equation}
+  \overline{m}(x,t) = \overline{m}_i(t) \qquad \, \forall \, x_{i-\frac{1}{2}} < x < x_{i+\frac{1}{2}}
+\end{equation}
+
+Consider then initial time $t$, time step $\Delta t$.   
+
+At this point, instead of recapping what is essentially the so-called ``Upwind Interpolation'', which Darmofal is doing in Lecture 7 of Darmofal (2015) \cite{Darm2005}, and on pp. 76, Chapter 4 Finite Volume Methods, Subsection 4.4.1 Upwind Interpolation (UDS) of Ferziger and Peric () \cite{FP2013}, which is essentially a zero-order approximation, let's try to do better.  
+
+Consider the interval $[x_{i-\frac{1}{2}}, x_{i+\frac{1}{2} } ] \subset \mathbb{R}$.
+
+For the 1-dimensional case of (pure) convection,
+\[
+\begin{gathered}
+  \int_{x_{i - \frac{1}{2}}}^{x_{i+\frac{1}{2} } } \frac{ \partial \rho (t,x) }{ \partial t } dx + \rho(t,x_{ i +\frac{1}{2} } ) u(t,x_{i +\frac{1}{2} } ) - \rho(t, x_{i -\frac{1}{2} } )u(t,x_{i -\frac{1}{2}} ) = \frac{d}{dt} \int_{x_{i -\frac{1}{2} } }^{ x_{i +\frac{1}{2} } } \rho(x) dx
+  \end{gathered}
+\]
+Given $\rho(t,x_{i -\frac{1}{2} }), \rho(t, x_{i +\frac{1}{2} }) \in \mathbb{R}$, do (polynomial) interpolation:
+\[
+\begin{gathered}
+  \mathbb{R} \times \mathbb{R} \xrightarrow{ \text{ interpolation }} \mathbb{R}[x] \equiv \mathcal{P}_{n=1}(\mathbb{R}) \\ 
+ \rho(t,x_{i -\frac{1}{2} }), \rho(t, x_{i +\frac{1}{2} }) \mapsto \frac{ (x_{ i +\frac{1}{2}}-x) \rho(t, x_{i -\frac{1}{2}}) - (x_{i +\frac{1}{2}} - x)\rho(t,x_{i +\frac{1}{2}}) }{ h } = \rho_{n=1}(t,x)
+\end{gathered}
+\]
+where $h \equiv x_{i +\frac{1}{2}} - x_{i -\frac{1}{2}}$ and $\mathcal{P}_{n=1}(\mathbb{R})$ is the set of all polynomials of order $n=1$ over field $\mathbb{R}$ (real numbers).
+
+We interchange the operations of integration and partial derivative - I (correct me if I'm wrong) give two possible reasons why we can do this: the spatial manifold $N$ is fixed in time $t$, and if the grid cell itself is fixed in time, then the partial derivative in time can be moved out of the integration limits.
+
+So, interchanging $\int_{x_{i -\frac{1}{2}}}^{x_{i +\frac{1}{2}}} dx$ and $\frac{ \partial }{ \partial t}$:
+\[
+\int_{x_{i -\frac{1}{2}}}^{x_{i +\frac{1}{2}}} \frac{ \partial \rho(t,x) }{ \partial t} dx = \frac{ \partial }{ \partial t} \int_{x_{i -\frac{1}{2}}}^{x_{i +\frac{1}{2}}} \rho(t,x)dx
+\]
+So then
+\[
+\Longrightarrow \frac{ \partial }{ \partial t} \int_{x_{i -\frac{1}{2}}}^{x_{i +\frac{1}{2}}} \rho_{n=1}(t,x) = \frac{ \partial }{ \partial t} ( \rho(t,x_{i+\frac{1}{2} }  )  + \rho(t,x_{i-\frac{1}{2} } ) ) \frac{ \Delta x}{2}
+\]
+where $\Delta x = x_{i+\frac{1}{2} } - x_{i+\frac{1}{2} } $.
+
+Then, discretizing,
+\begin{equation}
+  \Longrightarrow \begin{gathered}
+    \left[ (\rho(t+\Delta t, x_{i+\frac{1}{2} } ) + \rho(t+\Delta t, x_{i-\frac{1}{2} } ) ) - (\rho(t, x_{i+\frac{1}{2} } ) + \rho(t, x_{i-\frac{1}{2} } ) ) \right] \frac{\Delta x}{2} \left( \frac{1}{\Delta t} \right) + \rho(t,x_{i+\frac{1}{2} } )u(t,x_{i+\frac{1}{2} } ) - \rho(t,x_{i-\frac{1}{2} } )u(t,x_{i-\frac{1}{2} } ) = \\
+    = \dot{m}_{[x_{i-\frac{1}{2} }, x_{i+\frac{1}{2} }] }(t)
+  \end{gathered}
+  \end{equation}
+
+To obtain $\rho(t,x_{i-\frac{1}{2}})$, consider
+\[
+\frac{ \partial \rho}{ \partial t} + \text{div}(\rho u) = \frac{d\rho}{dt} = 0 
+\]
+which is valid at every point on $N$.
+
+Consider for $\text{dim}N=1$,
+\[
+\frac{ \partial \rho}{ \partial t}(t,x) + \frac{ \partial (\rho u) }{ \partial x}(t,x)
+\]
+
+Now, we want $x = x_{i-\frac{1}{2} }$.
+
+Consider
+\[
+\frac{ \partial \rho(t,x_{i-\frac{1}{2} }) }{ \partial t} \approx \frac{ \rho(t+\Delta t,x_{i-\frac{1}{2} })  - \rho(t,x_{i-\frac{1}{2} } ) }{\Delta t}
+\]
+
+Next, consider the (polynomial) interpolation for the $ \frac{ \partial (\rho u) }{ \partial x}(t,x)$ term:
+\[
+\begin{gathered}
+  \mathbb{R} \times \mathbb{R}\times\mathbb{R} \xrightarrow{ \text{interpolate} } \mathbb{R}[x] \equiv \mathcal{P}_{n=2}(\mathbb{R}) \\ 
+ \rho(t,x_{i-\frac{3}{2} } ) u(t,x_{i-\frac{3}{2} }) , \rho(t,x_{i-\frac{1}{2} })u(t,x_{i-\frac{1}{2} } ), \rho(t,x_{i+\frac{1}{2} })u(t,x_{i+\frac{1}{2} } ) \xmapsto{ \text{interpolate} } (\rho u)_{n=2}(t,x)
+  \end{gathered}
+\]
+Thus, we can calculate, by plugging in,
+\[
+\frac{ \partial (\rho u)_{n=2}(t,x_{i-\frac{1}{2} } ) }{ \partial x}
+\]
+Thus,
+\begin{equation}
+\Longrightarrow \begin{gathered}
+  \rho(t+\Delta t, x_{i-\frac{1}{2} } ) - \rho(t,x_{i-\frac{1}{2} } ) + \frac{ \partial (\rho u)_{n=2} }{\partial x}(t,x_{i-\frac{1}{2} } )\Delta t = 0  \text{ or } \\
+  \rho(t+\Delta t,x_{i-\frac{1}{2} } ) = \rho(t,x_{i-\frac{1}{2} } ) - \frac{ \partial (\rho u)_{n=2} }{ \partial x}(t,x_{i-\frac{1}{2} })\Delta t
+  \end{gathered}
+\end{equation}
+
+Now a note on the 1-dimensional grid, ``gridding'': for cell $i=0, \dots N^{\text{cell}} -1$, $N^{\text{cell}}$ cells total in the $x$-direction, then
+\[
+\begin{aligned}
+  & x_{i-\frac{1}{2} } = ih \\ 
+  & x_{i-\frac{1}{2} } = (i+1)h 
+  \end{aligned}
+\]
+and so $x_{i+\frac{1}{2} } - x_{i-\frac{1}{2} } = h$, meaning the cell width or cell size is $h$.
+
+Thus, in summary, 
+\begin{equation}
+\begin{gathered}
+  \rho(t+\Delta t,x_{i-\frac{1}{2} }) = \rho(t,x_{i-\frac{1}{2} }) - ( \rho(t,x_{i+\frac{1}{2} })u(t,x_{i+\frac{1}{2} } ) - \rho(t,x_{i-\frac{3}{2} })u(t,x_{i-\frac{3}{2} } ) )\left( \frac{1}{2h} \right) \Delta t \\
+  \left[ (\rho(t+\Delta t, x_{i+\frac{1}{2} } ) + \rho(t+\Delta t, x_{i-\frac{1}{2} } ) ) - (\rho(t, x_{i+\frac{1}{2} } ) + \rho(t, x_{i-\frac{1}{2} } ) ) \right] \frac{h}{2} \left( \frac{1}{\Delta t} \right) + \rho(t,x_{i+\frac{1}{2} } )u(t,x_{i+\frac{1}{2} } ) - \rho(t,x_{i-\frac{1}{2} } )u(t,x_{i-\frac{1}{2} } ) = \\
+    = \dot{m}_{[x_{i-\frac{1}{2} }, x_{i+\frac{1}{2} }] }(t)
+  \end{gathered}
+  \end{equation}
+
+If one was to include Newtonian gravity, consider this general expression for the time derivative of the momentum flux $\Pi$:
+\begin{equation}
+\begin{aligned}
+  & \Pi = \int_{B(t)} \rho u^i \text{vol}^n \otimes e_i \\ 
+  & \dot{\Pi} = \int_{B(t)} \frac{ \partial (\rho u^i ) }{ \partial t} \text{vol}^n \otimes e_i + \int_{B(t)} d(\rho u^i i_u \text{vol}^n ) \otimes e_i = \int_{B(t)} \frac{ \partial (\rho u^i )}{ \partial t} \text{vol}^n \otimes e_i + \int_{\partial B(t)} \rho u^i i_u \text{vol}^n \otimes e_i
+\end{aligned}
+  \end{equation}
+In 1-dim.,
+\[
+\dot{\Pi} = \int_{B(t)} \frac{ \partial (\rho u)}{\partial t } dx + \int_{\partial B} \rho u^2 = \int_B \frac{GM dm }{r^2} = GM \int_B \frac{ \rho \text{vol}^n }{r^2} = GM \int_B \frac{ \rho dx}{(R-x)^2}
+\]
+Considering a first-order polynomial interpolation for $\rho$,$\rho_{n=1}$,
+\[
+\begin{gathered}
+  \frac{ \partial }{ \partial t} ((\rho u)(t,x_{i+\frac{1}{2} } ) + (\rho u)(t,x_{i-\frac{1}{2} }) )\frac{h}{2} + \rho u^2(t,x_{i+\frac{1}{2} }) - \rho u^2(t,x_{i-\frac{1}{2} }) = GM \int \frac{ \rho_{n=2} dx}{ (R-x)^2}
+  \end{gathered}
+\]
+Note that we need another equation, at $x=x_{i-\frac{1}{2}}$, similar to above:
+\[
+\begin{gathered}
+  \frac{ \partial (\rho u) }{ \partial t} + \frac{ \partial (\rho u^2) }{ \partial x} = \frac{GM\rho}{(R-x)^2 } \\ 
+    \Longrightarrow \begin{gathered}
+      \rho u(t+\Delta t,x_{i-\frac{1}{2} } ) - \rho u(t,x_{i-\frac{1}{2} } ) + (\rho u^2(t,x_{i + \frac{1}{2} } ) - \rho u^2(t,x_{i - \frac{3}{2} } ) ) \left( \frac{1}{2h } \right) \Delta t = \Delta t \int GM \frac{ \rho dx }{ (R-x)^2 }
+      \end{gathered}
+  \end{gathered}
+\]
+
+As a recap, the 1-dimensional setup is as follows:
+\[
+\begin{aligned}
+  & \mathbb{R} \times N = \mathbb{R} \times \mathbb{R} \xrightarrow{ \text{discretization }} \mathbb{Z} \times \mathbb{Z} \\ 
+  & (t,x) \xmapsto{ \text{discretization} } (t_0 + (\Delta t)j, x_{i-\frac{1}{2} } = ih), \qquad \, i,j \in \mathbb{Z}
+  \end{aligned}
+\]
+Initial conditions for $\rho \in C^{\infty}(\mathbb{R}\times \mathbb{R})$: $\rho(t_0,x) \in C^{\infty}(\mathbb{R}\times \mathbb{R})$.
+
+Choices for $u\in \mathfrak{X}(\mathbb{R}\times \mathbb{R})$:
+\begin{itemize}
+\item $u(t,x) = u(x)$ (i.e. time-independent velocity vector field)
+\item $u(t,x)$ determined by Newtonian gravity (that's an external force on the fluid)
+  \end{itemize}
+
+
+
 \end{multicols*}
 \begin{thebibliography}{9}
 \bibitem{HTF2009}
@@ -2638,8 +2871,11 @@ Richard Fitzpatrick.  ``Computational Physics.''  \url{http://farside.ph.utexas.
 \bibitem{SK2010}
 Jason Sanders, Edward Kandrot.  \textbf{CUDA by Example: An Introduction to General-Purpose GPU Programming} 1st Edition.  Addison-Wesley Professional; 1 edition (July 29, 2010).  ISBN-13: 978-0131387683
 
+\bibitem{Darm2005}
+  David Darmofal. *16.901 Computational Methods in Aerospace Engineering, Spring 2005.* (Massachusetts Institute of Technology: MIT OpenCourseWare), \url{http://ocw.mit.edu} (Accessed 12 Jun, 2016). \href{http://creativecommons.org/licenses/by-nc-sa/4.0/}{License: Creative Commons BY-NC-SA}
 
-
+\bibitem{FP2013}
+Joel H. Ferziger and Milovan Peric.  \textbf{Computational Methods for Fluid Dynamics}.  Springer; 3rd edition (October 4, 2013).  ISBN-13: 978-3540420743
 
 
 \end{thebibliography}
