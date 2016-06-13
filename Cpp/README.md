@@ -4,6 +4,8 @@
 
 Included in this repository (repo) are code examples straight from M. Hjorth-Jensen's **Computational Physics**, University of Oslo (2015) [mhjensen](http://www.mn.uio.no/fysikk/english/people/aca/mhjensen/).  
 
+Hjorth-Jensen's material motivated me to (try to) dive deeper into C++ and so I picked up Bjarne Stroustrup's **A Tour of C++** (Addison-Wesley Professional, 2013).  This book is based on **C++11** and I suspect that a lot of computational physics code was written *before* this 2011 (keep in mind that I still need to find a good book for C++14).  I include code for Stroustrup's **A Tour of C++** in the `./tour` subdirectory.  
+
 You're (as I was) reading Hjorth-Jensen's excellent lecture notes (latest I found is from 2015) on Computational Physics (with an emphasis on C++).  You want to run the C++ code *simultaneously* as you are reading, as I found that I learn *much* faster watching how the code works than a book explanation - along with playing around with the code "in real-time" (it makes learning fun!).  But you don't know which code follows along which part of the lectures.  So I'll try to make a listing (a dictionary) or index of code to lecture, below.  
 
 P.S. There are some non-trivial typos both in the code and lecture that made the material confusing to understand (as in, did he really mean that?) and some things weren't obvious to me when I read it, and so I try to make sense of it in my notes in [CompPhys.pdf](https://github.com/ernestyalumni/CompPhys/blob/master/LaTeXandpdfs/CompPhys.pdf) and have my own code type-ups here in this repository, even though there's the [CompPhys repository](https://github.com/CompPhysics).
@@ -29,6 +31,11 @@ See Hjorth-Jensen's lectures for 2015.
 | program1.cpp    | ./progs/ch05/  | 5       | 5.3.6   | 127       | example using trapezoid rule, Simpson's rule, Gauss-Legendre method|
 | integrate1d.h   | ./progs/ch05/  | 5       | 5.3.6   | 127       | header file for 1-dimensional numerical integration routines, only |
 | integrate1d.cpp | ./progs/ch05/  | 5       | 5.3.6   | 127       | function definitions for 1-dimensional numerical integration routines, only |
+
+## Listing of which program or script corresponds to which section, chapter, part for Stroustrup's **A Tour of C++** (2013)
+
+| codename        | directory      | Chapter | Section | page (pp) | Description            |
+| --------------- | -------------- | :-----: | ------- | --------- | ---------------------- |
 
 ### File I/O in C and C++
 
