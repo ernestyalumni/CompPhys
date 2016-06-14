@@ -6,6 +6,10 @@ Included in this repository (repo) are code examples straight from M. Hjorth-Jen
 
 Hjorth-Jensen's material motivated me to (try to) dive deeper into C++ and so I picked up Bjarne Stroustrup's **A Tour of C++** (Addison-Wesley Professional, 2013).  This book is based on **C++11** and I suspect that a lot of computational physics code was written *before* this 2011 (keep in mind that I still need to find a good book for C++14).  I include code for Stroustrup's **A Tour of C++** in the `./tour` subdirectory.  
 
+> C++ feels like a new language. That is, I can express my ideas more clearly, more simply, and
+more directly in C++11 than I could in C++98.  Furthermore, the resulting programs are better
+checked by the compiler and run faster. -*Bjarne Stroustrup*
+
 You're (as I was) reading Hjorth-Jensen's excellent lecture notes (latest I found is from 2015) on Computational Physics (with an emphasis on C++).  You want to run the C++ code *simultaneously* as you are reading, as I found that I learn *much* faster watching how the code works than a book explanation - along with playing around with the code "in real-time" (it makes learning fun!).  But you don't know which code follows along which part of the lectures.  So I'll try to make a listing (a dictionary) or index of code to lecture, below.  
 
 P.S. There are some non-trivial typos both in the code and lecture that made the material confusing to understand (as in, did he really mean that?) and some things weren't obvious to me when I read it, and so I try to make sense of it in my notes in [CompPhys.pdf](https://github.com/ernestyalumni/CompPhys/blob/master/LaTeXandpdfs/CompPhys.pdf) and have my own code type-ups here in this repository, even though there's the [CompPhys repository](https://github.com/CompPhysics).
@@ -34,8 +38,21 @@ See Hjorth-Jensen's lectures for 2015.
 
 ## Listing of which program or script corresponds to which section, chapter, part for Stroustrup's **A Tour of C++** (2013)
 
-| codename        | directory      | Chapter | Section | page (pp) | Description            |
-| --------------- | -------------- | :-----: | ------- | --------- | ---------------------- |
+| codename        | directory      | Chapter      | Section           | page (pp) | Description            |
+| --------------- | -------------- | :----------: | ----------------- | --------- | ---------------------- |
+| helloworld.cpp    | ./tour         | 1 The Basics | 1.3 Hello, World! | 2         | Hello, World! and standard-library namespace std::cout |
+| typesvararith.cpp | ./tour         | 1 The Basics | 1.5 Types, Variables, and Arithmetic | 5 | notice initialization by double d2 {2.3}; |
+| const.cpp         | ./tour         | 1 The Basics | 1.7 Tests         | 8        | notice `constexpr` for compile-time evaluated constants |
+| test.cpp          | ./tour         | 1 The Basics | 1.9 Tests         | 12        | switch tests in C++11 |
+| structcls.cpp     | ./tour         | 2 Used-Defined Types | 2.2 Structures; 2.3 Classes | 16-18  | structs; notice how member initializer list is a C++11 feature for the class constructor |
+
+
+### Compiling C++11
+This worked for me, as I had obtained a c++11 compiling error when I trued to use `for (char ch: act) { ... }`:
+
+```
+g++ -std=c++11 test.cpp
+```
 
 ### File I/O in C and C++
 
