@@ -36,6 +36,7 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | simpleheat.cu    | 117-125 | 7.3.1 Simple Heating Model, 7.3.2 Computing Temperature Updates | using global GPU memory for simple heating model, no texture memory involved |
 | heattexture1.cu  | 125-131 | 7.3.4 Using Texture Memory | Demonstrates 1-dim. texture memory |
 | heattexture2d.cu | 131-137 | 7.3.5 Using Two-Dimensional Texture Memory | Demonstrates 2-dim. texture memory |
+| graphicsinterop.cu | 140-147 | 8.2 Graphics Interoperation | pedagogical example of graphics interoperation between CUDA C/C++ and OpenGL |
 
 ## Awesome gallery of results out of CUDA C/C++, CUDA By Examples
 
@@ -68,6 +69,9 @@ From [`rayconst.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-
 
 <img src=https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/rayconstScreenshot%20from%202016-06-10%2002-00-25.png width=400 height=400 />
 
+From [`graphicsinterop.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/graphicsinterop.cu), 
+
+<img src=https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/imgs/graphicsinteropScreenshot%20from%202016-06-15%2016-02-56.png width=400 height=400 />
 
 ## Compiling and running these programs in CUDA C/C++
 
