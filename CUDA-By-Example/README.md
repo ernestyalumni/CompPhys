@@ -134,3 +134,79 @@ Max grid dimensions:   (2147483647, 65535, 65535)
    --- Other Information for device 0 ---
 Max. 3D textures dimensions: (4096, 4096, 4096) 
 ```
+
+## On Graphics interoperability, i.e. CUDA C/C++ + OpenGL
+
+I myself found the topic of "Graphics Interoperability" (cf. Ch. 8 of Sanders and Kandrot) to be challenging.  I'll rewrite/step through the code from [`graphicsinterop.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/graphicsinterop.cu) here:
+
+```
+// global variables for same buffer
+Gluint bufferObj;
+cudaGraphicsResource *resource;
+```
+The `global` variables `bufferObj`, `resource` stores different "handles" to the same buffer, i.e. OpenGL and CUDA C/C++ will each have different "names" for the same buffer.
+
+
+### Setting the CUDA device to play with OpenGL driver
+This is done at the start; in [`graphicsinterop.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/graphicsinterop.cu), it was done in `main`
+
+We want to select the CUDA device to run the application.  We need to know the CUDA device ID so we can tell CUDA runtime that we intend to use the device for CUDA **AND** OpenGL.  
+```
+int main( int argc, char **argv) {
+	cudaDeviceProp prop;
+	int dev;
+
+	memset( &prop, 0, sizeof( cudaDeviceProp ) );
+	prop.major = 1; // major version set to 1
+	prop.minor = 0; // minor version set to 0 
+	
+	cudaChooseDevice( &dev, &prop ); 
+
+	cudaGLSetGLDevice( dev );
+```  
+`prop.major = 1` sets the major version to 1.  
+`prop.minor = 0` sets the minor version to 0.  
+These versions refer to compute versions.  (EY 20160616: I want to try for compute version 2).  
+
+`cudaChooseDevice( &dev, &prop)` instructs the runtime to select GPU that satisfies constraints specified by `cudaDeviceProp`'s `prop`.  
+
+We've now prepared our CUDA runtime to play nicely with OpenGL driver with `cudaGLSetGLDevice`.  
+
+### Initialize OpenGL driver by calling GL Utility Toolkit (GLUT)
+
+These GLUT calls need to be made before other GL calls.  
+
+Note that we're still in `main` (for this *particular* example):
+```
+	glutInit( &argc, argv );
+	glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA)
+	glutInitWindowSize(width, height );
+	glutCreateWindow( "bitmap" );
+```
+A note on `glutInit` - "some versions of GLUT have a bu that cause applications to crash when zero arguments are given" (Sanders and Kandrot (2011)).  So, trick GLUT into thinking we're passing an argument (if you're not going to use `&argc, argv`):
+```
+	int soo = 1;
+	char *foo = "name" ;
+	glutInit( &soo, &foo);
+```  
+
+### Instruct CUDA runtime to map shared resource, and then, by requesting pointer to mapped resource; the actual address in device memory of the *buffer*
+
+We want to read from and write to this buffer, which OpenGL calls refer with handle `bufferObj`, and which CUDA runtime calls refer to with pointer `resource`.  
+
+So we want the actual address in device memory.  
+
+Achieve this by instructing CUDA runtime to map shared resource and then by requesting a pointer to the mapped resource.  
+
+```
+uchar4* devPtr;
+size_t size; // unsigned integer type, to represent size of an object
+cudaGraphicsMapResources( 1, &resource, NULL);
+cudaGraphicsResourceGetMappedPointer( (void**)&devPtr,
+	&size, resource);
+```  
+We can then use `devPtr` as we would any device pointer, except that the data can also be used by OpenGL as a pixel source. (Sanders and Kandrot, 2011).  
+
+
+
+

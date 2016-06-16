@@ -9,7 +9,7 @@ cf. Jason Sanders, Edward Kandrot. CUDA by Example: An Introduction to General-P
 | ------------ | :--------: | :----------: | :-------------------------------: |
 | cpu_bitmap.h | 46-57      | 4.2.2.       | A Fun Example; Julia Sets         |
 | cpu_anim.h   | 70-72-     | 5.2.2.       | GPU Ripple using threads          |
-
+| gpu_anim.h   | 148-152 | 8.3.1. The GPUANIMBITMAP Structre | GPU interoperability with OpenGL |
 
 ## header file/library breakdown
 
@@ -35,6 +35,8 @@ Representing an empty char as `""` was causing all the problems - doing this `\0
     * `Key` 
     * `Draw`
 - `cpu_anim.h` has the line `#include "gl_helper.h"`.  Looking at the code for `gl_helper.h`, then for Linux, all that's needed is to include the system's copy of `glut.h, glext.h, glx.h`
+
+# Graphics Interoperability
 
 
 
