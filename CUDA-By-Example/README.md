@@ -41,12 +41,7 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | simpleheatredux.cu | 154-160 | 8.4 Heat Transfer with Graphics Interop | Heat transfer, no using texture memory, using GPU rendering; roughly from 8.1 ms to 6.9 ms time needed to render frames performance *boost* on NVIDIA GeForce GTX 980Ti |
 | heattexture1redux.cu | 154-160 | 8.4 Heat Transfer with Graphics Interop | Heat transfer, 1-dim. texture memory, using GPU rendering; roughly 7.9 ms to 6.9 ms time needed to render frame on NVIDIA GeForce GTX 980Ti |
 | heattexture2dredux.cu | 154-160 | 8.4 Heat Transfer with Graphics Interop | Heat transfer, 2-dim. texture memory, using GPU rendering; roughly 8.0 ms time needed to render frame on NVIDIA GeForce GTX 980Ti |
-| hist.c        | 170-173 | 9.4 Computing Histograms | Computing Histograms on CPU; using at command prompt, e.g. `time ./a.out`, time taken on the Intel Xeon E5-1650 v3 Haswell 3.5GHz was 0.023s ( 
-```
-real	0m1.082s
-user	0m1.059s
-sys	0m0.023s
-``` ) |
+| hist.c        | 170-173 | 9.4 Computing Histograms | Computing Histograms on CPU; using at command prompt, e.g. `time ./a.out`, time taken on the Intel Xeon E5-1650 v3 Haswell 3.5GHz was 0.023s (`real	0m1.082s  user	0m1.059s  sys	0m0.023s`) |
 | gpuhist.cu    | 173-181 | 9.4.2 GPU Histogram Computation | Computing Histograms on GPU with (only) global memory; time take on the NVIDIA GeForce GTX 980Ti was 85.6 ms |
 | histshared.cu | 181-183 | 9.4.2 GPU Histogram Computation | Computing Histograms on GPU with shared memory; time take on the NVIDIA GeForce GTX 980Ti was *16.1 ms* (!!!) |
 
