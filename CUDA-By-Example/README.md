@@ -40,7 +40,7 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | gpuripplereudx.cu  | 152-154 | 8.3.2 GPU Ripple Redux | gpuripple, but rendering on the GPU; notice how simpler the code is since you *don't* have to `cudaMemcpy` the bitmap back to the host (CPU) |
 | simpleheatredux.cu | 154-160 | 8.4 Heat Transfer with Graphics Interop | Heat transfer, no using texture memory, using GPU rendering; roughly from 8.1 ms to 6.9 ms time needed to render frames performance *boost* on NVIDIA GeForce GTX 980Ti |
 | heattexture1redux.cu | 154-160 | 8.4 Heat Transfer with Graphics Interop | Heat transfer, 1-dim. texture memory, using GPU rendering; roughly 7.9 ms to 6.9 ms time needed to render frame on NVIDIA GeForce GTX 980Ti |
-
+| heattexture2dredux.cu | 154-160 | 8.4 Heat Transfer with Graphics Interop | Heat transfer, 2-dim. texture memory, using GPU rendering; roughly 8.0 ms time needed to render frame on NVIDIA GeForce GTX 980Ti |
 
 ## Awesome gallery of results out of CUDA C/C++, CUDA By Examples
 
