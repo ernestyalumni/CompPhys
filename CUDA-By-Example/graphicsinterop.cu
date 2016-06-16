@@ -10,7 +10,6 @@
 #include "cuda.h"
 #include "cuda_gl_interop.h"
 #include "./common/errors.h"
-#include "./common/cpu_bitmap.h"
 
 #include <cmath> 
   
