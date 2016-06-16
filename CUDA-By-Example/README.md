@@ -37,6 +37,9 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | heattexture1.cu  | 125-131 | 7.3.4 Using Texture Memory | Demonstrates 1-dim. texture memory |
 | heattexture2d.cu | 131-137 | 7.3.5 Using Two-Dimensional Texture Memory | Demonstrates 2-dim. texture memory |
 | graphicsinterop.cu | 140-147 | 8.2 Graphics Interoperation | pedagogical example of graphics interoperation between CUDA C/C++ and OpenGL |
+| gpuripplereudx.cu  | 152-154 | 8.3.2 GPU Ripple Redux | gpuripple, but rendering on the GPU; notice how simpler the code is since you *don't* have to `cudaMemcpy` the bitmap back to the host (CPU) |
+| simpleheatredux.cu | 154-160 | 8.4 Heat Transfer with Graphics Interop | Heat transfer, no using texture memory, using GPU rendering; roughly from 8.1 ms to 6.9 ms time needed to render frames performance *boost* on NVIDIA GeForce 980ti |
+
 
 ## Awesome gallery of results out of CUDA C/C++, CUDA By Examples
 
