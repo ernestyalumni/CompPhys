@@ -9,7 +9,7 @@ It seems that a header file `book.h` out of the `common` subdirectory is needed 
 
 ## Dictionary between files on this github subdirectory to code in **CUDA By Example**, *Sanders and Kandrot*
 
-I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley, and Stroustrup (2013) refers to this text.  
+I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley, and Stroustrup (2013) refers to this text.  Stroustrup (2013) makes the case for *C++11* - it really is a new language - and I would like to see more of how C++11 and C++14 fits into CUDA C/C++.  As I'm continuing improving upon my skills in C++11, C++14, see the subdirectory `Cpp` in this same repository, `CompPhys`, i.e. `CompPhys/Cpp` for my elementary, pedagogical examples of C++11, C++14, following Stroustrup (2013).  
 
 | filename       |   pp.  | (Sub)Section             | Description                  |
 | -------------- | :----: | :--------------------:   | :--------------------------: |
@@ -44,6 +44,12 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | hist.c        | 170-173 | 9.4 Computing Histograms | Computing Histograms on CPU; using at command prompt, e.g. `time ./a.out`, time taken on the Intel Xeon E5-1650 v3 Haswell 3.5GHz was 0.023s (`real	0m1.082s  user	0m1.059s  sys	0m0.023s`) |
 | gpuhist.cu    | 173-181 | 9.4.2 GPU Histogram Computation | Computing Histograms on GPU with (only) global memory; time take on the NVIDIA GeForce GTX 980Ti was 85.6 ms |
 | histshared.cu | 181-183 | 9.4.2 GPU Histogram Computation | Computing Histograms on GPU with shared memory; time take on the NVIDIA GeForce GTX 980Ti was *16.1 ms* (!!!) |
+
+### My own CUDA C/C++ scripts/projects
+| filename              | Directory | Description                  |
+| --------------------- | :-------: | :--------------------------: |
+| `graphicsinteropb.cu` | `./`      | I wrote up a header file `gpu_bitmap.h` (see `./common/`) that packages up the CUDA and OpenGL buffer calls (so they call on the same buffer, which you access through the `devPtr` pointer) so that the bitmap gets rendered on the GPU and not the CPU; this file implements [`graphicsinterop.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/graphicsinterop.cu) |
+| `gpujuliac.cu`        | `./`      | Same as ['gpujulia.cu'](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpujulia.cu) but it's rendered on the GPU (as it should!) as opposed to being rendered (the Julia set, that is) on the CPU |
 
 
 ## Awesome gallery of results out of CUDA C/C++, CUDA By Examples
