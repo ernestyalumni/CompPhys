@@ -2433,6 +2433,14 @@ $\Longrightarrow $
  \item $N_x M_x$ total number of threads in $x$-direction.  Increment by $N_xM_x$.  So next scheduled execution by GPU at the $k= N_xM_x$ thread.  
    \end{itemize}
 
+ Sanders and Kandrot (2010) \cite{SK2010} made an important note, on pp. 176-177 Ch. 9 Atomics of Section 9.4 Computing Histograms, an important \emph{rule of thumb} on the number of blocks.
+
+ First, consider $N^{\text{threads}}$ total threads.  The extremes are either $N^{\text{threads}}$ threads on a single block, or $N^{\text{threads}}$ blocks, each with a single thread.
+
+ Sanders and Kandrot gave this tip:  \\
+
+ number of blocks, i.e. \verb|gridDim.x| $\Longleftarrow N_x$ $\sim 2 \times $ number of GPU multiprocessors, i.e. twice the number of GPU multiprocessors.  In the case of my GeForce GTX 980 Ti, it has 22 Multiprocessors.  
+ 
 \subsection{(CUDA) Constant Memory}
  
 cf. Chapter 6 Constant Memory of Sanders and Kandrot (2010) \cite{SK2010}
@@ -2683,7 +2691,7 @@ In the case of $\frac{d}{dt}m = 0$, on a single cell $i$,
   \end{gathered}
 \]
 
-This is one of the first main approximations Darmofal (2015) \cite{Darm2005} makes, in Eq. 7.10, Section 7.3 Finite Volume Method for Convection, for the \emph{finite volume method}:
+This is one of the first main approximations Darmofal (2005) \cite{Darm2005} makes, in Eq. 7.10, Section 7.3 Finite Volume Method for Convection, for the \emph{finite volume method}:
 \begin{equation}
   \overline{m}_i := \frac{1}{\Delta x_i} \int_{x_{i - \frac{1}{2} }}^{x_{i+\frac{1}{2} } } \rho(x)dx
 \end{equation}
@@ -2704,7 +2712,59 @@ Consider as first approximation,
 
 Consider then initial time $t$, time step $\Delta t$.   
 
-At this point, instead of recapping what is essentially the so-called ``Upwind Interpolation'', which Darmofal is doing in Lecture 7 of Darmofal (2015) \cite{Darm2005}, and on pp. 76, Chapter 4 Finite Volume Methods, Subsection 4.4.1 Upwind Interpolation (UDS) of Ferziger and Peric () \cite{FP2013}, which is essentially a zero-order approximation, let's try to do better.  
+\subsubsection{1-dimensional ``Upwind'' Interpolation for Finite Volume}
+
+This is the ``major'' approximation for the so-called ``Upwind'' interpolation approximation:
+\begin{equation}\label{Eq:rhoUpwindInterp}
+  \rho(x_{i+\frac{1}{2} },t+\Delta t) = \begin{cases} \overline{m}_i(t) & \text{ if } u(x_{i+\frac{1}{2} },t) > 0 \\
+    \overline{m}_{i+1}(t) & \text{ if } u(x_{i+\frac{1}{2} },t) < 0
+    \end{cases}
+\end{equation}
+
+Then use the so-called ``forward'' time approximation for $\frac{d}{dt} \overline{m}_i(t)$:
+\[
+\begin{gathered}
+\Delta x_i \frac{ \overline{m}_i(t+\Delta t) - \overline{m}_i(t) }{ \Delta t} + (\rho u)(t,x_{i+\frac{1}{2} } ) - (\rho u)(t,x_{i-\frac{1}{2} } ) = 0
+  \end{gathered}
+\]
+
+Darmofal (2005) \cite{Darm2005} didn't make this explicit in Lecture 7, but in the approximation for  $\rho(x_{i+\frac{1}{2} },t+\Delta t)$, Eq. \ref{Eq:rhoUpwindInterp}, it's supposed that it's valid at time $t$: $\rho(x_{i+\frac{1}{2} },t) \approx  \rho(x_{i+\frac{1}{2} },t+\Delta t)$, since it's the value of $\rho$ for time moving forward from $t$ (this is implied in Darmofal's code \href{http://ocw.mit.edu/courses/aeronautics-and-astronautics/16-901-computational-methods-in-aerospace-engineering-spring-2005/lecture-notes/convect1d.m}{convect1d}
+  %\verb|convect1d.m|}.
+\[
+\begin{gathered}
+  \rho(x_{i+\frac{1}{2} },t)u(x_{i+\frac{1}{2} },t) = \begin{cases} \overline{m}_i(t)u(x_{i+\frac{1}{2} },t) & \text{ if } u(x_{i+\frac{1}{2}},t )>0 \\
+    \overline{m}_{i+1}(t)u(x_{i+\frac{1}{2} },t) & \text{ if } u(x_{i+\frac{1}{2}},t )<0
+    \end{cases}
+  \end{gathered}
+\]
+
+Then
+\begin{equation}
+\begin{gathered}
+\frac{ \Delta x_i }{ \Delta t}( \overline{m}_i(t+\Delta t) - \overline{m}_i(t) ) + \\
++ \begin{cases} \overline{m}_i(t)u(x_{i+\frac{1}{2} },t) & \text{ if } u(x_{i+\frac{1}{2}},t )>0 \\
+    \overline{m}_{i+1}(t)u(x_{i+\frac{1}{2} },t) & \text{ if } u(x_{i+\frac{1}{2}},t )<0
+\end{cases} - \\
+- \begin{cases} \overline{m}_{i-1}(t)u(x_{i-\frac{1}{2} },t) & \text{ if } u(x_{i-\frac{1}{2}},t )>0 \\
+    \overline{m}_{i}(t)u(x_{i-\frac{1}{2} },t) & \text{ if } u(x_{i-\frac{1}{2}},t )<0
+\end{cases} = \\
+= 0
+  \end{gathered}
+  \end{equation}
+
+A note on 1-dimensional gridding: Consider total length $L_0 \in \mathbb{R}^+$.  \\
+For $N^{\text{cells}}$ total cells in $x$-direction.  $i=0\dots N^{\text{cells}}-1$.
+\[
+\begin{aligned}
+  & x_{i-\frac{1}{2}} = i \Delta x \qquad \, & i = 0, 1 \dots N^{\text{cells}} - 1 \\ 
+  & x_{i+\frac{1}{2}} = (i+1) \Delta x \qquad \, & i = 0, 1 \dots N^{\text{cells}} - 1 \\ 
+  & x_i = x_{i-\frac{1}{2} } + \frac{ x_{i+\frac{1}{2}} - x_{i-\frac{1}{2} } }{2} = \frac{ x_{i + \frac{1}{2} } + x_{i-\frac{1}{2} } }{2} = (2 i + 1)\frac{  \Delta x }{2} \qquad \, & i = 0, 1 \dots N^{\text{cells}} - 1 \\ 
+\end{aligned}
+\]
+
+
+
+At this point, instead of what is essentially the so-called ``Upwind Interpolation'', which Darmofal is doing in Lecture 7 of Darmofal (2005) \cite{Darm2005}, and on pp. 76, Chapter 4 Finite Volume Methods, Subsection 4.4.1 Upwind Interpolation (UDS) of Ferziger and Peric (2002) \cite{FP2013}, which is essentially a zero-order approximation, let's try to do better.  
 
 Consider the interval $[x_{i-\frac{1}{2}}, x_{i+\frac{1}{2} } ] \subset \mathbb{R}$.
 
@@ -2718,10 +2778,19 @@ Given $\rho(t,x_{i -\frac{1}{2} }), \rho(t, x_{i +\frac{1}{2} }) \in \mathbb{R}$
 \[
 \begin{gathered}
   \mathbb{R} \times \mathbb{R} \xrightarrow{ \text{ interpolation }} \mathbb{R}[x] \equiv \mathcal{P}_{n=1}(\mathbb{R}) \\ 
- \rho(t,x_{i -\frac{1}{2} }), \rho(t, x_{i +\frac{1}{2} }) \mapsto \frac{ (x_{ i +\frac{1}{2}}-x) \rho(t, x_{i -\frac{1}{2}}) - (x_{i +\frac{1}{2}} - x)\rho(t,x_{i +\frac{1}{2}}) }{ h } = \rho_{n=1}(t,x)
+ \rho(t,x_{i -\frac{1}{2} }), \rho(t, x_{i +\frac{1}{2} }) \mapsto \frac{ (x - x_{ i -\frac{1}{2}}) \rho(t, x_{i +\frac{1}{2}}) - (x - x_{i +\frac{1}{2}} )\rho(t,x_{i -\frac{1}{2}}) }{ h } = \rho_{n=1}(t,x)
 \end{gathered}
 \]
 where $h \equiv x_{i +\frac{1}{2}} - x_{i -\frac{1}{2}}$ and $\mathcal{P}_{n=1}(\mathbb{R})$ is the set of all polynomials of order $n=1$ over field $\mathbb{R}$ (real numbers).
+
+In general,
+\[
+\begin{gathered}
+  \mathbb{R} \times \mathbb{R} \xrightarrow{ \text{ interpolation }} \mathbb{R}[x] \equiv \mathcal{P}_{n=1}(\mathbb{R}) \\ 
+ \rho(t,x_L), \rho(t, x_R) \mapsto \frac{ (x - x_L ) \rho(t, x_R) - (x - x_R )\rho(t,x_L) }{ (x_R-x_L) } = \rho_{n=1}(t,x)
+\end{gathered}
+\]
+
 
 We interchange the operations of integration and partial derivative - I (correct me if I'm wrong) give two possible reasons why we can do this: the spatial manifold $N$ is fixed in time $t$, and if the grid cell itself is fixed in time, then the partial derivative in time can be moved out of the integration limits.
 
@@ -2734,6 +2803,12 @@ So then
 \Longrightarrow \frac{ \partial }{ \partial t} \int_{x_{i -\frac{1}{2}}}^{x_{i +\frac{1}{2}}} \rho_{n=1}(t,x) = \frac{ \partial }{ \partial t} ( \rho(t,x_{i+\frac{1}{2} }  )  + \rho(t,x_{i-\frac{1}{2} } ) ) \frac{ \Delta x}{2}
 \]
 where $\Delta x = x_{i+\frac{1}{2} } - x_{i+\frac{1}{2} } $.
+
+In general,
+\[
+\frac{ \partial }{ \partial t} \int_{x_L}^{x_R} \rho_{n=1}(t,x) = \frac{ \partial }{ \partial t}( \rho(t,x_R) + \rho(t,x_L) ) \frac{ (x_R - x_L) }{2}
+\]
+
 
 Then, discretizing,
 \begin{equation}
@@ -2768,10 +2843,27 @@ Next, consider the (polynomial) interpolation for the $ \frac{ \partial (\rho u)
  \rho(t,x_{i-\frac{3}{2} } ) u(t,x_{i-\frac{3}{2} }) , \rho(t,x_{i-\frac{1}{2} })u(t,x_{i-\frac{1}{2} } ), \rho(t,x_{i+\frac{1}{2} })u(t,x_{i+\frac{1}{2} } ) \xmapsto{ \text{interpolate} } (\rho u)_{n=2}(t,x)
   \end{gathered}
 \]
-Thus, we can calculate, by plugging in,
+Thus, we can calculate, by plugging into,
 \[
 \frac{ \partial (\rho u)_{n=2}(t,x_{i-\frac{1}{2} } ) }{ \partial x}
 \]
+
+In general, for
+\[
+\begin{gathered}
+  \mathbb{R} \times \mathbb{R}\times\mathbb{R} \xrightarrow{ \text{interpolate} } \mathbb{R}[x] \equiv \mathcal{P}_{n=2}(\mathbb{R}) \\ 
+ \rho(t,x_{LL } ) u(t,x_{LL }) , \rho(t,x_{L })u(t,x_{L } ), \rho(t,x_{R })u(t,x_{R } ) \xmapsto{ \text{interpolate} } (\rho u)_{n=2}(t,x)
+  \end{gathered}
+\]
+we have
+\[
+\begin{gathered}
+  \frac{ \partial (\rho u)_{n=2}(t,x_{L } ) }{ \partial x} = 
+  \frac{1}{\left(x_{L} - x_{LL}\right) \left(x_{L} - x_{R}\right) \left(x_{LL} - x_{R}\right)} \cdot \\
+  \cdot \left(\left(x_{L} - x_{LL}\right)^{2} (\rho u){\left (x_{R} \right )} + \left(x_{L} - x_{LL}\right) \left(x_{LL} - x_{R}\right) (\rho u){\left (x_{L} \right )} - \left(x_{L} - x_{R}\right)^{2} (\rho u){\left (x_{LL} \right )} + \left(x_{L} - x_{R}\right) \left(x_{LL} - x_{R}\right) (\rho u){\left (x_{L} \right )}\right)
+\end{gathered}
+\]
+
 Thus,
 \begin{equation}
 \Longrightarrow \begin{gathered}
@@ -2840,6 +2932,16 @@ Choices for $u\in \mathfrak{X}(\mathbb{R}\times \mathbb{R})$:
 \item $u(t,x)$ determined by Newtonian gravity (that's an external force on the fluid)
   \end{itemize}
 
+\subsubsection{Note on 1-dimensional gridding}
+
+For, $[0,1] \subset \mathbb{R}$ \\
+\phantom{For, } $N$ cells,
+
+Then $1/N = \Delta x$.  Then consider
+\[
+x_j = j\Delta x \qquad \, j = 0, 1, \dots N
+\]
+
 
 
 \end{multicols*}
@@ -2877,6 +2979,7 @@ Jason Sanders, Edward Kandrot.  \textbf{CUDA by Example: An Introduction to Gene
 \bibitem{FP2013}
 Joel H. Ferziger and Milovan Peric.  \textbf{Computational Methods for Fluid Dynamics}.  Springer; 3rd edition (October 4, 2013).  ISBN-13: 978-3540420743
 
+I used the 2002 edition since that was the only copy I had available.  
 
 \end{thebibliography}
 
