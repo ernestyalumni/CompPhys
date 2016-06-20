@@ -2942,6 +2942,112 @@ Then $1/N = \Delta x$.  Then consider
 x_j = j\Delta x \qquad \, j = 0, 1, \dots N
 \]
 
+\subsection{2-dim. and 3-dim. ``Upwind'' interpolation for Finite Volume}
+
+I build on Lecture 7 of Darmofal (2005) \cite{Darm2005}.
+
+Consider a rectangular grid.
+
+Consider cell $C^2_{ij}$, $i=0\dots N_x - 1$, $j=0\dots N_y -1$.  Then there's $N_x\cdot N_y$ total cells, $\begin{aligned} & \quad \\
+  & N_x \text{ cells in $x$-direction } \\ 
+  & N_y \text{ cells in $y$-direction } \end{aligned}$.
+
+There are 2 possibilities: rectangles of all the same size, with width $l^x$ and length $l^t$ each, or each rectangle for each cell $C^2_{ij}$ is different, of dimensions $l^x_i \times l^y_j$.  
+
+Consider cells centered at $x_{2i+1} = l^x\frac{(2i+1)}{2} = \sum_{k=0}^{i-1}l_k^x + \frac{l_i^2}{2}$.  
+
+On the ``left'' sides, $x_{2i} = l^x i = \sum_{k=0}^{i-1} l_k^x$ \\
+\phantom{On the } ``right'' sides, $x_{2(i+1)} = l^x(i+1) = \sum_{k=0}^i l_k^x$.
+
+So cells are centered at
+\[
+(x_{2i+1}, y_{2j+1}) = (l^x \frac{ (2i+1)}{2} , l^y \frac{(2j+1)}{2} ) = \left( \sum_{k=0}^{i-1} l_k^x + \frac{l_i^x}{2} , \sum_{k=0}^{j-1}l_k^y + \frac{l_j^y}{2} \right)
+\]
+
+So this cell $C^2_{ij}$, a 2-(cubic) simplex has 4 1-(cubic) simplices (edges): so 1-(cubic) simplices $\lbrace C_{i\pm 1, j }^1, C^1_{i,j\pm1}\rbrace$
+
+The center of these simplices are the following:
+\[
+\begin{aligned}
+  & x_{C^1_{i+1,j}} = (x_{2i+1+1},y_{2j+1}) = (l^x(i+1), l^y\frac{(2j+1)}{2} ) = \left( \sum_{k=0}^i l_k^x, \sum_{k=0}^{j-1} l_k^y + \frac{l_j^y}{2} \right) \text{ so then } \\ 
+  & x_{C^1_{i\pm 1,j}} = (x_{2i+1\pm 1},y_{2j+1}) = (l^x\left( \frac{2i+1\pm 1}{2}\right) , l^y\frac{(2j+1)}{2} ) = \left( \sum_{k=0}^{ \frac{2i - 1 \pm 1 }{2} } l_k^x, \sum_{k=0}^{j-1} l_k^y + \frac{l_j^y}{2} \right) \\ 
+  &  x_{C^1_{i,j\pm 1}} = (x_{2i+1},y_{2j+1 \pm 1}) = (l^x\left( \frac{2i+1}{2}\right) , l^y\frac{(2j+1 \pm 1)}{2} ) = \left(  \sum_{k=0}^{i-1} l_k^x + \frac{l_i^x}{2} , \sum_{k=0}^{ \frac{2j - 1 \pm 1 }{2} } l_k^y  \right)
+\end{aligned}
+\]
+
+We want the flux.  So for
+\[
+\overline{\rho}_{ij} := \frac{1}{l_i^x l_j^y} \int_{C^2_{ij}} \rho \text{vol}^2
+\]
+then the flux through 1-(cubic) simplices (faces), $\int \rho i_{\mathbf{u}}\text{vol}^2$,
+\[
+\begin{aligned}
+ &  \int_{C^1_{i+1,j}} \rho i_{\mathbf{u}} \text{vol}^2 = \begin{cases} l_j^y \overline{\rho}_{ij} u^x(x_{C^1_{i+1, j} } ) & \text{ if } u^x(x_{C^1_{i+1,j} }) > 0 \\ 
+ l_j^y \overline{\rho}_{i+1,j} u^x(x_{C^1_{i+1, j} } ) & \text{ if } u^x(x_{C^1_{i+1,j} }) < 0 \end{cases} \\
+&      \int_{C^1_{i-1,j}} \rho i_{\mathbf{u}} \text{vol}^2 = \begin{cases} l_j^y \overline{\rho}_{i-1,j} u^x(x_{C^1_{i-1, j} } ) & \text{ if } u^x(x_{C^1_{i-1,j} }) > 0 \\ 
+ l_j^y \overline{\rho}_{i,j} u^x(x_{C^1_{i-1, j} } ) & \text{ if } u^x(x_{C^1_{i-1,j} }) < 0 \end{cases}
+\end{aligned}
+\]
+Likewise,
+\[
+\int_{C^1_{i,j+1}} \rho i_{\mathbf{u}} \text{vol}^2 = \begin{cases} l_i^x \overline{\rho}_{ij} u^y(x_{C^1_{i, j+1} } ) & \text{ if } u^y(x_{C^1_{i,j+1} }) > 0 \\ 
+ l_i^x \overline{\rho}_{i,j+1} u^y(x_{C^1_{i, j+1} } ) & \text{ if } u^y(x_{C^1_{i,j+1} }) < 0 \end{cases}
+\]
+and so on.
+
+
+
+\subsubsection{3-dim. ``Upwind'' interpolation for finite volume }
+
+For a rectangular prism (cubic),
+
+for cell $C^3_{ijk}$, $i=0 \dots N_x-1$, $j=0 \dots N_y-1$ , $k=0 \dots N_z-1$, $N_x\cdot N_y \cdot N_z$ total cells.
+
+Cells centered at
+\[
+(x_{2i+1}, y_{2j+1}, z_{2j+1}) = (l^x \frac{ (2i+1)}{2} , l^y \frac{(2j+1)}{2}, l^z \frac{(2k+1)}{2} ) = \left( \sum_{l=0}^{i-1} l_l^x + \frac{l_i^x}{2} , \sum_{l=0}^{j-1}l_l^y + \frac{l_j^y}{2}, \sum_{l=0}^{k-1}l_l^z + \frac{l_k^y}{2}  \right)
+\]
+For the 3-(cubic) simplex, $C^3_{ijk}$, it has 6 2-(cubic) simplices (faces).  So for $C_{ijk}^3$, consider $\lbrace C^2_{i\pm 1, jk}, C^2_{ij\pm 1,k}, C^2_{ijk\pm 1}\rbrace$.
+
+The center of these faces, such as for $C^2_{i\pm 1, jk}$, $x_{ C^2_{i\pm 1, jk} }$, for instance,
+\[
+\begin{aligned}
+ x_{C^2_{i\pm 1,jk}} = (x_{2i+1\pm 1},y_{2j+1},z_{2k+1}) = (l^x\left( \frac{2i+1\pm 1}{2}\right) , l^y\frac{(2j+1)}{2},  l^z\frac{(2j+1)}{2} ) = \left( \sum_{l=0}^{ \frac{2i - 1 \pm 1 }{2} } l_l^x, \sum_{l=0}^{j-1} l_l^y + \frac{l_j^y}{2}, \sum_{l=0}^{l-1} l_l^z + \frac{l_k^z}{2} \right) 
+  \end{aligned}
+\]
+
+We want the flux.  So for
+\[
+\overline{\rho}_{ijk} := \frac{1}{l_i^x l_j^yl^z_k} \int_{C^3_{ijk}} \rho \text{vol}^3
+\]
+then the flux through 2-(cubic) simplices (faces), $\int \rho i_{\mathbf{u}}\text{vol}^3$,
+\[
+\begin{aligned}
+ &  \int_{C^2_{i+1,jk}} \rho i_{\mathbf{u}} \text{vol}^3 = \begin{cases} l_j^yl_k^z \overline{\rho}_{ijk} u^x(x_{C^2_{i+1, jk} } ) & \text{ if } u^x(x_{C^2_{i+1,jk} }) > 0 \\ 
+ l_j^y l^z_k \overline{\rho}_{i+1,jk} u^x(x_{C^2_{i+1, jk} } ) & \text{ if } u^x(x_{C^2_{i+1,jk} }) < 0 \end{cases} \\
+\end{aligned}
+\]
+and so on.  
+
+To reiterate the so-called ``upwind'' interpolation method, in generality, recall that we are taking this equation:
+\[
+\int_{C^n_{ij}} \frac{ \partial \rho }{ \partial t} \text{vol}^n + \int_{ \partial C^n_{ij} } \rho u_{\mathbf{u}} \text{vol}^n = \dot{M}_{ij}
+\]
+and discretizing it to obtain
+\[
+\begin{gathered}
+  \frac{ \partial }{ \partial t} \overline{\rho}_{ij} | \text{vol}^n | + \int_{ \partial C_{ij}^n } \rho i_{\mathbf{u}} \text{vol}^n = \dot{M}_{ij } \\ 
+\Longrightarrow  \frac{ \partial }{ \partial t} \overline{\rho}_{ij}  = \frac{-1}{ | \text{vol}^n | } \int_{ \partial C_{ij}^n } \rho i_{\mathbf{u}} \text{vol}^n + \frac{1}{ | \text{vol}^n | } \dot{M}_{ij }
+  \end{gathered}
+\]
+
+\section{Mapping scalar (data) to colors}
+
+Links I found useful:
+
+Taku Komura has good lectures on visualization with computers; it was heavily based on using VTK, but I found the principles and overview he gave to be helpful: here's \href{http://www.inf.ed.ac.uk/teaching/courses/vis/lecture_notes/lecture6.pdf}{Lecture 6 Scalar Algorithms: Colour Mapping}.  (Komura's teaching in the UK, hence spelling ``colour'')
+
+Good article on practical implementation of a rainbow: \url{https://www.particleincell.com/2014/colormap/}
 
 
 \end{multicols*}
