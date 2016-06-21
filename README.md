@@ -4,7 +4,11 @@ CompPhys - a Computational Physics repository
 ## Contents
 
 - Cpp
-  * `Cpp/` directory has material based off on M. Hjorth-Jensen's **Computational Physics** [2015 lectures](https://github.com/CompPhysics/ComputationalPhysicsMSU/blob/master/doc/Lectures/lectures2015.pdf): what I did was to type up the (pedagogical) programs in the lectures, (try to) organize them so that you know which program corresponds to what part of the lectures (so that while you're reading the lectures, you can run the programs simultaneously), and compile and make sure they run (as I wanted them to run, myself).  
+  * `Cpp/` directory has material based off of M. Hjorth-Jensen's **Computational Physics** [2015 lectures](https://github.com/CompPhysics/ComputationalPhysicsMSU/blob/master/doc/Lectures/lectures2015.pdf): what I did was to type up the (pedagogical) programs in the lectures, (try to) organize them so that you know which program corresponds to what part of the lectures (so that while you're reading the lectures, you can run the programs simultaneously), and compile and make sure they run (as I wanted them to run, myself).  
+
+- CUDA-By-Example
+	* `CUDA-By-Example/` directory has material based on Sanders and Kandrot's **CUDA By Example**.  Most of the code examples from the book are there, and then some.  I truly believe this is the most comprehensive code repository (subdirectory) for codes out of that book that's out there.  
+	* `CUDA-By-Example/common` : you should also note that the directory `CUDA-By-Example/common` has useful header files and I try my best to explain thoroughly what the stuff in the header files mean: especially note `gpu_anim.h` because you can use that header file to do OpenGL and CUDA C bitmap animations that's **entirely rendered on the GPU.**  
 
 ## C Resources
 
