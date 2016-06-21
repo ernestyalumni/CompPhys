@@ -2345,7 +2345,7 @@ where $\text{Obj}\textbf{Memory}_{GPU}  \equiv $ collection of all possible memo
 
 It should be noted that, syntax-wise, $\& c \in \text{Obj}\textbf{Memory}_{CPU}$ and $\& c$ belongs in the ``first slot'' of the arguments for $\text{cudaMemcpy}$, whereas \verb|dev_c| $\in \textbf{pointers}_{GPU}$ a \emph{device pointer}, is ``passed in'' to the ``second slot'' of the arguments for $\text{cudaMemcpy}$.  
 
-\subsection{Threads, Blocks, Grids}
+\section{Threads, Blocks, Grids}
 
 cf. Chapter 5 Thread Cooperation, Section 5.2. Splitting Parallel Blocks of Sanders and Kandrot (2010) \cite{SK2010}.
 
@@ -2366,7 +2366,7 @@ Then if we were to ``linearize'' or ``flatten'' in this $x$-direction,
  Take a look at \href{https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/heattexture1.cu}{heattexture1.cu} which uses the GPU texture memory.  Look at how \verb|threadIdx|/\verb|blockIdx| is mapped to pixel position.
 
  As an exercise, let's again rewrite the code in mathematical notation:
- \begin{itemize}
+ \begin{itemize}\label{List:threadblockdict}
 \item \verb|threadIdx.x| $\Longleftarrow j_x$, $0\leq j_x \leq M_x -1$ 
 \item \verb|blockIdx.x| $\Longleftarrow i_x$, $0\leq i_x \leq N_x -1$
 \item \verb|blockDim.x| $\Longleftarrow M_x$, number of threads along each dimension (here dimension $x$) of a block, $1 \leq M_x \leq M_x^{\text{max}} = 1024$
@@ -2440,7 +2440,211 @@ $\Longrightarrow $
  Sanders and Kandrot gave this tip:  \\
 
  number of blocks, i.e. \verb|gridDim.x| $\Longleftarrow N_x$ $\sim 2 \times $ number of GPU multiprocessors, i.e. twice the number of GPU multiprocessors.  In the case of my GeForce GTX 980 Ti, it has 22 Multiprocessors.  
- 
+
+ \subsection{global thread Indexing: 1-dim., 2-dim., 3-dim.}
+
+ Consider the problem of \emph{global thread indexing.}  This was asked on the NVIDIA Developer's board (cf. \href{https://devtalk.nvidia.com/default/topic/498642/calculate-global-thread-id/?offset=2}{Calculate GLOBAL thread Id}).  Also, there exists a ``cheatsheet'' (cf. \href{https://cs.calvin.edu/courses/cs/374/CUDA/CUDA-Thread-Indexing-Cheatsheet.pdf}{CUDA Thread Indexing Cheatsheet}).  Let's consider a (mathematical) generalization.
+
+Consider again (cf. \ref{List:threadblockdict}) the following notation: 
+\begin{itemize}
+\item \verb|threadIdx.x| $\Longleftarrow i_x$, $0\leq i_x \leq M_x -1$, \qquad \, $i_x \in \lbrace 0 \dots M_x - 1\rbrace \equiv I_x$, of ``cardinal length/size'' of $|I_x| = M_x$
+\item \verb|blockIdx.x| $\Longleftarrow j_x$, $0\leq j_x \leq N_x -1$, \qquad \, $j_x \in \lbrace 0 \dots N_x - 1\rbrace \equiv J_x$, of ``cardinal length/size'' of $|J_x| = N_x$
+\item \verb|blockDim.x| $\Longleftarrow M_x$
+  \item \verb|gridDim.x| $\Longleftarrow N_x$
+\end{itemize}
+
+Now consider formulating the various cases, of a grid of dimensions from 1 to 3, and blocks of dimensions from 1 to 3 (for a total of 9 different cases) mathematically, as the \href{https://cs.calvin.edu/courses/cs/374/CUDA/CUDA-Thread-Indexing-Cheatsheet.pdf}{CUDA Thread Indexing Cheatsheet} did, similarly:
+
+\begin{itemize}
+\item \emph{1-dim. grid} of \emph{1-dim. blocks}.   Consider $J_x\times I_x$.  For $j_x \in J_x$, $i_x \in I_x$, then $k_x = j_x M_x + i_x$, $k_x \in \lbrace 0 \dots N_xM_x-1\rbrace \equiv K_x$.
+
+  The condition that $k_x$ be a valid global thread index is that $K_x$ has equal cardinality or size as $J_x\times I_x$, i.e.
+  \[
+|J_x \times I_x| = |K_x|
+\]
+(this must be true).  This can be checked by checking the most extreme, maximal, case of $j_x = N_x-1$, $i_x = M_x-1$:
+\[
+k_x = j_xM_x + i_x = (N_x-1)M_x + M_x-1 = N_xM_x -1
+\]
+and so $k_x$ ranges from $0$ to $N_xM_x-1$, and so $|K_x|=N_xM_x$.
+
+Summarizing all of this in the following manner:
+\[
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=1.1em, column sep=4em, minimum width=1em]
+  {
+  J_x \times I_x &  K_x \equiv K^{N_xM_x}= \lbrace 0 \dots N_xM_x -1\rbrace \\ 
+  (j_x,i_x) & k_x = j_xM_x +i_x \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$$} (m-1-2)
+  ;  
+  \path[|->]
+  (m-2-1) edge node [auto] {$$} (m-2-2)
+  ;
+\end{tikzpicture} 
+\]
+
+For the other cases, this generalization we've just done is implied.  
+\item \emph{1-dim. grid} of \emph{2-dim. blocks}
+\[
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=1.1em, column sep=4em, minimum width=1em]
+  {
+  J_x \times (I_x\times I_y) &  K^{N_xM_xM_y} \equiv \lbrace 0 \dots N_xM_xM_y -1\rbrace \\ 
+  (j_x,(i_x,i_y)) & k = j_xM_xM_y +(i_x+i_yM_x) = j_x |I_x\times I_y| + (i_x + i_yM_x) \in \lbrace 0 \dots N_xM_xM_y -1 \rbrace \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$$} (m-1-2)
+  ;  
+  \path[|->]
+  (m-2-1) edge node [auto] {$$} (m-2-2)
+  ;
+\end{tikzpicture} 
+\]
+  %\[
+%\begin{gathered}
+%  (j_x,i_x)\mapsto k_x = j_xM_x + i_x
+%\end{gathered}
+%\]
+The ``most extreme, maximal'' case that can be checked to check that the ``cardinal size'' of $K^{N_xM_xM_y}$ is equal to $J_x\times (I_x\times I_y)$ is the following, and for the other cases, will be implied (unless explicitly written or checked out):
+\[
+k = j_x M_xM_y + (i_x + i_y M_x) = (N_x-1)M_xM_y + ((M_x-1) + (M_y-1)M_x) = (N_xM_xM_y-1) 
+\]
+The thing to notice is this emerging, general pattern, what could be called a ``global view'' of understanding the threads and blocks model of the GPU (cf. \href{https://devtalk.nvidia.com/default/topic/498642/calculate-global-thread-id/?offset=2}{njuffa's answer}:
+\[
+\text{ total number of threads } = \text{ block index (Id) }\cdot \text{ total number of threads per blcok } + \text{ thread index on the block }
+\]
+But as we'll see, that's not the only way of ``flattening'' the index, or transforming into a 1-dimensional index.  
+
+\item \emph{1-dim. grid} of \emph{3-dim. blocks}
+\[
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=1.1em, column sep=4em, minimum width=1em]
+  {
+  J_x \times (I_x\times I_y \times I_z) &  K^{N_xM_xM_yM_z}  \\ 
+  (j_x,(i_x,i_y,i_z)) & k = j_x(M_xM_yM_z) +(i_x+i_yM_x + i_Z M_xM_y)  \in \lbrace 0 \dots N_xM_xM_yM_z -1 \rbrace \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$$} (m-1-2)
+  ;  
+  \path[|->]
+  (m-2-1) edge node [auto] {$$} (m-2-2)
+  ;
+  \end{tikzpicture}
+  \]
+\item  \emph{2-dim. grid} of \emph{1-dim. blocks}
+\[
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=1.1em, column sep=4em, minimum width=1em]
+  {
+  (J_x\times J_y) \times I_x &  L^{N_xN_y} \times I_x & K^{N_xN_yM_x}  \\ 
+  ((j_x,j_y), i_x ) & ((j_x+N_xj_y) , i_x ) & k = (j_x + N_xj_y)\cdot M_x + i_x \in \lbrace 0 \dots N_xN_yM_x - 1 \rbrace   \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$$} (m-1-2)
+  (m-1-2) edge node [auto] {$$} (m-1-3) 
+  ;  
+  \path[|->]
+  (m-2-1) edge node [auto] {$$} (m-2-2)
+  (m-2-2) edge node [auto] {$$} (m-2-3)
+  ;
+\end{tikzpicture} 
+  \]
+  \item \emph{2-dim. grid} of \emph{2-dim. blocks}
+\[
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=1.1em, column sep=4em, minimum width=1em]
+  {
+  (J_x\times J_y) \times (I_x,I_y) &  L^{N_xN_y} \times (I_x,I_y) & K^{N_xN_yM_x}  \\ 
+  ((j_x,j_y), (i_x,i_y) ) & ((j_x+N_xj_y) , (i_x,i_y) ) & k = (j_x + N_xj_y)\cdot M_xM_y + i_x +M_xi_y     \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$$} (m-1-2)
+  (m-1-2) edge node [auto] {$$} (m-1-3) 
+  ;  
+  \path[|->]
+  (m-2-1) edge node [auto] {$$} (m-2-2)
+  (m-2-2) edge node [auto] {$$} (m-2-3)
+  ;
+\end{tikzpicture} 
+  \] 
+  But this \emph{isn't the only way of obtaining} a ``flattened index.''  Exploit the commutativity and associativity of the Cartesian product:
+\[
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=1.1em, column sep=4em, minimum width=1em]
+  {
+ J_x\times J_y \times I_x \times I_y = (J_x \times I_x) \times (J_y \times I_y) &  K^{N_xM_x} \times K^{N_yM_y}   & K^{N_xN_yM_xM_y}  \\ 
+ ((j_x,j_y,i_x,i_y ) = ((j_x,i_x),(j_y,i_y)) & (i_x+M_xj_x,i_y+M_yj_j)\equiv (k_x,k_y)  & \begin{gathered} k = k_x + k_yN_xM_x = \\ = (i_x+M_xj_x)+(i_y+M_yj_y)M_xN_x  \end{gathered}   \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$$} (m-1-2)
+  (m-1-2) edge node [auto] {$$} (m-1-3) 
+  ;  
+  \path[|->]
+  (m-2-1) edge node [auto] {$$} (m-2-2)
+  (m-2-2) edge node [auto] {$$} (m-2-3)
+  ;
+\end{tikzpicture} 
+  \] 
+  Indeed, checking the ``maximal, extreme'' case,
+  \[
+k = k_x + k_y N_xM_x = M_xN_x-1 + (M_yN_y - 1)(N_xM_x) = M_yM_yN_xM_x -1
+\]
+and so $k$ ranges from $0$ to $M_yM_yN_xM_x -1$.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  \item \emph{3-dim. grid} of \emph{3-dim. blocks}
+\[
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=1.1em, column sep=4em, minimum width=1em]
+  {
+    \begin{gathered} (J_x\times J_y \times J_z ) \times (I_x \times I_y \times I_z) = \\
+      = (J_x \times I_x) \times (J_y \times I_y) \times (J_z \times I_z) \end{gathered} &  K^{N_xM_x} \times K^{N_yM_y} \times K^{N_zM_z}   & K^{N_xN_yN_zM_xM_yM_z}  \\ 
+    \begin{gathered} ((j_x,j_y,j_z),(i_x,i_y,i_z )) = \\ = ((j_x,i_x),(j_y,i_y),(j_z,i_z)) \end{gathered} & \begin{gathered} (i_x+M_xj_x,i_y+M_yj_j,i_z + M_zj_z)\equiv \\
+      \equiv (k_x,k_y,k_z) \end{gathered}  & \begin{gathered} k = k_x + k_yN_xM_x + k_zN_xM_xN_yM_y    \end{gathered}   \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$$} (m-1-2)
+  (m-1-2) edge node [auto] {$$} (m-1-3) 
+  ;  
+  \path[|->]
+  (m-2-1) edge node [auto] {$$} (m-2-2)
+  (m-2-2) edge node [auto] {$$} (m-2-3)
+  ;
+\end{tikzpicture} 
+  \] 
+  Indeed, checking the ``extreme, maximal'' case for $k$:
+  \[
+\begin{gathered}
+  k =   k_x + k_y N_xM_x + k_zN_xM_xN_yN_y = \\
+  = (N_xM_x-1) + (N_yM_y-1)N_xM_x + (N_zM_z-1)N_xM_xN_yM_y = N_xN_yN_zM_xM_yM_z -1
+  \end{gathered}
+  \]
+\end{itemize}
+
+
+
 \subsection{(CUDA) Constant Memory}
  
 cf. Chapter 6 Constant Memory of Sanders and Kandrot (2010) \cite{SK2010}
