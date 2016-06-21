@@ -10,7 +10,10 @@ Since being good at Computational Physics means being good at C/C++, and also C+
 
 - CUDA-By-Example
 	* `CUDA-By-Example/` directory has material based on Sanders and Kandrot's **CUDA By Example**.  Most of the code examples from the book are there, and then some.  I truly believe this is the most comprehensive code repository (subdirectory) for codes out of that book that's out there.  
-	* `CUDA-By-Example/common` : you should also note that the directory `CUDA-By-Example/common` has useful header files and I try my best to explain thoroughly what the stuff in the header files mean: especially note `gpu_anim.h` because you can use that header file to do OpenGL and CUDA C bitmap animations that's **entirely rendered on the GPU.**  
+	* `CUDA-By-Example/common` : you should also note that the subdirectory `CUDA-By-Example/common` has useful header files and I try my best to explain thoroughly what the stuff in the header files mean: especially note `gpu_anim.h` because you can use that header file to do OpenGL and CUDA C bitmap animations that's **entirely rendered on the GPU.**  
+
+- moreCUDA
+	* `moreCUDA` directory has more CUDA C/C++ examples - I'm finding that as the CUDA Toolbox (version 7.5 at the time of writing this) adds more and more features, and with C++11/C++14, stuff from 2012, 2013 and before (it's 2016 at this time) isn't up to date, or coded to take advantage of C++11/C++14.  I'll try to alleviate this by showing examples in the `moreCUDA` directory there.  
 
 ## C Resources
 
