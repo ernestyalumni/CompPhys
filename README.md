@@ -1,5 +1,7 @@
 # CompPhys
-CompPhys - a Computational Physics repository
+CompPhys - a Computational Physics repository.
+
+Since being good at Computational Physics means being good at C/C++, and also C++11/C++14, which really feels like a new (and more modern and sensible language than before), and then CUDA C/C++ (which feels like new frontier), subdirectories in here has *lots* of (pedagogical) examples.  
 
 ## Contents
 
