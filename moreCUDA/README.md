@@ -1,3 +1,10 @@
+# moreCUDA
+
+`moreCUDA` in the github repository `CompPhys` contains more CUDA C/C++ examples.  
+
+## Table of Contents
+
+- `cudaforengineers` - a "mirror" of the [cudaforengineers](https://github.com/myurtoglu/cudaforengineers) repository by, presumably, the authors of *CUDA for Engineers*, Duane Storti and Mete Yurtoglu, but with my modifications, and stripped of Visual Studio "boilerplate." 
 - `matmultShare.cu`  - example of using `__shared__` memory in CUDA C on GPU device
   * cf. [Matrix Multiplication with CUDA | A basic introduction
 to the CUDA programming model, Robert Hochberg](http://www.shodor.org/media/content/petascale/materials/UPModules/matrixMultiplication/moduleDocument.pdf)
