@@ -4,13 +4,14 @@
  * 20160625
  */
 #include <stdio.h>
-#define Nthreads_x 64 // total number of threads in x-direction
-#define Nthreads_y 64 // total number of threads in y-direction
-#define Nthreads_z 64 // total number of threads in z-direction
+#include "../../common/errors.h"
+#define Nthreads_x 1000 // total number of threads in x-direction (304 works)
+#define Nthreads_y 1000 // total number of threads in y-direction (304 works)
+#define Nthreads_z 1000 // total number of threads in z-direction (304 works)
 
-#define M_x 8 // number of threads per block in x-direction
-#define M_y 8 // number of threads per block in y-direction
-#define M_z 8 // number of threads per block in z-direction
+#define M_x 20 // number of threads per block in x-direction
+#define M_y 20 // number of threads per block in y-direction
+#define M_z 20 // number of threads per block in z-direction
 
 int blocksNeeded(int N_i, int M_i) { return (N_i+M_i-1)/M_i; }
 
@@ -32,8 +33,8 @@ __global__ void distance(float *d_out, int L_x, int L_y, int L_z, float3 x_0) {
 	d_out[offset] = distance( k_x, k_y, k_z, x_0); // compute and store result
 
 	// sanity check
-	printf("On global thread index x=%d,y=%d,z=%d, distance=%f\n",
-			k_x,k_y,k_z,d_out[offset]);
+//	printf("On global thread index x=%d,y=%d,z=%d, distance=%f\n",
+//			k_x,k_y,k_z,d_out[offset]);
 }
 	
 int main() {
@@ -51,8 +52,11 @@ int main() {
 	cudaFree(d_out);
 
 	// sanity check
-	long int testx = (long int) 7*Nthreads_x*Nthreads_y*Nthreads_z/10;
-	printf("At %d the distance is %f \n", testx, out[testx]); 
+	int testx = (int) 9.*Nthreads_x/10.;
+	int testy = (int) 9.*Nthreads_y/10.;
+	int testz = (int) 9.*Nthreads_z/10.;
+	printf("At (%d,%d,%d), the distance is %f \n", testx, testy,testz,
+			out[testx+testy*Nthreads_x+testz*Nthreads_x*Nthreads_y]); 
 
 	free(out);
 	return 0;
