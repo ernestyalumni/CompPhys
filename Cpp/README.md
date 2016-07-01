@@ -146,6 +146,12 @@ g++ -std=c++14 testR3grid.cpp ./physlib/R3grid.cpp ./physlib/R3grid.h
 
 i.e. you're going to have to include all the files in that command line for `g++`.  
 
+### Useful links related to splitting up header files for declaration, split to `.cpp` files for definitions
+
+[ C++ Class Example | Separate header and implementation file](http://p2p.wrox.com/c-programming/92954-c-class-example-separate-header-implementation-file.html)
+
+[Declaring struct in header C++](http://stackoverflow.com/questions/25179244/declaring-struct-in-header-c)
+
 
 ### C++ Operator Overloading in expression; lvalues vs. rvalues
 
