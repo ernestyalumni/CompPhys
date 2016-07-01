@@ -14,6 +14,11 @@ You're (as I was) reading Hjorth-Jensen's excellent lecture notes (latest I foun
 
 P.S. There are some non-trivial typos both in the code and lecture that made the material confusing to understand (as in, did he really mean that?) and some things weren't obvious to me when I read it, and so I try to make sense of it in my notes in [CompPhys.pdf](https://github.com/ernestyalumni/CompPhys/blob/master/LaTeXandpdfs/CompPhys.pdf) and have my own code type-ups here in this repository, even though there's the [CompPhys repository](https://github.com/CompPhysics).
 
+## Table of Contents  
+Be aware that this Table of Contents maybe incomplete (one way around this is to search for key words with some kind of search function).  
+
+- Modularity
+
 ## Listing of which program or script corresponds to which section, chapter, part for Hjorth-Jensen's material
 
 See Hjorth-Jensen's lectures for 2015.  
@@ -45,7 +50,9 @@ See Hjorth-Jensen's lectures for 2015.
 | const.cpp         | ./tour         | 1 The Basics | 1.7 Tests         | 8        | notice `constexpr` for compile-time evaluated constants |
 | test.cpp          | ./tour         | 1 The Basics | 1.9 Tests         | 12        | switch tests in C++11 |
 | structcls.cpp     | ./tour         | 2 Used-Defined Types | 2.2 Structures; 2.3 Classes | 16-18  | structs; notice how member initializer list is a C++11 feature for the class constructor |
+...
 
+20160629 I continue this incomplete listing in the [README.md](https://github.com/ernestyalumni/CompPhys/blob/master/Cpp/tour/README.md) of the [tour subdirectory](https://github.com/ernestyalumni/CompPhys/tree/master/Cpp/tour) - go there for the entire list.  
 
 ### Compiling C++11
 This worked for me, as I had obtained a c++11 compiling error when I trued to use `for (char ch: act) { ... }`:
@@ -124,6 +131,21 @@ To understand
 ```
 
 See (http://stackoverflow.com/questions/1653958/why-are-ifndef-and-define-used-in-c-header-files) and (https://en.wikipedia.org/wiki/Include_guard).
+
+## Modularity
+
+Stroustrup makes a chapter on *Modularity.*  Here's what I found in practice.  
+
+I wanted to test out a new class which I want to put in a header file, with its class definition split away in another `.cpp` file.  This is because the header file is the "interface" and the definition is separated.
+
+Then I wanted to have a test `main` function in a directory "above."  Next, I wanted to compile it to test it out.  With a Makefile, you'd do something like this:
+
+```  
+g++ -std=c++14 testR3grid.cpp ./physlib/R3grid.cpp ./physlib/R3grid.h  
+```
+
+i.e. you're going to have to include all the files in that command line for `g++`.  
+
 
 ### C++ Operator Overloading in expression; lvalues vs. rvalues
 
