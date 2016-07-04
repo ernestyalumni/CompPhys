@@ -156,6 +156,8 @@ i.e. you're going to have to include all the files in that command line for `g++
 
 - [What should and what shouldn't be in a header file? [closed]](http://programmers.stackexchange.com/questions/167723/what-should-and-what-shouldnt-be-in-a-header-file) Wow, some people can get angry and indignant about coding practices on the Internet/stackexchange.  This could all be out-dated due to C++14 standards.  
 
+- [Why can templates only be implemented in the header file?](http://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file)
+
 ### Makefiles
 
 #### Useful links
