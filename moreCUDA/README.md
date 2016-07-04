@@ -32,7 +32,7 @@ Requires Compute Capability >5.0.
 
 I ran [`queryb.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/queryb.cu) 
 
-I **highly recommend** this link for reading to do C++ classes on the device *right*: [Separate Compilation and Linking of CUDA C++ Device Code](https://devblogs.nvidia.com/parallelforall/separate-compilation-linking-cuda-device-code/)
+I **highly recommend** this link for reading to do C++ classes on the device *right*: [Separate Compilation and Linking of CUDA C++ Device Code](https://devblogs.nvidia.com/parallelforall/separate-compilation-linking-cuda-device-code/) from Tony Scudiero and Mike Murphy. 
 
 It may not be immediately evident, but from reading the article, it becomes clear that you can use 
 * *both* `__host__` and `__device__` prefixes (or decorations) so class can be used on both the host **and** the device
@@ -44,5 +44,23 @@ This article also resolves the compilation issue(s) from others who ran into sim
 * [This guy had this error message: `error: calling a host function from a __device__/__global__ 
 function is not allowed`](https://github.com/lvaccaro/truecrack/issues/3)
 * [Work around here was to rename `.cpp` files to `.cu` - **no need to do that anymore**](https://groups.google.com/forum/#!topic/thrust-users/m9TFVWaBxkw).  Again, see the very lucid explanation in [Separate Compilation and Linking of CUDA C++ Device Code](https://devblogs.nvidia.com/parallelforall/separate-compilation-linking-cuda-device-code/) - all you have to do now is to add the `-x cu` flag, explained in that article, e.g. `nvcc -x cu myfilenamehere.cpp`
+
+### `nvcc` compiler flags (compiler options) - what they mean
+
+- `-dc` - "tells `nvcc` to generate device code for later linking" (Scudiero and Murphy);  I found that I needed `-dc` for my usual C++ classes, run on the "host" CPU, i.e. `.cpp` files with class definitions.  Otherwise, this error was obtained:  
+	* ```  
+/usr/lib/gcc/x86_64-redhat-linux/5.3.1/../../../../lib64/crt1.o: In function `_start':  
+(.text+0x20): undefined reference to `main'  
+collect2: error: ld returned 1 exit status  
+```  
+- `-I.` is the short cut, short name, for the flag `--include-path` *`path`*, e.g. `-I.` is `--include-path ./` i.e. the current (working) directory: cf. [3.2.2. File and Path Specfications](http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/#axzz4DIjT7Rkc).   
+- `-x cu` - "This option tells `nvcc` to treat input files as `.cu` files containing both CPU and GPU code.  By default, `nvcc` treats `.cpp` files as CPU-only code.  This option is required to have `nvcc` generate device code here, but it's also a hand way to avoid renaming source files in larger projects."  (cf. Scudiero and Murphy).  In practice, I've found that if I originally kept the `.cu` suffixes for the files, then it compiles without this flag, but this is good to know.  
+
+-side note to keep in mind if using `#include <cuda_runtime.h>` - "if you `#include <cuda_runtime.h>` in a `.cpp` file and compile it with a compiler other than `nvcc`, `__device__` and `__host__` will be defined to nothing to enable portability of this code to other compilers!"
+
+
+
+
+
 
 
