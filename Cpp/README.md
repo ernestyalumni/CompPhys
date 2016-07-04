@@ -138,7 +138,7 @@ Stroustrup makes a chapter on *Modularity.*  Here's what I found in practice.
 
 I wanted to test out a new class which I want to put in a header file, with its class definition split away in another `.cpp` file.  This is because the header file is the "interface" and the definition is separated.
 
-Then I wanted to have a test `main` function in a directory "above."  Next, I wanted to compile it to test it out.  With a Makefile, you'd do something like this:
+Then I wanted to have a test `main` function in a directory "above."  Next, I wanted to compile it to test it out.  In the command prompt, you'd do something like this:
 
 ```  
 g++ -std=c++14 testR3grid.cpp ./physlib/R3grid.cpp ./physlib/R3grid.h  
@@ -148,9 +148,46 @@ i.e. you're going to have to include all the files in that command line for `g++
 
 ### Useful links related to splitting up header files for declaration, split to `.cpp` files for definitions
 
-[ C++ Class Example | Separate header and implementation file](http://p2p.wrox.com/c-programming/92954-c-class-example-separate-header-implementation-file.html)
+- [ C++ Class Example | Separate header and implementation file from DeepakSingh in the wrox forums](http://p2p.wrox.com/c-programming/92954-c-class-example-separate-header-implementation-file.html)
 
-[Declaring struct in header C++](http://stackoverflow.com/questions/25179244/declaring-struct-in-header-c)
+- [Declaring struct in header C++](http://stackoverflow.com/questions/25179244/declaring-struct-in-header-c)
+
+- [How to define a template class in a .h file and implement it in a .cpp file from `codeproject.com`](http://www.codeproject.com/Articles/48575/How-to-define-a-template-class-in-a-h-file-and-imp)
+
+- [What should and what shouldn't be in a header file? [closed]](http://programmers.stackexchange.com/questions/167723/what-should-and-what-shouldnt-be-in-a-header-file) Wow, some people can get angry and indignant about coding practices on the Internet/stackexchange.  This could all be out-dated due to C++14 standards.  
+
+### Makefiles
+
+#### Useful links
+
+- [so-called "official" GNU manual for GNU make](https://www.gnu.org/software/make/manual/make.html#Overview)
+
+- [Using make and writing Makefiles from cs.swarthmore.edu](https://www.cs.swarthmore.edu/~newhall/unixhelp/howto_makefiles.html)  
+
+- From [isaacs's makefile basics](https://gist.github.com/isaacs/62a2d1825d04437c6f08): 
+[isaacs's excellent "glossary" explanation of Makefiles](https://gist.github.com/isaacs/62a2d1825d04437c6f08)
+
+#### Makefiles, quick and dirty, or my experience so far
+
+First thing that I had to learn first was from 2.4 Variables Make Makefiles Simpler of the GNU make "manual."
+
+Define variables by `=` sign and then, for each place we want to put the variable, e.g. `CPP = g++ -std=c++14` substitute in the variable's value by writing `$(CPP)`.  See [How to Use Variables](https://www.gnu.org/software/make/manual/make.html#Using-Variables).  Apparently, in 6.1 Basics of Variable References, `$(CPP)` and `${CPP}` are the same thing - parentheses or braces can be used (they do the same thing apparently (!!!)).
+
+##### Glossary (for Makefiles)
+
+From [isaac](https://gist.github.com/isaacs/62a2d1825d04437c6f08)
+- `$@` The file that is being made right now by this rule (aka the "target").  You can remember this because it's like the `$@` list in a shell script  
+- `$<`  The input file (that is, the first prerequisite in the list).  You can remember this because the `<` is like a file input pipe in bash.  
+- `$^`  This is the list of ALL input files, not just the first one.  You can remember it because it's like `$<`, but turned up a notch.  If a file shows up more than once in the input list for some reason, it's still only going to show one time in `$^`.
+
+At this point, knowing what some "commonly used" `g++` compiler flags mean would help.  
+
+From [die.net `g++(1)` - Linux man page](http://linux.die.net/man/1/g++)
+
+- `-c` -- Compile or assemble the source files, but do not link. The linking stage simply is not done. The ultimate output is in the form of an object file for each source file.  
+By default, the object file name for a source file is made by replacing the suffix `.c, .i, .s`, etc., with `.o`.
+- `-o` *file* -- Place output in file file. This applies regardless to whatever sort of output is being produced, whether it be an executable file, an object `f`.   
+
 
 
 ### C++ Operator Overloading in expression; lvalues vs. rvalues
