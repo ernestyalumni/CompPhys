@@ -3245,6 +3245,184 @@ and discretizing it to obtain
   \end{gathered}
 \]
 
+\section{Finite Difference}
+
+References/Links that I used:
+\begin{itemize}
+\item \href{http://www.ann.jussieu.fr/~frey/cours/UdC/ma691/ma691_ch6.pdf}{Chapter 6 The finite difference method, by Pascal Frey}
+\item \href{https://www.wias-berlin.de/people/john/LEHRE/NUM_PDE_FUB/num_pde_fub.pdf}{Numerical Methods for Partial Differential Equations by Volker John}
+\item \href{https://en.wikipedia.org/wiki/Finite_difference}{\emph{Wikipedia} ``Finite Difference''}.  Wikipedia has a section on Difference operators which appears powerful and general, but I haven't understood how to apply it.  In fact, see my jupyter notebook on the \verb|CompPhys| github, \verb|finitediff.ipynb| on how to calculate the coefficients in arbitrary (differential) order, and (error) order (of precision, error, i.e. $O(h^p)$) for finite differences, approximations of derivatives.  
+\end{itemize}
+
+From \verb|finitediff.ipynb|, I derived this formula
+\begin{equation}
+  \begin{gathered}
+    f'(x) = \frac{1}{h} \sum_{\nu =1}^3 C_{\nu} \cdot (f(x+\nu h)-f(x-\nu h)) + \mathcal{O}(h^7) \text{ for } \\
+    \begin{aligned}
+      & C_1 = \frac{3}{4} \\ 
+      & C_2 = \frac{-3}{20 } \\ 
+      & C_3 = \frac{1}{60}
+      \end{aligned}
+  \end{gathered}
+  \end{equation}
+
+\subsection{Finite Difference with Shared Memory (CUDA C/C++)}
+
+References/Links that I used:
+\begin{itemize}
+\item \href{https://devblogs.nvidia.com/parallelforall/finite-difference-methods-cuda-c-part-2/}{Finite Difference Methods in CUDA C++, Part 2, by Dr. Mark Harris}
+\item \href{http://www.bu.edu/pasi/files/2011/07/Lecture31.pdf}{GPU Computing with CUDA
+Lecture 3 - Efficient Shared Memory Use, Christopher Cooper of Boston University}, August, 2011.  UTFSM, Valpara\'{i}so, Chile.   
+  \end{itemize}
+
+cf. \href{https://devblogs.nvidia.com/parallelforall/finite-difference-methods-cuda-c-part-2/}{Finite Difference Methods in CUDA C++, Part 2, by Dr. Mark Harris}
+
+In $x$-derivative, $\frac{ \partial f}{ \partial x}$, $\forall \, $ thread block, $(j_x,j_y) \in \lbrace \lbrace 0 \dots N_x - 1 \rbrace \times \lbrace 0 \dots N_y-1 \rbrace$.  $m_x\times s_{\text{Pencils}}$ elements $\in$ tile e.g. $64 \times \text{sPencils}$.
+
+In $y$-derivative, $\frac{ \partial f}{ \partial y}$, $(x,y)$-tile of $\text{sPencils} \times 64 = s_{\text{Pencils}} \times m_y$.
+
+Likewise, $\frac{ \partial f}{ \partial z} \to (x,z)-$tile of $\text{sPencils} \times 64 = s_{\text{Pencils}} \times m_z$.  
+
+Consider for the $y$ derivative, the code for \verb|__global__ void derivative_y(*f, *d_f)| (\href{https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/finitediff.cu}{finitediff.cu}):
+
+\verb|int i| $\Longleftarrow i = j_x M_x + i_x \in \lbrace 0 \dots N_xM_x-1\rbrace$ (since $j_xM_x + i_x = (M_x-1)+(N_x-1)M_x$, i.e. the ``maximal'' case) \\
+\verb|int j| $\Longleftarrow j = i_y \in \lbrace 0 \dots M_y-1 \rbrace$ \\
+\verb|int k| $\Longleftarrow k = j_y \in \lbrace 0 \dots N_y-1 \rbrace$ \\
+\verb|int si| $\Longleftarrow si = i_x \in \lbrace 0 \dots M_x-1\brace$ \\
+\verb|int sj| $\Longleftarrow sj = j+4 \in \lbrace 4 \dots M_y+3 \rbrace$.  Notice that $r=4$.  Then generalize to $s_j = j + r\in \lbrace r, \dots , M_y + r-1 \rbrace$ \\
+\verb|int globalIdx| $\Longleftarrow l = km_xm_y + jm_x + i\in \lbrace 0 , \dots , (N_y -1)m_xm_y + (M_y-1)m_x + N_xM_x -1 \rbrace$ since
+\[
+(N_y-1)m_xm_y + (M_y-1)m_X + N_xM_x -1
+\]
+\verb|s_f[sj][si]| $\Longleftarrow s_f[s_j][s_i] \equiv (s_f)_{s_j,s_i} = f(l)$, $l\in \lbrace 0 \dots (N_y - 1)m_xm_y + (M_y-1)m_x + N_xM_x -1 \rbrace$ with
+\[
+s_f\in \text{Mat}_{\mathbb{R}}(M_y + r, M_x)
+\]
+
+If $j< 4$, $j<r$, $j = s_j-r \in \lbrace 0 \dots r-1 \rbrace$ and so
+\[
+\begin{gathered}
+(s_f)_{ (s_j-r), s_i } = (s_f)_{ s_j + m_y - 1-r, s_i} \\ 
+  \Longleftrightarrow \\
+  \lbrace 0 , \dots r-1\rbrace \times \lbrace 0 \dots M_x-1\rbrace \xleftarrow{} \lbrace m_y - 1, \dots M_y + m_y -2 \rbrace \times \lbrace 0 \dots M_x - 1 \brace
+  \end{gathered}
+\]
+Then, the actual approximation method:
+\[
+\frac{ \partial f}{ \partial y}(l) = \frac{ \partial f}{ \partial y}(i,j,k) = \sum_{\nu =1}^r c_{\nu} ((s_f)_{s_j + \nu, s_i} - (s_f)_{s_j-\nu,s_i} )
+\]
+
+The shared memory tile here is
+\[
+\begin{gathered}
+\verb|__shared__ float s_f[m_y+8][sPencils]| \Longleftarrow s_f \in \text{Mat}_{\mathbb{R}}(m_y+2r, s_{\text{Pencil}})
+  \end{gathered}
+\]
+By using the shared memory tile, each element from global memory is read only once. (cf. \href{https://devblogs.nvidia.com/parallelforall/finite-difference-methods-cuda-c-part-2/}{Finite Difference Methods in CUDA C++, Part 2, by Dr. Mark Harris}) 
+
+Consider expanding the number of pencils in the shared memory tile, e.g. 32 pencils.
+
+Harris says that ``with a 1-to-1 mapping of threads to elements where the derivative is calculated, a thread block of 2048 threads would be required.''  Consider then letting each thread calculate the derivative for multiple points.  
+
+So Harris uses a thread block of $32\times 8 \times 1 = 256$ threads per block, and have each thread calculate the derivative at 8 points, as opposed to a thread block of $4*64*1=256$ thread block, with each thread calculate the derivative at only 1 point.
+
+Perfect coalescing is then regained.
+
+
+
+
+
+\href{http://www.bu.edu/pasi/files/2011/07/Lecture31.pdf}{GPU Computing with CUDA
+Lecture 3 - Efficient Shared Memory Use, Christopher Cooper}
+
+\pagebreak
+
+\subsection{Note on finite-difference methods on the shared memory of the device GPU, in particular, the pencil method, that attempts to improve upon the double loading of boundary ``halo'' cells (of the grid)}
+
+cf. \href{https://devblogs.nvidia.com/parallelforall/finite-difference-methods-cuda-c-part-1/}{Finite Difference Methods in CUDA C++, Part 1, by Dr. Mark Harris}
+
+Take a look at the code \href{https://github.com/parallel-forall/code-samples/blob/master/series/cuda-cpp/finite-difference/finite-difference.cu}{finite\_difference.cu}.  The full code is there.  In particular, consider how it launches blocks and threads in the kernel function (and call) \verb|__global__| \verb|derivative_x|, \verb|derivative_y|, \verb|derivative_z|.  \verb|setDerivativeParameters| has the arrays containing \verb|dim3| ``instantiations'' that have the grid and block dimensions, for x-,y-,z-derivatives and for ``small'' and ``long pencils''.  Consider ``small pencils'' for now.  The relevant code is as follows:
+\begin{lstlisting}
+ grid[0][0]  = dim3(my / sPencils, mz, 1);
+  block[0][0] = dim3(mx, sPencils, 1);
+
+  grid[0][1]  = dim3(my / lPencils, mz, 1);
+  block[0][1] = dim3(mx, sPencils, 1);
+
+  grid[1][0]  = dim3(mx / sPencils, mz, 1);
+  block[1][0] = dim3(sPencils, my, 1);
+
+  grid[1][1]  = dim3(mx / lPencils, mz, 1);
+  // we want to use the same number of threads as above,
+  // so when we use lPencils instead of sPencils in one
+  // dimension, we multiply the other by sPencils/lPencils
+  block[1][1] = dim3(lPencils, my * sPencils / lPencils, 1);
+
+  grid[2][0]  = dim3(mx / sPencils, my, 1);
+  block[2][0] = dim3(sPencils, mz, 1);
+
+  grid[2][1]  = dim3(mx / lPencils, my, 1);
+  block[2][1] = dim3(lPencils, mz * sPencils / lPencils, 1);
+\end{lstlisting}
+
+Let $N_i \equiv $ total number of cells in the grid in the $i$th direction, $i=x,y,z$.  $N_i$ corresponds to \verb|m*| in the code, e.g. $N_x$ is \verb|mx|.  
+
+Note that in this code, what seems to be attempted is calculating the derivatives of a 3-dimensional grid, but using only 2-dimensions on the memory of the device GPU.  In my experience, with the NVIDIA GeForce GTX 980 Ti, the maximum number of threads per block in the $z$-direction and the maximum number of blocks that can be launched in the $z$-direction is severely limited compared to the $x$ and $y$ directions (use \verb|cudaGetDeviceProperties|, or run the code \href{https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/queryb.cu}{queryb.cu}; I find
+\begin{equation}\label{Code:GTX980Tiproperties}
+\end{equation}
+  \begin{lstlisting}
+ Max threads per block: 1024
+Max thread dimensions: (1024, 1024, 64) 
+Max grid dimensions:   (2147483647, 65535, 65535) 
+\end{lstlisting}
+).  
+
+Let $M_i$ be the number of threads on a block in the $i$th direction.  Let $N^{\text{threads}}_i$ be the total number of threads in the $i$th direction on the grid, i.e. the number of threads in the $i$th grid-direction.  $i=x,y$. This is \emph{not} the desired grid dimension $N_i$.   
+
+Surely, for a desired grid of size $N_x\times N_y \times N_z \equiv N_xN_yN_z$, then a total of $N_xN_yN_z$ threads are to be computed.
+
+Denote $s_{\text{pencil}} \in \mathbb{Z}^+$ to be \verb|sPencils|; example value is $s_{\text{pencil}} = 4$.  Likewise, denote $l_{\text{pencil}} \in \mathbb{Z}^+$ to be \verb|lPencils|; example value is $l_{\text{pencil}} = 32 > s_{\text{pencil}}=4$.  
+
+Then, for instance the small pencil case, for the $x$-derivative, we have
+\begin{equation}\label{Eq:gridblockspencilx}
+\begin{aligned}
+  \text{ grid dimensions } & (N_y/s_{\text{pencil}}, N_z,1) \\ 
+\text{ block dimensions } &  (N_x, s_{\text{pencil}}, 1)
+  \end{aligned}
+\end{equation}
+Then the total number of threads launched in each direction, $x$ and $y$, is
+\[
+\begin{aligned}
+  & N_x^{\text{threads}} = \frac{N_y}{s_{\text{pencil}}} N_x \\ 
+   & N_y^{\text{threads}} = \frac{N_z}{s_{\text{pencil}}}  \\ 
+  \end{aligned}
+\]
+While it is true that the total number of threads computed matches our desired grid:
+\[
+N_x^{\text{threads}} \cdot N_y^{\text{threads}} = \frac{N_y}{s_{\text{pencil}}} N_x N_z s_{\text{pencil}} = N_x N_y N_z
+\]
+take a look at the block dimensions that were demanded in Eq. \ref{Eq:gridblockpencilx}, $(N_x,s_{\text{pencil}},1)$.  The total number of threads to be launched in this block is $N_x \cdot s_{\text{pencil}}$.  Suppose $N_x = 1920$.  Then easily $N_x\cdot s_{\text{pencil}} > $ allowed maximum number of threads per block.  In my case, this number is 1024.
+
+Likewise for the case of $x$-direction, but with long pencils.  The blocks and threads to be launched on the grid and blocks for the kernel function (\verb|derivative_x|) is
+\begin{equation}\label{Eq:gridblocklpencilx}
+\begin{aligned}
+  \text{ grid dimensions } & (N_y/l_{\text{pencil}}, N_z,1) \\ 
+\text{ block dimensions } &  (N_x, s_{\text{pencil}}, 1)
+  \end{aligned}
+\end{equation}
+The total number of threads to be launched in each block is also $N_x \cdot s_{\text{pencil}}$ and for large $N_x$, this could easily exceed the maximum number of threads per block allowed.
+
+Also, be aware that the shared memory declaration is
+\begin{lstlisting}
+  __shared__ float s_f[sPencils][mx+8]
+\end{lstlisting}
+
+$N_x$ (i.e. \verb|mx|) can be large and we're requiring a 2-dim. array of size $(N_x+8)*s_{\text{pencil}}$ of floats, for each block.  As, from Code listing \ref{Code:GTX980Tiproperties}, much more blocks can be launched than threads on a block, and so trying to launch more blocks could possibly be a better solution.  
+
+
+
+\pagebreak
+
 \section{Mapping scalar (data) to colors}
 
 Links I found useful:
