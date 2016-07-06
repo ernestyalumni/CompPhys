@@ -12,8 +12,15 @@ to the CUDA programming model, Robert Hochberg](http://www.shodor.org/media/cont
   * more links I found
     - [5KK73 GPU assignment website 2014/2015](http://www.es.ele.tue.nl/~mwijtvliet/5KK73/?page=mmcuda)
     - [Tiled Matrix Multiplication Kernel](http://www.umiacs.umd.edu/~ramani/cmsc828e_gpusci/Lecture5.pdf)
+
+In this `README.md`:
+- Pitched Pointer, 2d array, 3d array on the device
 - Finite-Difference, shared memory, tiling
 - C++ Classes on the device, GPU
+
+## Pitched Pointer, 2d array, 3d array on the device
+
+`pitcharray2d.cu` is an implementation of the code in [(2012 Jan 21) *Allocating 2D Arrays in Cuda* By Steven Mark Ford](http://www.stevenmarkford.com/allocating-2d-arrays-in-cuda/).  
 
 ### Shared Memory
 
@@ -31,13 +38,8 @@ Here's how I understand using shared memory for CUDA C so far (I know stackoverf
 
 ## Setup, `__global__` memory loading
 
-Suppose your **goal** is to compute on a 3-dimensional grid, ($\equiv targetgrid3d$) of size $N_x \times N_y \times N_z = N_xN_yN_z$  e.g. $N_x = N_y = N_z = 800$.  Flattened, this would be a $N_xN_yN_z = 512000000$ sized 1-dimensional array, say of floats, and both the CPU and GPU should have enough RAM to load this (on my workstation, it has 32 GB CPU RAM, on the NVIDIA GeForce GTX 980Ti, there's [8 GB of system memory](http://www.geforce.com/hardware/geforce-gtx-980-ti/buy-gpu).  As I'd want to calculate on values at each point of this 3-dimensional grid, targetgrid3d, I'd want to launch a kernel function (call) on a total of 
+Suppose your **goal** is to compute on a 3-dimensional grid, ($\equiv targetgrid3d$) of size $N_x \times N_y \times N_z = N_xN_yN_z$  e.g. $N_x = N_y = N_z = 800$.  Flattened, this would be a $N_xN_yN_z = 512000000$ sized 1-dimensional array, say of floats, and both the CPU and GPU should have enough RAM to load this (on my workstation, it has 32 GB CPU RAM, on the NVIDIA GeForce GTX 980Ti, there's [8 GB of system memory](http://www.geforce.com/hardware/geforce-gtx-980-ti/buy-gpu).  As I'd want to calculate on values at each point of this 3-dimensional grid, targetgrid3d, I'd want to launch a kernel function (call) on a total of $N_xN_yN_z$ threads. 
 
-$N_xN_yN_z$ threads. 
-
-\[
-N_xN_yN_z
-\]
 
 However, the computation I'm doing is such that, $\forall \, $ pt on that targetgrid3d,$\equiv k$, $k\in \mathbb{Z}^+$, $k=\lbrace 0, \dots N_xN_yN_z \rbrace$, i.e. for each grid point, each computation involving single $k$ involves only a (much smaller than N_xN_yN_z) finite number of other points on targetgrid3d: for example, for 3-dimensional finite difference of the 0th order (I think that's the right number, for 0), it involves the "left", "right", "up", "down", "bottom" and "top" grid pts. adjacent to $k$: 6+1 in total.  Let's just denote $6+1=R$.  
 
