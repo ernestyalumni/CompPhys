@@ -35,7 +35,7 @@ For `pitcharray2db.cu`, I appear to obtain the fastest calculation of a 1000x100
 For `pitcharray2dc.cu`, I launch on 1 block, 1 thread, because when I do `printf`, `printf` executes once; whereas if I launch on 2 blocks, 2 threads, `printf` executes a total of 4 times.  Where does this device (2-dimensional) array live, does it exist on the global memory only once?  
 
 ```  
-__hist__ cudaError_t cudaMalloc3D( cudaPitchedPtr* pitchedDevPtr, cudaExtent extent )  
+__host__ cudaError_t cudaMalloc3D( cudaPitchedPtr* pitchedDevPtr, cudaExtent extent )  
 ```
 
 `pitchedDevPtr` is a pointer to allocated pitched device memory.  It appears that from `pitchedDevPtr`, type cudaPitchedPtr has members (I think it might be a struct, or "class-like") `.ptr` and `.pitch`.  
@@ -54,6 +54,9 @@ void* ptr
 size_t xsize
 size_t ysize
 ```
+What I did was to force the type from `(void *)` to `(char *)`.  
+
+For a 64x64x64 grid, I get the fastest times (68.0802 ms, about) for grid, block dims. (32,4)
 
 ### Shared Memory
 
