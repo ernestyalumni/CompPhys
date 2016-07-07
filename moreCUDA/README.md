@@ -56,9 +56,36 @@ size_t ysize
 ```
 What I did was to force the type from `(void *)` to `(char *)`.  
 
-For a 64x64x64 grid, I get the fastest times (68.0802 ms, about) for grid, block dims. (32,4)
+For a 64x64x64 grid, I get the fastest times (68.0802 ms, about) for grid, block dims. (32,4)  
 
-### Shared Memory
+```  
+__host__ cudaError_t cudaMalloc3DArray( cudaArray_t* array, const cudaChannelFormatDesc* desc, cudaExtent extent, unsigned int flags=0)
+```
+
+`cudaChannelFormatDesc` appears to be a struct.  It seems that we could think of $(x,y,z,w)$ as a 4-vector.  However, memory has to be accounted for in *bits*, not bytes.  
+
+`cudaChannelFormatDesc` is defined as (cf. CUDA Runtime API, `CUDA_Runtime_API.pdf`)
+```  
+struct cudaChannelFormatDesc {
+	int x, y, z, w;
+	enum cudaChannelFormatKind
+		f;
+};
+```  
+where `cudaChannelFormatKind` is one of `cudaChannelFormatKind` is one of `cudaChannelFormatKindSigned`, `cudaChannelFormatKindUnsigned`, or `cudaChannelKindFloat`.  
+
+I like to think that a $C^{\infty}(\mathbb{R}^3)$ function on $\mathbb{R}^3$ can be represented as follows (in this context):
+
+```
+cudaChannelFormatDesc somenameChannel { CHAR_BIT*sizeof(float), 0, 0, 0, cudaChannelKindFloat }
+```
+with `CHAR_BIT` being the size of 1 byte in bits and `sizeof(float)` being the size of a `float` in bytes.  
+
+
+
+
+
+### Shared Memory  
 
 [Using Shared Memory in CUDA C/C++](https://devblogs.nvidia.com/parallelforall/using-shared-memory-cuda-cc/) by [Mark Harris](https://devblogs.nvidia.com/parallelforall/author/mharris/)
 
@@ -66,7 +93,7 @@ For a 64x64x64 grid, I get the fastest times (68.0802 ms, about) for grid, block
 
 I asked this on stackoverflow.  
 
-Could someone please help explain tiling, the tile method for shared memory on the device GPU, with CUDA C/C++, in general? 
+Could someone please help explain tiling, the tile method for shared memory on the device GPU, with CUDA C/C++, in general?  
 
 There are a number of Powerpoint lecture slides in pdf that I've found after a Google search, namely [Lecture 3 Shared Memory Implementation part, pp. 21](http://www.bu.edu/pasi/files/2011/07/Lecture31.pdf) and/or [Zahran's Lecture 6: CUDA Memories](http://cs.nyu.edu/courses/spring12/CSCI-GA.3033-012/lecture6.pdf).  However, these *Powerpoint* slides (obviously) don't give a full, written explanation and the books out there are 3-4 years old (and there are huge changes in CUDA C/C++ and Compute Capability now being at 5.2, since then).    
 
