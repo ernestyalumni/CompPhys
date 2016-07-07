@@ -22,6 +22,39 @@ In this `README.md`:
 
 `pitcharray2d.cu` is an implementation of the code in [(2012 Jan 21) *Allocating 2D Arrays in Cuda* By Steven Mark Ford](http://www.stevenmarkford.com/allocating-2d-arrays-in-cuda/).  
 
+From [CUDA Runtime API, CUDA Toolkit Documentation](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1g32bd7a39135594788a542ae72217775c)
+
+```  
+__host__ cudaError_t cudaMallocPitch( void** devPtr, size_t* pitch, size_t width, size_t height)  
+```  
+
+`pitch` is, as a separate parameter of memory allocation, used to compute addresses within the 2D array.  The pitch returned in `*pitch` by `cudaMallocPitch()` is the width in bytes of the allocation.  
+
+For `pitcharray2db.cu`, I appear to obtain the fastest calculation of a 1000x1000 array on the device, squaring individual elements, with grid, block dimensions, in x-direction, of 32,64 (32 blocks on the grid in the x-direction, 64 threads on a block in the x-direction).  
+
+For `pitcharray2dc.cu`, I launch on 1 block, 1 thread, because when I do `printf`, `printf` executes once; whereas if I launch on 2 blocks, 2 threads, `printf` executes a total of 4 times.  Where does this device (2-dimensional) array live, does it exist on the global memory only once?  
+
+```  
+__hist__ cudaError_t cudaMalloc3D( cudaPitchedPtr* pitchedDevPtr, cudaExtent extent )  
+```
+
+`pitchedDevPtr` is a pointer to allocated pitched device memory.  It appears that from `pitchedDevPtr`, type cudaPitchedPtr has members (I think it might be a struct, or "class-like") `.ptr` and `.pitch`.  
+
+`extent` is a `cudaExtent` struct (it's a very easy, basic struct) that has the dimensions.  
+
+Then this [part of the CUDA Toolkit v7.5 documentation, Programming Guide](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#axzz4DfygExhf) had a code snippet implementing this.  I've put this in `pitcharray3d.cu`.  
+
+However, in the documentation, there's a `(char *)` pointer to a char, but `cudaPitchedPtr` instance, called `pitchedDevPtr` in this case, has, as a data field, `.ptr`, but it's a **`void *`**, i.e. pointer to a void (!!!).  
+
+cf. [cudaPitchedPtr Struct Reference](http://horacio9573.no-ip.org/cuda/structcudaPitchedPtr.html)
+Data Fields:
+```  
+size_t pitch
+void* ptr
+size_t xsize
+size_t ysize
+```
+
 ### Shared Memory
 
 [Using Shared Memory in CUDA C/C++](https://devblogs.nvidia.com/parallelforall/using-shared-memory-cuda-cc/) by [Mark Harris](https://devblogs.nvidia.com/parallelforall/author/mharris/)
