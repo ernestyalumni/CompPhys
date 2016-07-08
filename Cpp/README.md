@@ -190,6 +190,20 @@ From [die.net `g++(1)` - Linux man page](http://linux.die.net/man/1/g++)
 By default, the object file name for a source file is made by replacing the suffix `.c, .i, .s`, etc., with `.o`.
 - `-o` *file* -- Place output in file file. This applies regardless to whatever sort of output is being produced, whether it be an executable file, an object `f`.   
 
+### C++11, C++14 `std::array` and Multidimensional `std::array`
+
+From [stackexchange, "Multidimensional std::array"](http://stackoverflow.com/questions/17759757/multidimensional-stdarray)
+
+[billz's answer](http://stackoverflow.com/users/951757/billz):
+
+> You need extra brackets, until c++14 proposal kicks in.
+```  
+ std::array<std::array<int, 3>, 3> arr = {{{5, 8, 2}, {8, 3, 1}, {5, 3, 9}}};  
+```  
+
+
+
+
 
 
 ### C++ Operator Overloading in expression; lvalues vs. rvalues
