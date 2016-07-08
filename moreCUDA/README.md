@@ -81,13 +81,60 @@ cudaChannelFormatDesc somenameChannel { CHAR_BIT*sizeof(float), 0, 0, 0, cudaCha
 ```
 with `CHAR_BIT` being the size of 1 byte in bits and `sizeof(float)` being the size of a `float` in bytes.  
 
+#### On cudaArray , straight from the horses mouth:
 
+[3.2.11.3. CUDA Arrays, CUDA Toolkit 7.5 Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cuda-arrays) "CUDA arrays are opaque memory layouts optimized for texture fetching. They are one dimensional, two dimensional, or three-dimensional and composed of elements, each of which has 1, 2 or 4 components that may be signed or unsigned 8-, 16-, or 32-bit integers, 16-bit floats, or 32-bit floats. **CUDA arrays are only accessible by kernels through texture fetching as described in Texture Memory or surface reading and writing as described in Surface Memory**."
 
+### Texture memory
+
+[Textures from Moshovos, http://www.eecg.toronto.edu/~moshovos/CUDA08/slides/008 - Textures.ppt (1.742 Mb)](http://www.eecg.toronto.edu/~moshovos/CUDA08/doku.php?id=lecture_slides)
+
+**If** you cannot write to texture memory, but only be able to write to surface memory, then I will implement in surface memory.  
+
+### Surface Memory
+
+cf. [3.2.11.2.2. Surface Reference API](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#surface-reference-api)
+
+surface reference is declared at file scope (at the top?) as a variable of type surface:
+```
+surface<void, Type> surfRef;
+```
+where `Type` species type of surface reference and is equal to 
+- `cudaSurfaceType1D`
+- `cudaSurfaceType2D`
+- `cudaSurfaceType3D`
+- `cudaSurfaceTypeCubemap`
+- `cudaSurfaceType1DLayered`
+- `cudaSurfaceType2DLayered`
+- `cudaSurfaceTypeCubemapLayered`
+
+`surfRef` is an arbitrary name (can be `outputSurf`, etc.)
 
 
 ### Shared Memory  
 
 [Using Shared Memory in CUDA C/C++](https://devblogs.nvidia.com/parallelforall/using-shared-memory-cuda-cc/) by [Mark Harris](https://devblogs.nvidia.com/parallelforall/author/mharris/)
+
+### Constant Memory, `__constant__`
+
+Here's how to use `__constant__` memory in the header file and definition: cf. [Constant memory symbols](https://devtalk.nvidia.com/default/topic/569901/constant-memory-symbols/?offset=1) , from user [hrvthzs](https://devtalk.nvidia.com/member/1919793/) 
+
+Somebody answered my question here:
+(http://stackoverflow.com/questions/18213988/cuda-constant-memory-symbols)
+
+So at first you need to create a header file and declare the symbol:
+```  
+    // constant.cuh
+    extern __constant__ var_type var_name;
+```  
+
+then define only once the symbol in a .cu file:
+```  
+    // constant.cu
+    __constant__  var_type var_name;
+``` 
+
+If you need this symbol in other `.cu` files, just include the header. 
 
 ## Finite-Difference, shared memory, tiling
 
