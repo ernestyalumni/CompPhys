@@ -63,6 +63,92 @@ g++ -std=c++11 test.cpp
 
 ### File I/O in C and C++
 
+## Quick and Dirty File I/O for C++
+
+I find myself having to write out results into `.csv` text files to see what my C++ program is doing.  
+
+Here's the raw C++ code I have in (draft) github repository `Propulsion/CUDACFD/NavierStokes/commonlib/sharedmem.cu`:
+
+```  
+// test print outs, file IO out
+	std::ofstream ofile1;
+	ofile1.open("testfx_sin1.csv");
+	ofile1 << testfx[ testgrid3d.flatten( 0, testgrid3d.N_is[1]/2, testgrid3d.N_is[2]/2) ] ; 
+	
+	for (int i = 1; i < ( testgrid3d.N_is[0] ); ++i) {
+		ofile1 << ", " << testfx[ testgrid3d.flatten( i, testgrid3d.N_is[1]/2, testgrid3d.N_is[2]/2) ];
+	}
+	ofile1 << std::endl;
+	
+	ofile1 << testfx[ testgrid3d.flatten( 0, 0, 0) ] ; 
+	for (int i = 1; i < ( testgrid3d.N_is[0] ); ++i) {
+		ofile1 << ", " << testfx[ testgrid3d.flatten( i, 0, 0 ) ];
+	}
+	ofile1 << std::endl;
+
+	ofile1 << testfx[ testgrid3d.flatten( 0, testgrid3d.N_is[1]*3/4, testgrid3d.N_is[2]*3/4) ] ; 
+	for (int i = 1; i < ( testgrid3d.N_is[0] ); ++i) {
+		ofile1 << ", " << testfx[ testgrid3d.flatten( i, testgrid3d.N_is[1]*3/4, testgrid3d.N_is[2]*3/4)  ];
+	}
+	ofile1 << std::endl;
+
+	ofile1.close();
+	
+	std::ofstream ofile2;
+	ofile2.open("testdfx_cos1.csv");
+	
+	ofile2 << testdfx[ testgrid3d.flatten( 0, testgrid3d.N_is[1]/2, testgrid3d.N_is[2]/2) ] ; 
+	
+	for (int i = 1; i < ( testgrid3d.N_is[0] ); ++i) {
+		ofile2 << ", " << testdfx[ testgrid3d.flatten( i, testgrid3d.N_is[1]/2, testgrid3d.N_is[2]/2) ];
+	}
+	ofile2 << std::endl;
+	
+	ofile2 << testdfx[ testgrid3d.flatten( 0, 0, 0) ] ; 
+	for (int i = 1; i < ( testgrid3d.N_is[0] ); ++i) {
+		ofile2 << ", " << testdfx[ testgrid3d.flatten( i, 0, 0 ) ];
+	}
+	ofile2 << std::endl;
+
+	ofile2 << testdfx[ testgrid3d.flatten( 0, testgrid3d.N_is[1]*3/4, testgrid3d.N_is[2]*3/4) ] ; 
+	for (int i = 1; i < ( testgrid3d.N_is[0] ); ++i) {
+		ofile2 << ", " << testdfx[ testgrid3d.flatten( i, testgrid3d.N_is[1]*3/4, testgrid3d.N_is[2]*3/4)  ];
+	}
+	ofile2 << std::endl;
+
+	ofile2.close();
+
+	std::ofstream ofile3;
+	ofile3.open("dev_testdfx_sin1.csv");
+	
+	ofile3 << testdfx_res[ testgrid3d.flatten( 0, testgrid3d.N_is[1]/2, testgrid3d.N_is[2]/2) ] ; 
+	
+	for (int i = 1; i < ( testgrid3d.N_is[0] ); ++i) {
+		ofile3 << ", " << testdfx_res[ testgrid3d.flatten( i, testgrid3d.N_is[1]/2, testgrid3d.N_is[2]/2) ];
+	}
+	ofile3 << std::endl;
+	
+	ofile3 << testdfx_res[ testgrid3d.flatten( 0, 0, 0) ] ; 
+	for (int i = 1; i < ( testgrid3d.N_is[0] ); ++i) {
+		ofile3 << ", " << testdfx_res[ testgrid3d.flatten( i, 0, 0 ) ];
+	}
+	ofile3 << std::endl;
+
+	ofile3 << testdfx_res[ testgrid3d.flatten( 0, testgrid3d.N_is[1]*3/4, testgrid3d.N_is[2]*3/4) ] ; 
+	for (int i = 1; i < ( testgrid3d.N_is[0] ); ++i) {
+		ofile3 << ", " << testdfx_res[ testgrid3d.flatten( i, testgrid3d.N_is[1]*3/4, testgrid3d.N_is[2]*3/4)  ];
+	}
+	ofile3 << std::endl;
+
+	ofile3.close();
+```  
+
+Let's generalize this (as this is my template).  Let `testfx, testdfx, testdfx_res` be 1-dimensional arrays.  The indexing was handled by `testgrid3d.flatten`, a (I defined) class member function.  But I can have a simple indexing and looping through that index e.g. `for (int i =0; i< Lengthofmy1dimarray; ++i) { testfx[i]; // and so on }`.  
+
+You'd have to use the `<<` C++ "operator" to input into your ofile, an "instance" of `std::ofstream` each string.  
+
+
+
 cf. `program1.cpp` in `./progs/ch03` subdirectory; pp. 51 Subsection 3.1.1.1 Initializations and main program, Ch. 3 Numerical differentiation and interpolation of Hjorth-Jensen (2015); [CompPhysics/ComputationalPhysicsMSU/doc/Programs/LecturePrograms/programs/Classes/cpp/
 ](https://github.com/CompPhysics/ComputationalPhysicsMSU/blob/master/doc/Programs/LecturePrograms/programs/Classes/cpp/program1.cpp)
 
@@ -111,6 +197,43 @@ ofile << setw(15) << setprecision(8) << epsilon << endl;
 ```
 
 `setw` is a class belonging to `<iomanip>`.  It stands for **Set field width** and sets the *field width* to be used on output operations (cf. http://www.cplusplus.com/reference/iomanip/setw/ ).  
+
+#### `.csv` file output of an array for C++
+
+[Export data from an array to a csv file](http://www.cplusplus.com/forum/general/170845/)
+
+From [Duoas](http://www.cplusplus.com/user/Duoas/) answer,
+
+> Don't forget to put something (like a comma) between outputs. This takes a little thinking, 
+> because you want to see:
+```
+    1,2,3,4
+```
+> and not:
+```
+    1,2,3,4,
+```
+
+Fortunately, that's a pretty simple fix:
+
+```  
+// for each row
+for (i=0; ...)
+{
+  // print first column's element
+  outfile << arr[i][0];
+
+  // print remaining columns
+  for (j=1; ...)
+  {
+    outfile << ", " << arr[i][j];
+  }
+
+  // print newline between rows
+  outfile << endl;
+}
+```  
+
 
 ### Classes (C++)
 
