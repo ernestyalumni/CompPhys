@@ -17,6 +17,8 @@ In this `README.md`:
 - Pitched Pointer, 2d array, 3d array on the device
 - Finite-Difference, shared memory, tiling
 - C++ Classes on the device, GPU
+- Compiling errors when using `__constant__` memory
+- Dirty CUDA C/C++ Troubleshooting
 
 ## Pitched Pointer, 2d array, 3d array on the device
 
@@ -271,7 +273,7 @@ collect2: error: ld returned 1 exit status
 
 -side note to keep in mind if using `#include <cuda_runtime.h>` - "if you `#include <cuda_runtime.h>` in a `.cpp` file and compile it with a compiler other than `nvcc`, `__device__` and `__host__` will be defined to nothing to enable portability of this code to other compilers!"
 
-##
+## Compiling errors when using `__constant__` memory
 
 ['cicc' compilation error and debug flag](https://devtalk.nvidia.com/default/topic/527307/-39-cicc-39-compilation-error-and-debug-flag/)
 
@@ -282,5 +284,9 @@ I obtain a similar error when I try to "link together" or have header file depen
 - [njuffa](https://devtalk.nvidia.com/member/1738298/)
 
 Adding `-G` compiler flag helps but slows down the kernel run time.  
+
+## Dirty CUDA C/C++ Troubleshooting
+
+I found that my CUDA C/C++ program was outputting nonsense even after using `__syncthreads()` correctly (e.g. github repository `Propulsion/CUDACFD/convect1dfinitediff/`).  What I did to troubleshoot this was to change the number of threads on a block to 1, then do make, and run it again, and it works.  Then I changed the number of threads for the number of threads on a block, $M_x,M_y,M_z$, to my desired amount.  
 
 
