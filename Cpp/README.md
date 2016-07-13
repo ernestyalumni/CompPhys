@@ -2,6 +2,12 @@
 
 ## Abstract
 
+(20160713) I'm reading and going through 
+
+**C++ Primer** (5th Edition) 5th Edition, by Stanley B. Lippman, Josée Lajoie, Barbara E. Moo.
+
+Those scripts related to that is in the subdirectory `/CompPhys/Cpp/primer`, and the `README.md` there has (an incomplete) dictionary between script and reading.  
+
 Included in this repository (repo) are code examples straight from M. Hjorth-Jensen's **Computational Physics**, University of Oslo (2015) [mhjensen](http://www.mn.uio.no/fysikk/english/people/aca/mhjensen/).  
 
 Hjorth-Jensen's material motivated me to (try to) dive deeper into C++ and so I picked up Bjarne Stroustrup's **A Tour of C++** (Addison-Wesley Professional, 2013).  This book is based on **C++11** and I suspect that a lot of computational physics code was written *before* this 2011 (keep in mind that I still need to find a good book for C++14).  I include code for Stroustrup's **A Tour of C++** in the `./tour` subdirectory.  
