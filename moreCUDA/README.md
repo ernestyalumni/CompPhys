@@ -15,6 +15,7 @@ to the CUDA programming model, Robert Hochberg](http://www.shodor.org/media/cont
 
 In this `README.md`:
 - Pitched Pointer, 2d array, 3d array on the device
+- Constant Memory, `__constant__`
 - Finite-Difference, shared memory, tiling
 - C++ Classes on the device, GPU
 - Compiling errors when using `__constant__` memory
@@ -122,7 +123,7 @@ where `Type` species type of surface reference and is equal to
 
 [Using Shared Memory in CUDA C/C++](https://devblogs.nvidia.com/parallelforall/using-shared-memory-cuda-cc/) by [Mark Harris](https://devblogs.nvidia.com/parallelforall/author/mharris/)
 
-### Constant Memory, `__constant__`
+## Constant Memory, `__constant__`
 
 Here's how to use `__constant__` memory in the header file and definition: cf. [Constant memory symbols](https://devtalk.nvidia.com/default/topic/569901/constant-memory-symbols/?offset=1) , from user [hrvthzs](https://devtalk.nvidia.com/member/1919793/) 
 
@@ -142,6 +143,26 @@ then define only once the symbol in a .cu file:
 ``` 
 
 If you need this symbol in other `.cu` files, just include the header. 
+
+
+*My experience* with `__constant__` constant memory : it's read-only, cached memory on the GPU.  I think of it as when I'm working on a physics problem, and I need to plug in a few ($<21$) parameters into my physics problem (physical constants, physical parameters, etc.), then I'll need those constants all the type, floating around.  I would use constant memory, `__constant__` for those values.
+
+`__constant__` memory stuff (objects) have to be in global scope.  So it's at the top of the "`main.cu`" file.  Or, as I've found, they're `extern __constant__ somearray[N]` in your header file (e.g. 'thisismylibrarywithclasses.h') and then as `__constant__ somearray[N]` in your definition file ('thisismylibrarywithclasses.cu`).  I use them as **global** constants anywhere in my code, in particular, in the main.
+
+I've found that I *cannot* get away with passing those globally defined, in constant memory, objects (such as arrays), into a `__global__` device function.  I've found that I *can* pass them in as arguments for a `__device__` device function.
+
+However, when I think about it, if the program is such that it's running on the device GPU, I'm looking down from `__global__` memory, to `__shared__` memory and local (thread block) memory, etc., and the constant exists globally, then I don't think it makes sense to pass them in as arguments.  The `__device__ functions should just use them, i.e.
+
+$$
+`__constant__` \in `__global__`, \text{ in fact } `__constant__` \in \text{Obj}{`__global__`} 
+$$
+
+then it makes no sense to "subset", or do restriction functor on  `__constant__` objects down to your routine.  
+
+
+
+
+
 
 ## Finite-Difference, shared memory, tiling
 
