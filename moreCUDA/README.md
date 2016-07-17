@@ -14,6 +14,7 @@ to the CUDA programming model, Robert Hochberg](http://www.shodor.org/media/cont
     - [Tiled Matrix Multiplication Kernel](http://www.umiacs.umd.edu/~ramani/cmsc828e_gpusci/Lecture5.pdf)
 
 In this `README.md`:
+- `cudaMemcpy`
 - Pitched Pointer, 2d array, 3d array on the device
 - Constant Memory, `__constant__`
 - Finite-Difference, shared memory, tiling
@@ -24,7 +25,43 @@ In this `README.md`:
 | codename        | Key code, code function, demonstrations | Description             |
 | --------------- | :-------------------------------------: | :---------------------- |
 | `dev3darray.cu` | `cudaMalloc3DArray`                     |                         |
-|
+| `learrays.cu`   | `__constant__`, `cudaMemcpy`, `cudaMalloc` | arrays of `float3`, on host, on device |
+
+## `cudaMemcpy`
+
+*Note*: for some reason, you *cannot* do this (see `learrays.cu`):
+
+```
+float3* divresult
+float3* dev_divresult;
+
+cudaMalloc((void**)&dev_divresult, sizeof(float3));
+
+// do stuff on dev_divresult from a `__global__` function
+
+cudaMemcpy( divresult, dev_divresult, sizeof(float3), cudaMemcpyDeviceToHost) ;
+
+```  
+
+I obtain Segmentation Faults when trying to read out the result.  
+
+I **can** do this:
+
+```
+**float3 divresult**
+float3* dev_divresult;
+
+cudaMalloc((void**)&dev_divresult, sizeof(float3));
+
+// do stuff on dev_divresult from a `__global__` function
+
+**cudaMemcpy( &divresult, dev_divresult, sizeof(float3), cudaMemcpyDeviceToHost) ;**
+
+```  
+
+cf. [CUDA invalid argument when trying to copy struct to device's memory (cudaMemcpy)q](http://stackoverflow.com/questions/24460507/cuda-invalid-argument-when-trying-to-copy-struct-to-devices-memory-cudamemcpy)
+
+
 
 ## Pitched Pointer, 2d array, 3d array on the device
 
@@ -159,7 +196,8 @@ $$
 
 then it makes no sense to "subset", or do restriction functor on  `__constant__` objects down to your routine.  
 
-
+- From your `__global__` device function, you *CANNOT* pass in the `__constant__` objects (stuff) as arguments; just use them *directly* since they're already sitting on a "global", special read-only cached memory
+- From your `__device__` function, you could pass them in as arguments (but why?)
 
 
 
