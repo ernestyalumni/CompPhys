@@ -20,6 +20,11 @@ In this `README.md`:
 - Compiling errors when using `__constant__` memory
 - Dirty CUDA C/C++ Troubleshooting
 
+| codename        | Key code, code function, demonstrations | Description             |
+| --------------- | :-------------------------------------: | :---------------------- |
+| `dev3darray.cu` | `cudaMalloc3DArray`                     |                         |
+|
+
 ## Pitched Pointer, 2d array, 3d array on the device
 
 `pitcharray2d.cu` is an implementation of the code in [(2012 Jan 21) *Allocating 2D Arrays in Cuda* By Steven Mark Ford](http://www.stevenmarkford.com/allocating-2d-arrays-in-cuda/).  
@@ -265,13 +270,16 @@ function is not allowed`](https://github.com/lvaccaro/truecrack/issues/3)
 (.text+0x20): undefined reference to `main'  
 collect2: error: ld returned 1 exit status  
   ```  
-
+`-dc` is short for `--device-c`, and from [3.2.1. Options for Specifying Compilation and Phase, CUDA Toolkit v7.5 NVCC documentation](http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#nvcc-command-options), "compiles each `.c/.cc/.cpp/.cxx/.cu` input file into an object file that contains relocatable device code.  It's equivalent to `--relocatable-device-code=true --compile`
 
 
 - `-I.` is the short cut, short name, for the flag `--include-path` *`path`*, e.g. `-I.` is `--include-path ./` i.e. the current (working) directory: cf. [3.2.2. File and Path Specfications](http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/#axzz4DIjT7Rkc).   
 - `-x cu` - "This option tells `nvcc` to treat input files as `.cu` files containing both CPU and GPU code.  By default, `nvcc` treats `.cpp` files as CPU-only code.  This option is required to have `nvcc` generate device code here, but it's also a hand way to avoid renaming source files in larger projects."  (cf. Scudiero and Murphy).  In practice, I've found that if I originally kept the `.cu` suffixes for the files, then it compiles without this flag, but this is good to know.  
 
 -side note to keep in mind if using `#include <cuda_runtime.h>` - "if you `#include <cuda_runtime.h>` in a `.cpp` file and compile it with a compiler other than `nvcc`, `__device__` and `__host__` will be defined to nothing to enable portability of this code to other compilers!"
+
+
+
 
 ## Compiling errors when using `__constant__` memory
 
@@ -284,6 +292,30 @@ I obtain a similar error when I try to "link together" or have header file depen
 - [njuffa](https://devtalk.nvidia.com/member/1738298/)
 
 Adding `-G` compiler flag helps but slows down the kernel run time.  
+
+### Dealing with the error of not being able to relocate code (problem is linking up `__device__` code) 
+
+Useful links:
+
+[Unable to decipher nvlink error](http://stackoverflow.com/questions/21173232/unable-to-decipher-nvlink-error)
+
+
+
+Use `c++filt` to demangle the names. For instance:
+```
+    $ c++filt _ZN5JARSS15KeplerianImpactC1ERKdS2_S2_S2_S2_S2_ JARSS::KeplerianImpact::KeplerianImpact(double const&, double const&, double const&, double const&, double const&, double const&)
+```  
+cf. [Roger Dahl](http://stackoverflow.com/users/442006/roger-dahl)
+
+http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#using-separate-compilation-in-cuda
+
+http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#examples
+
+http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#nvcc-command-options
+
+
+
+
 
 ## Dirty CUDA C/C++ Troubleshooting
 
