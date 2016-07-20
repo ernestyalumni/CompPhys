@@ -336,8 +336,8 @@ collect2: error: ld returned 1 exit status
 - `-x cu` - "This option tells `nvcc` to treat input files as `.cu` files containing both CPU and GPU code.  By default, `nvcc` treats `.cpp` files as CPU-only code.  This option is required to have `nvcc` generate device code here, but it's also a hand way to avoid renaming source files in larger projects."  (cf. Scudiero and Murphy).  In practice, I've found that if I originally kept the `.cu` suffixes for the files, then it compiles without this flag, but this is good to know.  
 
 -side note to keep in mind if using `#include <cuda_runtime.h>` - "if you `#include <cuda_runtime.h>` in a `.cpp` file and compile it with a compiler other than `nvcc`, `__device__` and `__host__` will be defined to nothing to enable portability of this code to other compilers!"
-
-
+- `-g` is short for `--debug` - "generate debug information for host code"
+- `-G` is short for `--device-debug` - "generate debug information for device code"
 
 
 ## Compiling errors when using `__constant__` memory
