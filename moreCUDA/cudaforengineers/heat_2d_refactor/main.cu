@@ -5,11 +5,18 @@
  */
 #include <functional>
 
-#include "heat_2d.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 
+#include "./physlib/heat_2d.h"
+#include "./physlib/dev_R2grid.h"
+#include "./physlib/R2grid.h"
+
+#include "./commonlib/errors.h"
 #include "./commonlib/tex_anim2d.h"
+#include "./commonlib/finitediff.h"
+
 
 #define GL_GLEXT_PROTOTYPES // needed for identifier glGenBuffer, glBindBuffer, glBufferData, glDeleteBuffers
 
@@ -19,11 +26,16 @@
 #include <cuda_gl_interop.h> // or #include "cuda_gl_interop.h"
 #define ITERS_PER_RENDER 50
 
+const float Deltat[1] { 0.0001f };
+
 // physics
 const int WIDTH  { 640 } ;
 const int HEIGHT { 640 } ;
 
-float *d_temp = 0;
+dim3 dev_L2 { static_cast<unsigned int>(WIDTH), 
+				static_cast<unsigned int>(HEIGHT) };
+
+dev_Grid2d dev_grid2d( dev_L2 );		
 
 // graphics + physics
 
@@ -42,7 +54,10 @@ void make_render( int w, int h, int iters_per_render_in, GPUAnim2dTex* texmap  )
 		texmap->cuda_pixbufferObj_resource);
 
 	for (int i = 0; i < iters_per_render_in; ++i) {
-		kernelLauncher(d_out, d_temp, w, h, bc, M_i );
+//		kernelLauncher2(d_out, dev_grid2d.dev_temperature, w, h, bc, M_i );
+//		kernelLauncher(d_out, dev_grid2d.dev_temperature, w, h, bc, M_i );
+//		kernelLauncher3(d_out, dev_grid2d.dev_temperature, w, h, bc, M_i );
+		kernelLauncher4(d_out, dev_grid2d.dev_temperature, w, h, bc, M_i );
 	}
 
 	cudaGraphicsUnmapResources(1, &texmap->cuda_pixbufferObj_resource, 0);
@@ -69,9 +84,43 @@ void display() {
 
 
 int main(int argc, char** argv) {
+	// physics
+	constexpr std::array<int,2> LdS {WIDTH, HEIGHT };
+	constexpr std::array<float,2> ldS {1.f, 1.f };
+	
+	HANDLE_ERROR(
+		cudaMemcpyToSymbol( dev_Deltat, Deltat, sizeof(float)*1,0,cudaMemcpyHostToDevice) );
 
-	cudaMalloc(&d_temp, WIDTH*HEIGHT*sizeof(float));
-	resetTemperature(d_temp, WIDTH, HEIGHT, bc, M_i);
+	const float heat_params[2] { 
+//								 0.0061035f , 
+								 0.00061035f,
+								 1.f } ; // \kappa 
+										// heat capacity for constant volume, per volume 
+
+	HANDLE_ERROR(
+		cudaMemcpyToSymbol( dev_heat_params, heat_params, sizeof(float)*2,0,cudaMemcpyHostToDevice) );
+	
+	const int Ld_to_const[3] { LdS[0], LdS[1] } ;
+	
+	HANDLE_ERROR(
+		cudaMemcpyToSymbol( dev_Ld, Ld_to_const, sizeof(int)*2,0,cudaMemcpyHostToDevice) );
+	
+	Grid2d grid2d( LdS, ldS);
+	
+	const float hds[2] { grid2d.hd[0], grid2d.hd[1] } ;
+	
+	// sanity check
+	std::cout << " hds : .x : " << hds[0] << " .y : " << hds[1] << std::endl;
+	
+//	set1DerivativeParameters(hds);
+//	set2DerivativeParameters(hds);
+//	set3DerivativeParameters(hds);
+	set4DerivativeParameters(hds);
+	
+	
+	resetTemperature( dev_grid2d.dev_temperature, WIDTH, HEIGHT, bc, M_i);
+	
+	
 	printInstructions();
 
 
@@ -87,7 +136,8 @@ int main(int argc, char** argv) {
 
 	glutMainLoop();
 
-	cudaFree(d_temp);
+	HANDLE_ERROR(
+		cudaFree( dev_grid2d.dev_temperature ) );
 
 	return 0;
 } 

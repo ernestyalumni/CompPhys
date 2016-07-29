@@ -7,7 +7,7 @@
   
 int iterationCount = 0 ;
 
-BC bc = {W / 2, H / 2, W / 10.f, 150, 212.f, 70.f, 0.f}; // Boundary conds
+BC bc = {W / 2, H / 2, W / 15.f, 150, 212.f, 70.f, 0.f}; // Boundary conds
 
 // interactions
 

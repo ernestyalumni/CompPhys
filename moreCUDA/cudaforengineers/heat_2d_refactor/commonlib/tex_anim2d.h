@@ -6,7 +6,7 @@
 #ifndef __TEX_ANIM2D_H__
 #define __TEX_ANIM2D_H__
 
-#include "../heat_2d.h"  // BC
+#include "../physlib/heat_2d.h"  // BC
 #include <stdio.h>
 
 #define GL_GLEXT_PROTOTYPES // needed for identifier glGenBuffer, glBindBuffer, glBufferData, glDeleteBuffers
