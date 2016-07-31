@@ -92,7 +92,7 @@ __global__ void tempKernel(float *d_temp, BC bc) {
 	
 	float2 stencil[NUS][2] ; 
 	
-	const float centerval { s_in[s_k ] };
+	const float centerval { s_in[flatten(s_x,s_y,S.x,S.y)] };
 	
 	for (int nu = 0; nu < NUS; ++nu) {
 		stencil[nu][0].x = s_in[flatten(s_x-(nu+1),s_y,S.x,S.y)] ; 
@@ -168,7 +168,7 @@ __global__ void tempKernel2(float *d_temp, BC bc) {
 	
 	float2 stencil[NUS][2] ; 
 	
-	const float centerval { s_in[s_k ] };
+	const float centerval { s_in[flatten(s_x,s_y,S.x,S.y)] };
 	
 	for (int nu = 0; nu < NUS; ++nu) {
 		stencil[nu][0].x = s_in[flatten(s_x-(nu+1),s_y,S.x,S.y)] ; 
@@ -244,7 +244,7 @@ __global__ void tempKernel3(float *d_temp, BC bc) {
 	
 	float2 stencil[NUS][2] ; 
 	
-	const float centerval { s_in[s_k ] };
+	const float centerval { s_in[flatten(s_x,s_y,S.x,S.y)] };
 	
 	for (int nu = 0; nu < NUS; ++nu) {
 		stencil[nu][0].x = s_in[flatten(s_x-(nu+1),s_y,S.x,S.y)] ; 
@@ -320,7 +320,7 @@ __global__ void tempKernel4(float *d_temp, BC bc) {
 	
 	float2 stencil[NUS][2] ; 
 	
-	const float centerval { s_in[s_k ] };
+	const float centerval { s_in[flatten(s_x,s_y,S.x,S.y)] };
 	
 	for (int nu = 0; nu < NUS; ++nu) {
 		stencil[nu][0].x = s_in[flatten(s_x-(nu+1),s_y,S.x,S.y)] ; 
