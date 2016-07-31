@@ -54,10 +54,10 @@ void make_render( int w, int h, int iters_per_render_in, GPUAnim2dTex* texmap  )
 		texmap->cuda_pixbufferObj_resource);
 
 	for (int i = 0; i < iters_per_render_in; ++i) {
-//		kernelLauncher2(d_out, dev_grid2d.dev_temperature, w, h, bc, M_i );
+		kernelLauncher2(d_out, dev_grid2d.dev_temperature, w, h, bc, M_i );
 //		kernelLauncher(d_out, dev_grid2d.dev_temperature, w, h, bc, M_i );
 //		kernelLauncher3(d_out, dev_grid2d.dev_temperature, w, h, bc, M_i );
-		kernelLauncher4(d_out, dev_grid2d.dev_temperature, w, h, bc, M_i );
+//		kernelLauncher4(d_out, dev_grid2d.dev_temperature, w, h, bc, M_i );
 	}
 
 	cudaGraphicsUnmapResources(1, &texmap->cuda_pixbufferObj_resource, 0);
@@ -113,9 +113,9 @@ int main(int argc, char** argv) {
 	std::cout << " hds : .x : " << hds[0] << " .y : " << hds[1] << std::endl;
 	
 //	set1DerivativeParameters(hds);
-//	set2DerivativeParameters(hds);
+	set2DerivativeParameters(hds);
 //	set3DerivativeParameters(hds);
-	set4DerivativeParameters(hds);
+//	set4DerivativeParameters(hds);
 	
 	
 	resetTemperature( dev_grid2d.dev_temperature, WIDTH, HEIGHT, bc, M_i);

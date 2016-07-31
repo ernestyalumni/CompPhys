@@ -25,11 +25,11 @@ __device__ int flatten(int col, int row, int width, int height) {
 	return idxClip(col, width) + idxClip(row,height)*width;
 }
 
-__global__ void resetKernel(float *d_temp, BC bc) {
+__global__ void resetKernel(float *d_temp, int w, int h, BC bc) {
 	const int col = blockIdx.x*blockDim.x + threadIdx.x;
 	const int row = blockIdx.y*blockDim.y + threadIdx.y;
-	if ((col >= dev_Ld[0]) || (row >= dev_Ld[1])) return;
-	d_temp[row*dev_Ld[0] + col] = bc.t_a;
+	if ((col >= w) || (row >= h)) return;
+	d_temp[row*w + col] = bc.t_a;
 }
 
 
@@ -403,7 +403,7 @@ void kernelLauncher4(uchar4 *d_out, float *d_temp, int w, int h, BC bc, dim3 M_i
 void resetTemperature(float *d_temp, int w, int h, BC bc, dim3 M_in) {
 	const dim3 gridSize( blocksNeeded(w, M_in.x), blocksNeeded( h, M_in.y));
 
-	resetKernel<<<gridSize, M_in>>>(d_temp,bc);
+	resetKernel<<<gridSize, M_in>>>(d_temp,w,h,bc);
 }
 
 
