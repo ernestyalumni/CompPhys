@@ -11,7 +11,7 @@ This directory contains C++ code snippets and examples formulated entirely in th
 
 | codename         | directory      | external link(s) | Description             |
 | ---------------- | -------------- | ---------------- | :----------------------: |
-| `timingcode.cpp` | `./`           | (C++11 timing code performance)[https://solarianprogrammer.com/2012/10/14/cpp-11-timing-code-performance/] | C++11 timing code performance | 
+| `timingcode.cpp` | `./`           | [C++11 timing code performance](https://solarianprogrammer.com/2012/10/14/cpp-11-timing-code-performance/) | C++11 timing code performance | 
 
 
 
