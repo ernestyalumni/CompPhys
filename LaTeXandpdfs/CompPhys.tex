@@ -370,6 +370,28 @@ Then suppose threadIdx $\subset \mathbf{\text{FinSet}}$, a subcategory of the ca
 
 $n_{\text{blocks}}$, $n_{\text{threads}}$ with $n_{\text{threads}} \geq 1024$ (this maximum constant is GPU dependent).  You should pick the $(n_{\text{blocks}}, n_{\text{threads}})$ that makes sense for your problem, says Prof. Owen.  
 
+\subsubsection{More thoughts on Squaring Numbers Using CPU, and then using CUDA}
+
+Note that this squaring of numbers is really element-wise multiplication of a vector.
+
+I sought an isomorphism between abstract algebra and computer code.
+
+Consider
+\[
+\begin{aligned}
+ &  \mathbb{R}^N \ni x \qquad \, N \in \mathbb{Z}^+ \\ 
+ &  \mathbb{R} \ni x[i] \qquad i = 1 \dots N \to i = 0, \dots N-1 
+  \end{aligned}
+\]
+Then the element-wise squaring of numbers is
+\[
+(x[i])^2 = x[i] \cdot x[i]
+\]
+In general,
+\[
+(x[i])^p = \underbrace{x[i]\cdot x[i] \dots x[i]}_{ p \text{ times } }
+\]
+
 \subsubsection{Memory layout of blocks and threads}
 
 $\forall \, (n_{\text{blocks}}, n_{\text{threads}}) \in \mathbb{Z} \times \lbrace 1 \dots 1024 \rbrace$, $\lbrace 1 \dots n_{\text{block}} \times \lbrace 1 \dots n_{\text{threads}} \rbrace$ is now an ordered index (with lexicographical ordering).  This is just 1-dimensional (so possibly there's a 1-to-1 mapping to a finite subset of $\mathbb{Z}$).
@@ -393,6 +415,27 @@ where \verb|dim3(tx,ty,tz)| is the grid of blocks $bx\cdot by \cdot bz$ \\
 \phantom{ where } \verb|shmem| is the shared memory per block in bytes
 
 
+\href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/673071460923#}{Quiz: Map}
+
+I wanted to try to mathematically formulate the idea of \verb|map|.
+
+\[
+\begin{gathered}
+  \verb|MAP(ELEMENTS,FUNCTION)|
+  \end{gathered} \Longleftrightarrow
+\begin{gathered}
+\begin{gathered}
+  \text{ given } x \in \mathbb{R}^N \\ 
+  x[i] \xrightarrow{ f } f(x[i]) 
+\end{gathered} \\
+\text{ or } \\ 
+\begin{gathered}
+  \text{ set of elements (finite, so can be indexed) } \qquad \, \lbrace x_0 , \dots , x_{n-1} \rbrace_{\mathcal{A}} \in \text{Obj}\mathbf{ \text{Fin} } \\
+  x_i \xrightarrow{ f } f(x_i) , \qquad \, \forall \, i \in \mathcal{A}
+  \end{gathered}
+  \end{gathered}
+\]
+
 \href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/967066740923}{Problem Set 1}
 ``Also, the image is represented as an 1D array in the kernel, not a 2D array like I mentioned in the video.''
 
@@ -404,6 +447,70 @@ Here's part of that code for squaring numbers:
     d_out[idx] = f*f;
     }
   \end{lstlisting}
+
+\subsubsection{Problem Set 1, Udacity CS344}
+
+Let $\begin{aligned} & \quad \\
+  & L_x \equiv \text{ total number of pixels in $x$-direction of image } \in \mathbb{Z}^+ \\
+   & L_y \equiv \text{ total number of pixels in $y$-direction of image } \in \mathbb{Z}^+ \end{aligned}$
+
+and so $L_x L_y  = $ total number of pixels in image.
+
+The formula for ensuring that all threads will be computed, given an arbitrary choice of the number of threads in a (single) block, is the following:
+
+\[
+\begin{aligned}
+  & \frac{L_x + ( M_x - 1) }{ M_x} = N_x \in \mathbb{N} \qquad \, & N_x = \text{ number of (thread) blocks in $x$-direction } \\ 
+  & \frac{L_y + ( M_y - 1) }{ M_y} = N_y \in \mathbb{N} \qquad \, & N_y = \text{ number of (thread) blocks in $y$-direction } 
+\end{aligned}
+\]
+
+Then
+\[
+(M_x, M_y, 1) \in \mathbb{N}^3  \Longleftrightarrow \verb|dim3|
+\]
+needs to be determined manually, empirically, and in consideration of the actual GPU hardware architecture (look up number of CUDA cores, and allowed maximum threads), where
+\[
+\begin{aligned}
+  & M_x \equiv \text{ number of threads per block in $x$-direction } \\ 
+  & M_y \equiv \text{ number of threads per block in $y$-direction } 
+  \end{aligned}
+\]
+
+Consider that we want to go from the indices on each thread per block, on each block on the grid, in each of the 2 dimensions, to a global 2-dimensional position, and then ``flatten'' these coordinates to a 1-dimensional array that CUDA C can load onto global memory.  In other words, for
+
+\[
+\begin{gathered}
+\begin{aligned}  
+  & i_x \in \lbrace 0 , \dots , M_x - 1 \rbrace \qquad \, & \Longleftrightarrow \verb| threadIdx.x| \\ 
+  & i_y \in \lbrace 0 , \dots , M_y - 1 \rbrace \qquad \, & \Longleftrightarrow \verb| threadIdx.y|
+  \end{aligned} \\ 
+\begin{aligned}
+  & j_x \in \lbrace 0 , \dots , N_x - 1 \rbrace \qquad \, & \Longleftrightarrow \verb| blockIdx.x| \\ 
+  & j_y \in \lbrace 0 , \dots , N_y - 1 \rbrace \qquad \, & \Longleftrightarrow \verb| blockIdx.y|
+  \end{aligned}
+\end{gathered}
+\]
+
+and so for
+\[
+\begin{gathered}
+  (k_x,k_y) \\
+\begin{aligned}
+  & k_X = i_x + j_x M_x \\ 
+  & k_y = i_y + j_y M_y
+  \end{aligned} 
+  \end{gathered}
+\]
+
+then we sought the following operations:
+\[
+\begin{gathered}
+  (j_x,j_y)\times (i_x,i_y) \in \lbrace 0 , \dots , N_x - 1 \rbrace \times \lbrace 0 \dots N_y - 1 \rbrace \times \lbrace 0 \dots M_x - 1 \rbrace \times \lbrace 0 \dots M_y - 1 \rbrace \in \verb|dim3| \times \verb|dim3| \\
+  \mapsto (k_x,k_y) \in \lbrace 0 \dots L_x -1 \rbrace \times \lbrace 0 \dots L-y - 1 \rbrace \\
+  \mapsto k = k_x + L_x k_y \in \lbrace 0 \dots L_x L_y - 1 \rbrace 
+  \end{gathered}
+\]
 
 \subsubsection{Grid of blocks, block of threads, thread that's indexed; (mathematical) structure of it all}
 
@@ -418,7 +525,7 @@ where $N=1,2,3$ (for CUDA) and by naming convention $\begin{aligned} & \quad \\
   & I = 2 \equiv y \\
   & I = 3 \equiv z \end{aligned}$
 
-Let's try to make it explicity (as others had difficulty understanding the grid, block, thread model, cf. \href{http://stackoverflow.com/questions/14711668/colored-image-to-greyscale-image-using-cuda-parallel-processing}{colored image to greyscale image using CUDA parallel processing}, \href{http://stackoverflow.com/questions/16619274/cuda-griddim-and-blockdim}{Cuda gridDim and blockDim}) through commutative diagrams and categories (from math):
+Let's try to make it explicitly (as others had difficulty understanding the grid, block, thread model, cf. \href{http://stackoverflow.com/questions/14711668/colored-image-to-greyscale-image-using-cuda-parallel-processing}{colored image to greyscale image using CUDA parallel processing}, \href{http://stackoverflow.com/questions/16619274/cuda-griddim-and-blockdim}{Cuda gridDim and blockDim}) through commutative diagrams and categories (from math):
 
 \[
 \begin{tikzpicture}
@@ -562,6 +669,8 @@ Just note that in terms of syntax, you have the ``block'' model, in which you al
 \]
 Then the condition is
 $n_x^b/\text{dim}V , n_y^b/\text{dim}V, n_z^b/\text{dim}V \in \mathbb{Z}$ (condition), \qquad \, $(n_x^{\text{gr}}-1)/\text{dim}V , n_y^{\text{gr}}/\text{dim}V, n_z^{\text{gr}}/\text{dim}V \in \mathbb{Z}$
+
+\subsection{Unit 2, Lesson 2 GPU Hardware and Parallel Communication Patterns}
 
 \href{https://classroom.udacity.com/courses/cs344/lessons/77202674/concepts/773931440923}{Transpose Part 1}
 
@@ -740,6 +849,12 @@ $\forall \, $ thread,
 
 \href{https://classroom.udacity.com/courses/cs344/lessons/77202674/concepts/773883130923}{Synchronization - Barrier}
 
+Danger: what if a thread reads a result before another thread writes it?
+
+Threads need to \emph{synchronize}.
+
+one of the most fundamental problems in parallel computing
+
 \href{https://classroom.udacity.com/courses/cs344/lessons/77202674/concepts/785776150923}{Quiz: The Need For Barriers}
 
 3 barriers were needed (wasn't obvious to me at first).  All threads need to finish the write, or initialization, so it'll need a barrier.
@@ -757,6 +872,8 @@ So \emph{actually} we'll need to \emph{rewrite} this code:
   array[idx] = temp;
   __syncthreads();
   \end{lstlisting}
+
+Make sure each \emph{read} and \emph{write} operation is completed.  
 
 kernels have implicit barrier for each.  
 
@@ -777,6 +894,16 @@ local memory is fastest; global memory is slower
 
 kernel we know (in the code) is tagged with \verb|__global__|
 
+
+
+
+\subsubsection{Coalesce global memory accesses}
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/77202674/concepts/799933660923}{Coalesce Memory Access}
+
+We saw such access pattern is coalesced; GPU must efficient when threads read or write contiguous memory locations.  
+
+
 \href{https://classroom.udacity.com/courses/cs344/lessons/77202674/concepts/814086830923}{quiz: A Quiz on Coalescing Memory Access}
 
 Work it out as Dr. Luebki did to figure out if it's coalesced memory access or not.  
@@ -787,6 +914,102 @@ Work it out as Dr. Luebki did to figure out if it's coalesced memory access or n
 Atomic Memory Operations
 
 atomicadd atomicmin atomicXOR atomicCAS Compare And Swap
+
+
+\subsubsection{On Problem Set 2}
+
+There is what I call the ``naive global memory'' scheme, that solves the objective of blurring a photo with a local stencil of the values, using only global memory on the GPU.
+
+Given image of size $L_x \times L_y$, i.e. $(L_x,L_y) \in (\mathbb{Z}^+)^2$; image is really a designated or particular mapping $f$,
+\[
+\begin{aligned}
+  & f: \lbrace 0 \dots L_x - 1 \rbrace \times \lbrace 0 \dots L_y - 1 \rbrace \to \lbrace 0 \dots 255 \rbrace^4 \\ 
+  & f(x,y) = (f^{(r)}(x,y) , f^{(b)}(x,y), f^{(g)}(x,y), f^{(\alpha)}(x,y) )
+\end{aligned}
+\]
+Consider ``naive global memory scheme'' - establishing the following notation:
+\[
+\begin{gathered}
+  \begin{aligned}
+    & i_x \in \lbrace 0 \dots M_x - 1 \rbrace \Longleftrightarrow \verb|threadIdx.x| \\
+    & i_y \in \lbrace 0 \dots M_y - 1 \rbrace \Longleftrightarrow \verb|threadIdx.y|  \\
+    & j_x \in \lbrace 0 \dots N_x - 1 \rbrace \Longleftrightarrow \verb|blockIdx.x|  \\
+    & j_y \in \lbrace 0 \dots N_y - 1 \rbrace \Longleftrightarrow \verb|blockIdx.y|  
+  \end{aligned} \\
+  \begin{aligned}
+    & M_x \in \lbrace 1 \dots 1024 \rbrace \Longleftrightarrow \verb|blockDim.x| \\ 
+    & M_y \in \lbrace 1 \dots 1024 \rbrace \Longleftrightarrow \verb|blockDim.y| 
+    \end{aligned}
+\end{gathered}
+\]
+with
+\[
+\begin{aligned}
+  & N_x := (L_x + M_x - 1)/M_x \in \mathbb{Z}^+ \\ 
+  & N_y := (L_y + M_y - 1)/M_y \in \mathbb{Z}^+ 
+  \end{aligned}
+\]
+
+There should be a functor called ``flatten'' such that we end up with the image as a 1-dimensional, contiguous array on the global memory of the GPU; so for
+\[
+k = k_x + k_y L_x \in \lbrace 0 \dots L_x L_y - 1 \rbrace
+\]
+then
+\[
+\begin{gathered}
+  (k_x,k_y) \Longleftrightarrow (x,y) \in \lbrace 0 \dots L_x -1 \rbrace \times \lbrace 0 \dots L_y - 1 \rbrace \xmapsto{ \text{ flatten }} k \in \lbrace 0 \dots L_xL_y -1 \rbrace \\
+  f:\lbrace 0 \dots L_x -1 \rbrace \times \lbrace 0 \dots L_y - 1 \rbrace \xrightarrow{ \text{ flatten }} f: \lbrace 0 \dots L_x L_y - 1 \rbrace \to \lbrace 0 \dots 255 \rbrace^4  \\
+  f(x,y) = f(k_x,k_y) \xmapsto{ \text{ flatten } } f(k) 
+\end{gathered}
+\]
+
+Then there should be a functor called ``separateChannels'' to represent the \verb|__global__| kernel \verb|separateChannels|.
+\[
+\begin{gathered}
+  f: \lbrace 0 \dots L_x L_y - 1 \rbrace \to \lbrace 0 \dots 255 \rbrace^4 \xrightarrow{ \text{ separateChannels } } f^{(c)}:\lbrace 0 \dots L_xL_y -1 \rbrace \to \lbrace 0 \dots 255 \rbrace , \, c = \lbrace r,g,b \rbrace \\ 
+ f(k) \xmapsto{ \text{ separateChannels } } f^{(c)}(k)
+\end{gathered}
+\]
+
+Then consider a ``stencil'' of size \verb|filterWidth| $\times$ \verb|filterWidth| $\Longleftrightarrow W \times W \in (\mathbb{Z}^+)^2$.
+
+Let $(\nu_x,\nu_y) \in \lbrace 0 \dots W-1 \rbrace^2$ and so
+\[
+\left( \nu_x - \frac{W}{2} , \nu_y - \frac{W}{2} \right) \in \lbrace \frac{-W}{2} , \dots \frac{W}{2} - 1 \rbrace \subset \mathbb{Z}
+\]
+
+Now let
+\[
+\begin{aligned}
+  &  k_x^{\text{st}} = k_x  + \nu_x - \frac{W}{2} \Longleftrightarrow \verb|stencilindex_x| \\ 
+  & k_y^{\text{st}} = k_y  + \nu_y - \frac{W}{2} \Longleftrightarrow \verb|stencilindex_y| 
+\end{aligned}
+\]
+with $\begin{aligned} & \quad \\
+ &  k_x^{\text{st}} \in \lbrace 0 \dots L_x -1 \rbrace \\ 
+  &  k_y^{\text{st}} \in \lbrace 0 \dots L_y -1 \rbrace \\
+  \end{aligned}$
+
+We also have to apply the flatten functor on the stencil:
+\[
+\begin{gathered}
+  (\nu_x,\nu_y) \in \lbrace 0 \dots W-1\rbrace^2 \xmapsto{ \text{ flatten } } \nu = \nu_x + W \nu_y \in \lbrace 0 \dots W^2 -1 \rbrace
+  \end{gathered}
+\]
+
+And so the gist of the blurring operation is in this equation:
+\begin{equation}
+\begin{gathered}
+  g^{(c)}(k) = \sum_{\nu_x=0}^{W-1} \sum_{\nu_y =0}^{W-1} c_{\nu = \nu_x + W\nu_y} f^{(c)}(k_x^{\text{st}} + L_x \cdot k_y^{\text{st}} ) \qquad \, \forall \, c = \lbrace r,g,b\rbrace 
+  \end{gathered}
+  \end{equation}
+with $\begin{aligned} & \quad \\
+  & k_x^{\text{st}} = k_x^{\text{st}}(\nu_x) := k_x + \nu_x - \frac{W}{2} \\ 
+  & k_y^{\text{st}} = k_y^{\text{st}}(\nu_y) := k_y + \nu_y - \frac{W}{2} 
+  \end{aligned}$
+
+
+
 
 
 
@@ -2859,6 +3082,89 @@ Topics in Geometric Topology (18.937)
 \href{http://www.math.harvard.edu/~lurie/937notes/937Lecture2.pdf}{Piecewise Linear Topology (Lecture 2)}
 
 \part{Computational Fluid Dynamics (CFD); Computational Methods} 
+
+\section{On Computational Methods for Aerospace Engineering, via Darmofal, Spring 2005}
+
+Notes to follow along Darmofal (2005) \cite{Darm2005}
+
+\subsection{On Lecture 1, Numerical Integration of Ordinary Differential Equations}
+
+For the 1-dim. case,
+\[
+m_p \frac{du}{dt} = m_pg - D(u)
+\]
+Recall the velocity vector field $u=u(t,x) \in \mathfrak{X}(\mathbb{R}\times \mathbb{R})$.  This is \emph{not} what we want in this case; we want for particles the tangent bundle.
+
+\[
+\begin{aligned}
+  & D = D(u) = \frac{1}{2} \rho_g \pi a^2 u^2 C_D(\text{Re}) \\ 
+  & \text{Re} = \frac{2\rho_g u a}{\mu_g} \\
+  & C_D = \frac{24}{\text{Re}} + \frac{6}{1+ \sqrt{\text{Re}} } + 0.4
+\end{aligned}
+\]
+
+Darmofal (2005) \cite{Darm2005} then made a brief aside/note on linearization.
+
+Consider perturbation method (linearization)
+\[
+u(t) = u_0 + \widetilde{u}(t)
+\]
+e.g. constant (in time).
+
+If $\frac{du}{dt} = f(u,t)$,
+\[
+\begin{gathered}
+  \frac{d\widetilde{u}}{dt} = f(u_0 + \widetilde{u},t) = f(u_0,t) + \left. \frac{ \partial f}{ \partial u} \right|_{u_0,0} \widetilde{u} + \left. \frac{ \partial f}{ \partial t} \right|_{u_0,0} t + \mathcal{O}(t^2, \widetilde{u}t, \widetilde{u}^2 )
+  \end{gathered}
+\]
+
+$a = 0.01 \, m$, $\rho_p = 917 \, \text{kg}/m^3$ \qquad $\rho_g = 0.9 \, \text{kg}/m^3$
+
+$m_p = \rho_p \frac{4}{3} \pi a^3 = 0.0038 \, \text{kg}$
+
+$\mu_g = 1.69 \times 10^{-5} \, \text{kg}/(m \, \text{sec})$
+
+$g=9.8 \, m/s^2$
+
+In the 3-dim. case,
+\[
+m_p \frac{d\mathbf{u}}{dt} = m_p g - D(u) \frac{\mathbf{u}}{ |u| }
+\]
+
+Consider curve $\begin{aligned} & x: \mathbb{R} \to N = \mathbb{R} \\
+  & x(t) \in \mathbb{R} \end{aligned}$,  $u(t) \equiv \frac{dx}{dt} \in \Gamma(TN) = \Gamma(T\mathbb{R})$
+
+\[
+\frac{du}{dt} = g - \frac{D(u)}{m_p}
+\]
+
+\[
+\frac{du}{dt} = (u(t+\Delta t) - u(t)) \frac{1}{\Delta t} + \mathcal{O}(\Delta t)
+\]
+
+
+
+\subsection{Multi-step methods generalized}
+
+This subsection corresponds to \href{http://ocw.mit.edu/courses/aeronautics-and-astronautics/16-901-computational-methods-in-aerospace-engineering-spring-2005/lecture-notes/lect3.pdf}{Lecture 3: Convergence of Multi-Step Methods}, but is a further generalization to the presented multi-step methods.
+
+The problem to solve, the ODE to compute out, is
+\begin{equation}
+\frac{du}{dt}(t) = f(u(t),t)
+\end{equation}
+
+Make the following ansatz:
+\begin{equation}
+  \frac{du}{dt}(t) = \sum_{\nu = 0 }^N \frac{1}{h} C_{\nu} u(t-\nu h) = \sum_{\xi = 1}^P \beta_{\xi} f(u(t-\xi h) , t-\xi h)
+\end{equation}
+Do the Taylor expansion:  
+\[
+\begin{gathered}
+  \sum_{\nu =0}^N \frac{1}{h} C_{\nu} \left[ u(t) + \left( \frac{du}{dt} \right)(t) \cdot (-\nu h) + \sum_{j=2}^n \frac{u^{(j)}(t) }{j!} (-\nu h)^j + \mathcal{O}(h^n) \right] = \sum_{\xi = 1}^P \beta_{\xi} \frac{du}{dt}(t-\xi h) = \\
+  = \sum_{\xi =1}^P \beta_{\xi} \left[ \frac{du}{dt} + \sum_{j=2}^n \frac{u^{(j)}(t) }{j!} (-\xi h)^j + \mathcal{O}(h^n) \right]
+  \end{gathered}
+\]
+
 
 \subsection{Convection (Discretized)}
 
