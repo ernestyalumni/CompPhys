@@ -1008,10 +1008,171 @@ with $\begin{aligned} & \quad \\
   & k_y^{\text{st}} = k_y^{\text{st}}(\nu_y) := k_y + \nu_y - \frac{W}{2} 
   \end{aligned}$
 
+\subsubsection{Problem Set 2, shared memory ``tiling'' scheme}
+
+I think the \verb|__shared__| memory ``tiling'' scheme is non-trivial due to accounting for the values ``at the edges'' of the thread block, including the ``corners'' the so-called ``halo'' cells.  Storing the value of the ``cells'' or threads within a thread block into shared memory is \emph{relatively} straightforward - it is a 1-to-1 mapping.  But taking care of the corner cases, due to the desired ``stencil'' for blurring, is nontrivial, I think.
+
+Consider my scheme for ``tiling'' using shared memory:
+
+Let
+\[
+\begin{gathered}
+  \begin{aligned}
+    & k_x = i_x + j_x M_x \in \lbrace 0 \dots L_x -1 \rbrace \\ 
+    & k_y = i_y + j_y M_y \in \lbrace 0 \dots L_y -1 \rbrace 
+    \end{aligned} \\
+  k_x < L_x \text{ and } k_y < L_y \\
+  0 \leq k_x < L_x \text{ and } 0 \leq k_y < L_y \\
+  k := k_x + L_x k_y
+\end{gathered}
+\]
+and let
+\[
+\begin{gathered}
+  \begin{aligned}
+    & S_x := M_x + 2r \\ 
+    & S_y := M_y + 2r \\
+    \end{aligned} \\
+  \begin{aligned}
+    & s_x := i_x + r \\ 
+    & s_y := i_y + r
+  \end{aligned} \\
+  0 \leq s_x < S_x \text{ and } 0 \leq s_y < S_y \\
+  s_k := s_x + S_x s_y 
+\end{gathered}
+\]
+where $r$ is the ``radius'' or essentially the stencil size, out in 1-direction.
+
+Loading the regular cells,
+\[
+s_{\text{in}}[s_k] = f^{(c)}(k)
+\]
+
+Loading the halo cells, \\
+
+if ($i_x < r$),
+
+then requiring
+\[
+\begin{gathered}
+  \begin{aligned}
+    & 0 \leq s_x -r < S_x \\ 
+    & 0 \leq s_y < S_y
+  \end{aligned} \quad \quad \,
+  \begin{aligned}
+    & 0 \leq k_x - r < L_x \\ 
+    & 0 \leq k_y < L_y
+    \end{aligned} \\
+  s_{\text{in}}[s_x-r + S_xs_y] = f^{(c)}[k_x-r + L_x k_y] \\ 
+   \begin{aligned}
+    & 0 \leq s_x +M_x < S_x \\ 
+    & 0 \leq s_y < S_y
+  \end{aligned} \quad \quad \,
+  \begin{aligned}
+    & 0 \leq k_x + M_x < L_x \\ 
+    & 0 \leq k_y < L_y
+  \end{aligned} \\
+  s_{\text{in}}[s_x + M_x + S_xs_y] = f^{(c)}[k_x + M_x + L_xk_y]
+\end{gathered}
+\]
+
+If ($i_y < r$),
+
+then requiring
+\[
+\begin{gathered}
+  \begin{aligned}
+    & 0 \leq s_x  < S_x \\ 
+    & 0 \leq s_y -r < S_y
+  \end{aligned} \quad \quad \,
+  \begin{aligned}
+    & 0 \leq k_x  < L_x \\ 
+    & 0 \leq k_y -r < L_y
+    \end{aligned} \\
+  s_{\text{in}}[s_x + S_x(s_y-r)] = f^{(c)}[k_x + L_x (k_y-r)] \\ 
+   \begin{aligned}
+    & 0 \leq s_x  < S_x \\ 
+    & 0 \leq s_y +M_y < S_y
+  \end{aligned} \quad \quad \,
+  \begin{aligned}
+    & 0 \leq k_x  < L_x \\ 
+    & 0 \leq k_y +M_y< L_y
+  \end{aligned} \\
+  s_{\text{in}}[s_x +  S_x(s_y+M_y)] = f^{(c)}[k_x  + L_x(k_y+M_y)]
+\end{gathered}
+\]
+
+And now the actual stencil calculation:
+
+$\forall \, \nu_y \in \lbrace \nu_y = 0 , 1 \dots W-1 | 0 \leq \nu_y < W \rbrace$, \\
+\phantom{ \qquad \, } $k_y^{\text{st}} := s_y + \nu_y - r$ \\
+\phantom{ \qquad \, } $\forall \, \nu_x \in \lbrace \nu_x = 0 , 1 \dots W-1 | 0 \leq \nu_x < W \rbrace$, \\
+\phantom{ \qquad \qquad \, } $k_x^{\text{st}} := s_x + \nu_x -r $ \\
+\phantom{ \qquad \qquad \, } \verb|inputvalue| $=s_{\text{in}}[k^{\text{st}}_x + S_x k_y^{\text{st}}]$ with $\begin{aligned} & \quad \\
+  & 0 \leq k_x^{\text{st}} < S_x \\ 
+  & 0 \leq k_y^{\text{st}} < S_y  \end{aligned}$ \\
+\phantom{ \qquad \qquad \, } \verb|filtervalue| $ = c(\nu_x + W\nu_y)$  \\
+\phantom{ \qquad \qquad \, } \verb|value| $+=$ \verb|filtervalue| $\cdot$ \verb|inputvalue|,
+
+i.e.
+\[
+g^{(c)}(k) = \sum_{\nu_y=0}^{W-1} \sum_{\nu_x =0}^{W-1} c_{\nu = \nu_x + W \nu_y} s_{\text{in}}[k_x^{\text{st}} + k_y^{\text{st}}S_x]
+\]
 
 
+Unfortunately, the (literal) corner cases aren't accounted for correctly, (when $i_x < r$ \emph{and } $i_y<r$), as can be seen by the difference image and output image when it's run.
 
+\href{https://discussions.udacity.com/users/Samuel271828}{Samuel Lin or Samuel271828} had both an elegant and \emph{correct} implementation.  It's also in \href{https://github.com/samuellin3310}{Samuel Lin or samuellin3310's github repositories}, in \href{https://github.com/samuellin3310/ro-to-Parallel-Programming_set2/blob/master/student_fuction_improved_share.cu}{student fuction improved share.cu (sic)}.  
 
+%\href{https://github.com/samuellin3310/ro-to-Parallel-Programming_set2/blob/master/student_fuction\improved\share.cu}{}.  
+
+Here it is, mathematically:
+
+Let
+\[
+\begin{gathered}
+  s_{\text{in}} \in \mathbb{R}^{(M_x + 2r)(M_y + 2r) } \\
+  \begin{aligned}
+    & k_x = i_x + j_x M_x \in \mathbb{Z} \\ 
+    & k_y = i_y + j_y M_y \in \mathbb{Z}  
+    \end{aligned} \\
+  k_x < L_x \text{ and } k_y < L_y \\
+  0 \leq k_x < L_x \text{ and } 0 \leq k_y < L_y \\
+  k := k_x + L_x k_y
+\end{gathered}
+\]
+
+Then,
+
+$\forall \, i \in \lbrace i = i_x -r, i_x - r +M_x, i_x -r + 2M_x, \dots | i_x - r \leq i < M_x + r \rbrace$, \\
+\phantom{ \qquad \, } $\forall \, j \in \lbrace j =i_y - r , i_y - r + M_y, i_y -r + 2M_y \dots | i_y - r \leq j < M_y + r \rbrace$,
+\[
+\begin{gathered}
+  \begin{aligned}
+    & l_x := i + M_x j_x \in \mathbb{Z} \text{ with (enforcing) } 0 \leq l_x < L_x \\ 
+    & l_y := i + M_y j_y \in \mathbb{Z} \text{ with (enforcing) } 0 \leq l_y < L_y \\ 
+    & s_{\text{in}}[i+r + (j+r)(M_x + 2r) ] = f^{(c)}(l_x + l_yL_x)
+    \end{aligned}
+\end{gathered}
+\]
+Enforce $k_x <L_x$ and $k_y <L_y$, otherwise nothing happens.  
+
+And now the actual stencil calculation:
+
+$\forall \, \nu_y \in \lbrace \nu_y = 0 , 1 \dots W-1 | 0 \leq \nu_y < W \rbrace$, \\
+\phantom{ \qquad \, } $k_y^{\text{st}} := s_y + \nu_y - r$ \\
+\phantom{ \qquad \, } $\forall \, \nu_x \in \lbrace \nu_x = 0 , 1 \dots W-1 | 0 \leq \nu_x < W \rbrace$, \\
+\phantom{ \qquad \qquad \, } $k_x^{\text{st}} := s_x + \nu_x -r $ \\
+\phantom{ \qquad \qquad \, } \verb|inputvalue| $=s_{\text{in}}[k^{\text{st}}_x + S_x k_y^{\text{st}}]$ with $\begin{aligned} & \quad \\
+  & 0 \leq k_x^{\text{st}} < S_x \\ 
+  & 0 \leq k_y^{\text{st}} < S_y  \end{aligned}$ \\
+\phantom{ \qquad \qquad \, } \verb|filtervalue| $ = c(\nu_x + W\nu_y)$  \\
+\phantom{ \qquad \qquad \, } \verb|value| $+=$ \verb|filtervalue| $\cdot$ \verb|inputvalue|,
+
+i.e.
+\[
+g^{(c)}(k) = \sum_{\nu_y=0}^{W-1} \sum_{\nu_x =0}^{W-1} c_{\nu = \nu_x + W \nu_y} s_{\text{in}}[k_x^{\text{st}} + k_y^{\text{st}}S_x]
+\]
 
 \section{Pointers in C; Pointers in C categorified (interpreted in Category Theory)}
 
