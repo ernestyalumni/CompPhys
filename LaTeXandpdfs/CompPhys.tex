@@ -1128,6 +1128,8 @@ Unfortunately, the (literal) corner cases aren't accounted for correctly, (when 
 
 Here it is, mathematically:
 
+\hrulefill
+
 Let
 \[
 \begin{gathered}
@@ -1173,6 +1175,114 @@ i.e.
 \[
 g^{(c)}(k) = \sum_{\nu_y=0}^{W-1} \sum_{\nu_x =0}^{W-1} c_{\nu = \nu_x + W \nu_y} s_{\text{in}}[k_x^{\text{st}} + k_y^{\text{st}}S_x]
 \]
+
+\hrulefill
+
+It may be non-intuitive, as was in my case, from my personal experience, to have to move the requirement that $k_x < L_x$, and $k_y <L_y$, i.e. the line
+
+\begin{lstlisting}
+  if ( k_x >= numCols || k_y >= numRows ) {
+    return; }
+  \end{lstlisting}
+\emph{after} loading all the values from global memory into shared memory, and not in the beginning of the kernel.  This can be proven, in general.  And again, shout-outs (i.e. credit should go) to \href{https://discussions.udacity.com/users/Samuel271828}{Samuel Lin or Samuel271828} for the clarifying discussion \href{https://discussions.udacity.com/t/any-one-completed-problem-set-2-using-shared-memory/158442/6}{here}.
+
+For simplicity, consider the 1-dimensional case, e.g. a 1-dimensional pixelated image, represented by a 1-dimensional array.  The discussion below can easily be generalized to $n$-dimensions.
+
+Recall that
+\[
+k_x := i_x + M_x j_x 
+\]
+for
+\[
+\begin{aligned}
+  & i_x \in \lbrace 0 \dots M_x - 1 \rbrace \\ 
+  & j_x \in \lbrace 0 \dots N_x - 1 \rbrace
+\end{aligned}
+\]
+for
+\[
+\begin{aligned}
+& i_x \Longleftrightarrow \verb|threadIdx.x| \\ 
+& j_x \Longleftrightarrow \verb|blockIdx.x| \\ 
+& M_x \Longleftrightarrow \verb|blockDim.x|
+\end{aligned}
+\]
+with $N_x$ determined by a formula immediately below.  
+
+Then
+\[
+k_x \in \lbrace 0 \dots N_xM_x -1 \rbrace
+\]
+with $N_x$ being determined by
+\[
+N_x := \frac{ L_x + M_x - 1 }{ M_x} \in \mathbb{Z}
+\]
+By integer division, this formula for $N_x$ guarantees that the number of blocks in the grid is the lowest number that would guarantee that \emph{all} the needed grid points are computed, i.e. $N_x$ is the lowest number such that there are enough (i.e. minimal number of) threads that'll compute all the needed grid points, or pixels, or computations, etc., by how integer division works.  Note that
+\[
+\begin{gathered}
+  L_x \Longleftrightarrow \verb|numCols| \text{ and so }
+  N_x \Longleftrightarrow \verb|gridDim.x|
+\end{gathered}
+\]
+Now
+\[
+N_xM_x \geq L_x
+\]
+meaning, that we could have the case where the very last (thread) block would have more threads than is needed to compute all the pixels.  
+
+e.g.\[
+\begin{aligned}
+  & L_x = 127 \\ 
+  & M_x = 128 \, ( \text{ so } N_x = 1 ) \\ 
+  & k_x = i_x + 128 \cdot 0 = i_x \\ 
+  & k_x = 127 
+  \end{aligned}
+\]
+and so $k_x \geq L_x$, namely $127 \geq 127$.  If we had, in the beginning, the line that returns nothing for the condition $k_x \geq L_x$, we won't be including this case.  
+
+Now recall the \href{https://github.com/ernestyalumni/cs344/blob/master/Problem%20Sets/Problem%20Set%202/student_func.cu}{shared memory tiling scheme}, but in 1-dimension (for the purposes of this present discussion):
+\[
+\forall \, \lbrace i \in i_x - r, i_x - r + M_x , i_x -r + 2M_x, \dots | i_x - r \leq i < M_x + r \rbrace
+\]
+so $- r \leq i < M_x + r$.
+
+Then
+\[
+l_x := i + M_xj_x 
+\]
+and
+\[
+s_{\text{in}}[i+r] = f^{(c)}(l_x)
+\]
+
+e.g.
+\[
+\begin{aligned}
+  & r= \verb|filterWidth|/2 = 9/2 = 4 \\
+  & i_x = 127 \\ 
+  & i = 127 -4 = 123 = l_x \\
+  & s_{\text{in}}[127] = f^{(c)}(123)
+\end{aligned}
+\]
+$k_x=127 = L_x$ so $k_x \geq L_x$
+
+So in this very insightful example, we've seen that for $k_x = 127$, it loads the regular value at index $l_x = 123$ into the appropriate slot in the shared memory, namely $s_{\text{in}}[127]$ correctly, and yet if we placed the code line in question that tests $k_x$ against $L_x$ in the wrong order, this step would've been excluded!  
+
+How can we see this in general?
+
+Consider now that $l_x = i+M_xj_x = i_x +M_xj_x -r = k_x -r$.
+
+Also
+\[
+i+r = i_x - r+r = i_x
+\]
+Now then
+\[
+s_{\text{in}}[i_x] = f^{(c)}(l_x) = f^{(c)}(k_x -r)
+\]
+while $N_xM_x - r \geq L_x $ or $N_xM_x-r < L_x$.  It's this ambiguity that forces the check of $k_x \geq L_x$ to be moved to after loading all values into shared memory.  The $l_x \leq L_x$ check guarantees both that we aren't going ``outside'' the array indices in global memory \emph{and} that we're ``clamping'' down on the absolute boundary value if we reach the absolute boundary or ``end'' of the array.
+
+My big takeaway is that doing the shared memory tiling scheme is much more nuanced and deserves more inspection that the relatively straightforward ``naive'' global memory scheme.  
 
 \section{Pointers in C; Pointers in C categorified (interpreted in Category Theory)}
 
