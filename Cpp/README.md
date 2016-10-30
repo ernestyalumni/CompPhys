@@ -67,9 +67,9 @@ This worked for me, as I had obtained a c++11 compiling error when I trued to us
 g++ -std=c++11 test.cpp
 ```
 
-### File I/O in C and C++
+## File I/O in C and C++
 
-## Quick and Dirty File I/O for C++
+### Quick and Dirty File I/O for C++
 
 I find myself having to write out results into `.csv` text files to see what my C++ program is doing.  
 
@@ -173,6 +173,8 @@ int fprintf_s(FILE *restrict stream, const char *restrict format, ...);
 ```
 cf. http://en.cppreference.com/w/c/io/fprintf
 
+[`main.cpp` of `dd_1d_global`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/cudaforengineers/dd_1d_global/main.cpp), and [`main.cpp` of `dd_1d_shared`](https://github.com/ernestyalumni/CompPhys/tree/master/moreCUDA/cudaforengineers/dd_1d_shared), in the `moreCUDA/cudaforengineers/dd_1d_global` and `moreCUDA/cudaforengineers/dd_1d_shared` directories, respectively, of this same repository (CompPhys) demonstrate the use of `fprintf`, and then taking that generated `.csv` file, using Python's `matplotlib` on a `jupyter` notebook for "data visualization" (plotting).  
+
 - `fclose` - closes a file
 
 cf. `program3.cpp` in `./progs/ch03` subdirectory, pp. 54-55, Subsection 3.1.1.4 The output function of Hjorth-Jensen (2015), [CompPhysics/ComputationalPhysicsMSU/doc/Programs/LecturePrograms/programs/Classes/cpp/
@@ -239,13 +241,18 @@ for (i=0; ...)
   outfile << endl;
 }
 ```  
+#### Examples of Usage
+
+As mentioned before, examples of good usage, in particular of `fprintf`, are [`main.cpp` of `dd_1d_global`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/cudaforengineers/dd_1d_global/main.cpp), and [`main.cpp` of `dd_1d_shared`](https://github.com/ernestyalumni/CompPhys/tree/master/moreCUDA/cudaforengineers/dd_1d_shared), in the `moreCUDA/cudaforengineers/dd_1d_global` and `moreCUDA/cudaforengineers/dd_1d_shared` directories, respectively, of this same repository (CompPhys), demonstrating the use of `fprintf`, and then taking that generated `.csv` file, using Python's `matplotlib` on a `jupyter` notebook for "data visualization" (plotting).  
 
 
-### Classes (C++)
+
+
+## Classes (C++)
 
 See `complex.h, complex.cpp, customCC.cpp` in `./progs/ch03` subdirectory for useful (pedagogical) examples.
 
-## header files
+### header files
 
 Define header file (e.g. complex.h) which contains declarations of the class.
 The header file contains
@@ -261,7 +268,7 @@ To understand
 
 See (http://stackoverflow.com/questions/1653958/why-are-ifndef-and-define-used-in-c-header-files) and (https://en.wikipedia.org/wiki/Include_guard).
 
-## Modularity
+### Modularity
 
 Stroustrup makes a chapter on *Modularity.*  Here's what I found in practice.  
 
@@ -287,9 +294,26 @@ i.e. you're going to have to include all the files in that command line for `g++
 
 - [Why can templates only be implemented in the header file?](http://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file)
 
-### Makefiles
+#### 
 
-#### Useful links
+[33.2 How do I pass a pointer-to-member-function to a signal handler, X event callback, system call that starts a thread/task, etc?](http://yosefk.com/c++fqa/function.html#fqa-33.2)
+
+>  FAQ: You don't. A member function can't be used without an object of the class, so the whole thing can't work. What you can do is write a non-member function wrapping your pointer-to-member-function call.
+
+> For example, thread creation callbacks usually have a void* argument. You could pass an object pointer in that argument to the callback (which has to be a non-member). The callback would then cast the void* down to the actual type and call the object's method.
+
+> Some functions, like signal, use callbacks without a void* argument or anything similar. In that case, you have no choice but save a pointer to the object in a global variable. The callback can get the object pointer from that global variable and call the method.
+
+> static member functions can be used in the contexts where a C callback is expected, if they are extern "C". Although on most compilers it would probably work without extern "C", the standard says it doesn't have to work. 
+
+This also answers 33.3 Why do I keep getting compile errors (type mismatch) when I try to use a member function as an interrupt service routine?
+
+So a member function of a class can't be used without an object (in my case, an "instantiation") of the class, so the function can't be an argument, or passed by value or passed by reference, to another (outside) function.
+
+
+## Makefiles
+
+### Useful links
 
 - [so-called "official" GNU manual for GNU make](https://www.gnu.org/software/make/manual/make.html#Overview)
 
@@ -298,13 +322,13 @@ i.e. you're going to have to include all the files in that command line for `g++
 - From [isaacs's makefile basics](https://gist.github.com/isaacs/62a2d1825d04437c6f08): 
 [isaacs's excellent "glossary" explanation of Makefiles](https://gist.github.com/isaacs/62a2d1825d04437c6f08)
 
-#### Makefiles, quick and dirty, or my experience so far
+### Makefiles, quick and dirty, or my experience so far
 
 First thing that I had to learn first was from 2.4 Variables Make Makefiles Simpler of the GNU make "manual."
 
 Define variables by `=` sign and then, for each place we want to put the variable, e.g. `CPP = g++ -std=c++14` substitute in the variable's value by writing `$(CPP)`.  See [How to Use Variables](https://www.gnu.org/software/make/manual/make.html#Using-Variables).  Apparently, in 6.1 Basics of Variable References, `$(CPP)` and `${CPP}` are the same thing - parentheses or braces can be used (they do the same thing apparently (!!!)).
 
-##### Glossary (for Makefiles)
+#### Glossary (for Makefiles)
 
 From [isaac](https://gist.github.com/isaacs/62a2d1825d04437c6f08)
 - `$@` The file that is being made right now by this rule (aka the "target").  You can remember this because it's like the `$@` list in a shell script  
@@ -319,7 +343,7 @@ From [die.net `g++(1)` - Linux man page](http://linux.die.net/man/1/g++)
 By default, the object file name for a source file is made by replacing the suffix `.c, .i, .s`, etc., with `.o`.
 - `-o` *file* -- Place output in file file. This applies regardless to whatever sort of output is being produced, whether it be an executable file, an object `f`.   
 
-### C++11, C++14 `std::array` and Multidimensional `std::array`
+## C++11, C++14 `std::array` and Multidimensional `std::array`
 
 From [stackexchange, "Multidimensional std::array"](http://stackoverflow.com/questions/17759757/multidimensional-stdarray)
 
@@ -335,7 +359,7 @@ From [stackexchange, "Multidimensional std::array"](http://stackoverflow.com/que
 
 
 
-### C++ Operator Overloading in expression; lvalues vs. rvalues
+## C++ Operator Overloading in expression; lvalues vs. rvalues
 
 cf. [C++ Operator Overloading in expression](http://stackoverflow.com/questions/6377786/c-operator-overloading-in-expression)
 
@@ -351,7 +375,7 @@ work the way we expect.  Kudos to user [fredoverflow](http://stackoverflow.com/u
 
 Also, member functions should be marked `const` as well.''  
 
-#### What are lvalues and rvalues in C and C++?
+### What are lvalues and rvalues in C and C++?
 
 [C++ Rvalue References Explained](http://thbecker.net/articles/rvalue_references/section_01.html)
 
@@ -415,11 +439,6 @@ For $\int_0^3 1/(2+x^2) \, dx$,
 | 40       | 0.799209      | 0.791846 | 0.805925    | 0.799233       |
 | 100      | 0.799229      | 0.796278 | 0.80194     | 0.799233       |
 | 1000     | 0.799233      | 0.798937 | 0.799505    | 0.799233       |
-
-
-
-
-
 
 
 
