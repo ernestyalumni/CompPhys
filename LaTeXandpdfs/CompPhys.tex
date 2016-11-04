@@ -1284,6 +1284,443 @@ while $N_xM_x - r \geq L_x $ or $N_xM_x-r < L_x$.  It's this ambiguity that forc
 
 My big takeaway is that doing the shared memory tiling scheme is much more nuanced and deserves more inspection that the relatively straightforward ``naive'' global memory scheme.  
 
+\subsection{Unit 3, Lesson 3 Fundamental GPU Algorithms (Reduce, Scan, Histogram; Udacity cs344)}
+
+More on Udacity forums, in particular, forum for cs344: \href{https://discussions.udacity.com/t/please-elaborate-the-micro-optimization-techniques-discussed-by-the-instructor/123454}{Please elaborate the micro-optimization techniques discussed by the instructor}
+
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/875579020923#}{Reduce Part 2}
+
+\subsubsection*{Reduce: Inputs}
+
+\begin{enumerate}
+\item Set of elements.
+
+  Assume they are in an array.
+\item reduction \underline{operator}
+  \begin{enumerate}
+    \item binary 
+    \item associative
+    \end{enumerate}
+  \end{enumerate}
+
+e.g. of binary operators, cf. \href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/878363880923#}{Binary and Associative Operators}
+\begin{itemize}
+  \item multiply $*$ 
+  \item min
+  \item logical or ($a \parallel b$)
+    \item bitwise and $(a\& b)$
+  \end{itemize}
+
+Indeed, let $f$ represent the input:
+\[
+\begin{aligned}
+  & f \in K^N ; \qquad \, N \in \mathbb{Z}^+ \\ 
+  & f(i) \in K ; \qquad \, i \in \lbrace 0 ,1 \dots , N-1 \rbrace
+\end{aligned}
+\]
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/876789040923#}{Serial Implementation of Reduce}
+
+\[
+\begin{gathered}
+  S = 0, \\ 
+  \forall \, i \in \lbrace 0 , 1 , \dots N-1 \rbrace \\
+  S += f(i) 
+\end{gathered} \Longleftrightarrow S = \sum_{i=0}^{N-1} f(i)
+\]
+
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/877097870923}{Step Complexity of Parallel Reduce}
+
+\begin{tabular}{ l | c }
+  N & steps \\ \hline
+  2 & 1 \\
+  4 & 2 \\
+  8 & 3 \\
+  $2^n$ & n
+  \end{tabular}
+
+The answer is $\log_2N =n$.  Let's prove this with induction.
+
+Consider $N=2^{n+1}$, number of things to compute.
+
+$\frac{N}{2} = 2^n$.  After 1 step (of binary operations), there are $2^n$ things left to compute.
+
+By induction step, $n$ steps are required.
+\[
+\log_2N = \log_22^{n+1} = n+1
+\]
+Done.
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/877097880923#}{Reduction Using Global and Shared Memory}
+
+For a good explanation of \emph{bitwise left shift} and \emph{bitwise right shift} operators (and also for assignment), see \href{http://stackoverflow.com/questions/6385792/what-does-a-bitwise-shift-left-or-right-do-and-what-is-it-used-for}{What does a bitwise shift (left or right) do and what is it used for?}.  Also, a good implementation that converts from integers to bitwise representation is given in \href{http://stackoverflow.com/questions/2686542/converting-integer-to-a-bit-representation}{Converting integer to a bit representation}
+
+Keep in mind these are called \emph{bitwise shift} operations (so we could look them up by this name).
+
+\subsubsection*{Left shift}
+
+\[
+\begin{gathered}
+  \verb| x << y | \Longleftrightarrow x \cdot 2^y 
+  \end{gathered}
+\]
+
+\subsubsection*{Right shift}
+
+\[
+\begin{gathered}
+  \verb| x >> y | \Longleftrightarrow x / 2^y 
+  \end{gathered}
+\]
+
+cf. \href{https://github.com/udacity/cs344/blob/master/Lesson Code Snippets/Lesson 3 Code Snippets/reduce.cu}{reduce.cu of Lesson 3 Code Snippet for Udacity cs344}
+
+%\verb|reduce.cu|
+
+\subsubsection*{global memory reduce}
+
+$M_x \in \mathbb{Z}^+$, e.g. $M_x = 1024$
+
+$k_x := i_x + M_x j_x \in \mathbb{Z}^+$ \\
+$t_{id} := i_x \in \lbrace 0 \dots M_x-1\rbrace \subset \mathbb{Z}^+$
+
+$\forall \, s \in \lbrace \frac{M_x}{2}, \frac{M_x}{2^2}, \frac{M_x}{2^3}, \dots \rbrace $, 
+
+If $t_{id} < s$,
+\[
+\begin{gathered}
+d_{in}[k_x] += d_{in}[k_x + s]
+\end{gathered} \Longleftrightarrow d_{\text{out}}[j_x] = \sum_{ \substack{ t_{\text{id}} < s \\ s \in \lbrace \frac{M_x}{2}, \frac{M_x}{2^2}, \frac{M_x}{2^3} , \dots \rbrace } } d_{\text{in}}[k_x + s] + d_{\text{in}}[k_x]
+\]
+Finally,
+\[
+d_{\text{out}}[j_x] = d_{\text{in}}[k_x]
+\]
+
+\subsubsection*{shared memory reduce }
+
+$k_x := i_x + M_x j_x \in \mathbb{Z}^+$ \\
+$t_{id} := i_x \in \lbrace 0 \dots M_x-1\rbrace \subset \mathbb{Z}^+$
+
+Load values into shared memory:
+
+\[
+\begin{aligned} 
+  & s_{\text{data}}[i_x] = d_{\text{in}}[k_x]  \text{ where }  s_{\text{data}}  \in \mathbb{R}^{M_x} 
+ \end{aligned}
+\]
+
+$\forall \, s \in \lbrace \frac{M_x}{2}, \frac{M_x}{2^2}, \frac{M_x}{2^3}, \dots \rbrace $, 
+
+If $t_{id} < s$,
+\[
+\begin{gathered}
+s_{\text{data}}[t_{\text{id}}] += s_{\text{data}}[t_{\text{id}} + s]
+\end{gathered} \Longleftrightarrow d_{\text{out}}[j_x] = \sum_{ \substack{ t_{\text{id}} < s \\ s \in \lbrace \frac{M_x}{2}, \frac{M_x}{2^2}, \frac{M_x}{2^3} , \dots \rbrace } } s_{\text{data}}[t_{\text{id}} + s] + s_{\text{data}}[t_{\text{id}}]
+\]
+Finally,
+\[
+d_{\text{out}}[j_x] = s_{\text{data}}[0]
+\]
+
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/873907110923#}{Scan}
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/877097890923#}{Inputs to Scan}
+
+\subsubsection*{Inputs to scan}
+
+Like reduce,
+\begin{itemize}
+  \item input array, $\begin{aligned} & f \in K^N \, \qquad \, N \in \mathbb{Z}^+ \\ & f(i) \in K \, \qquad \, i \in \lbrace 0 \dots , N-1 \rbrace \end{aligned}$
+  \item binary associative operator
+  \end{itemize}
+new feature (not in reduce),
+\begin{itemize}
+  \item identity element $[I \, \text{op} \, a = a \, ]$  
+  \end{itemize}
+
+
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/878394960923}{What Scan Actually Does}
+
+\[
+f\in K^N \xmapsto{ \text{ scan } } g \in K^N
+\]
+
+inclusive scan
+
+\[
+g(i) = \bigoplus_{j=0}^i f(j)
+\]
+
+exclusive scan
+
+\[
+g(i) = \begin{cases} \bigoplus_{j=0}^{i-1}f(j) & \text{ if } i \geq 1 \\
+  1 & \text{ if } i = 0 \end{cases}
+\]
+
+These definitions are worth repeating:
+
+\begin{definition}[Scan]
+  Given
+  \begin{itemize}
+  \item \emph{input array} $f\in K^N$, i.e.
+    \[
+\begin{aligned}
+  & f \in K^N \qquad \, & N \in \mathbb{Z}^+ \\ 
+  & f[i] \in K \qquad \, & i \in \lbrace 0 , \dots , N-1 \rbrace
+\end{aligned}
+    \]
+with $K$ equipped with a 
+\item \emph{binary associative operator} \\
+\item \emph{identity element} [$I$ op $a=a$]
+    \end{itemize}
+  Then for
+  \begin{equation}
+    \begin{tikzpicture}
+  \matrix (m) [matrix of math nodes, row sep=2em, column sep=5em, minimum width=2em]
+  {
+    f & g \\
+    K^N & K^N \\
+};
+  \path[|->]
+  (m-1-1) edge node [auto] {$\text{scan}$} (m-1-2);
+\path[->]
+  (m-2-1) edge node [auto] {$\text{scan}$} (m-2-2)
+  ;
+  \end{tikzpicture}
+    \end{equation}
+  with
+  \textbf{inclusive scan} defined as
+  \begin{equation}
+\boxed{ g(i) = \bigoplus_{j=0}^i f(j) }
+    \end{equation}
+  and \textbf{exclusive scan} defined as 
+  \begin{equation}
+    \boxed{
+      g(i) = \begin{cases} \bigoplus_{j=0}^{i-1}f(j) & \text{ if } i \geq 1 \\
+        1 & \text{ if } i = 0 \end{cases}
+    }
+    \end{equation}
+  
+  \end{definition}
+
+
+
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/880351220923#}{Hillis Steele Scan}
+
+\subsubsection*{Hillis/Steele inclusive scan}
+
+Let $\begin{aligned} & \quad \\
+  & f \in K^N \, \qquad \, N \in \mathbb{Z}^+ \\
+  & f(j) \in K \, \qquad \, j \in \lbrace 0 \dots N-1 \rbrace \end{aligned}$
+
+Consider step $i=0$.
+
+For $g_i \in K^N$, $\forall \, i\in \lbrace 0 , \dots , \log_2{N}-1 \rbrace$, 
+
+Doing the first 3 steps,
+\[
+\begin{aligned}
+  & g_0(j) = \begin{cases} f(j) + f(j-2^0) & \text{ if } j \geq 1 \\
+    f(j) & \text{ if } j < 1 \end{cases} \\
+  & g_1(j) = \begin{cases} g_0(j) + g_0(j-2^1) & \text{ if } j \geq 2^1 \\
+    g_0(j) & \text{ if } j < 2^1 \end{cases} \\
+  & g_2(j) = \begin{cases} g_1(j) + g_1(j-2^2) & \text{ if } j \geq 2^2 \\
+    g_1(j) & \text{ if } j < 2^2 \end{cases} \\
+\end{aligned}
+\]
+Thus
+\[
+   g_i(j) = \begin{cases} g_{i-1}(j) + g_{i-1}(j-2^i) & \text{ if } j \geq 2^i \\
+    g_{i-1}(j) & \text{ if } j < 2^i \end{cases} \\
+\]
+
+Now do the following induction cases:
+\[
+\begin{aligned}
+  & g_{\log_2{N}}(0) = f(0) \\ 
+  & g_{\log_2{N}}(1) = g_0(1) = f(1) + f(0) \\
+  & g_{\log_2{N}}(2) = g_1(2) = g_0(2) + g_0(0) = f(2)+f(1) + f(0) \\
+  & g_{\log_2{N}}(3) = g_1(3) = g_0(3) + g_0(1) = f(3)+f(2)+f(1)+f(0)  \\
+\end{aligned}
+\]
+So generalize to the induction case:
+\[
+g_{ \log_2{N} }(j) = \bigoplus_{i=0}^j f(i)
+\]
+Then one would check the induction step for a number of cases, whether $j$ was greater or smaller or equal to $2^{ \log_2{N}}$.  
+
+To summarize for the Hillis/Steele inclusive scan,
+\begin{equation}
+  \boxed{ \begin{gathered}
+      \forall \, i \in \lbrace 0 ,1 , \dots , \log_2{N} | 2^i < N \rbrace \\ 
+      g_{i-1}(j) = f(j) \qquad \, \forall \, j \in \lbrace 0 \dots N-1 \rbrace \\
+      g_i(j) = \begin{cases}
+        g_{i-1}(j) + g_{i-1}(j-2^i) & \text{ if } j \geq 2^i \\
+        g_{i-1}(j) & \text{ if } j < 2^i \end{cases}
+      \end{gathered}
+  }
+  \end{equation}
+i.e.
+\begin{equation}
+  \boxed{ \begin{gathered}
+      \forall \, i \in \lbrace 0 ,1 , \dots , \lfloor \log_2{N} \rfloor | 2^i < N \rbrace \\ 
+      g_{-1}(j) = f(j) \qquad \, \forall \, j \in \lbrace 0 \dots N-1 \rbrace \\
+      g_i(j) = \begin{cases}
+        g_{i-1}(j) + g_{i-1}(j-2^i) & \text{ if } j \geq 2^i \\
+        g_{i-1}(j) & \text{ if } j < 2^i \end{cases}
+      \end{gathered}
+  }
+  \end{equation}
+
+
+Implementation is CUDA C/C++:  consider $k_x:= i_x + M_xj_x \in \lbrace 0,1, \dots , L_x\rbrace$, $L_x \in \mathbb{Z}^+$, with the formula
+\[
+N_x := \frac{L_x + M_x-1}{M_x}
+\]
+that'll give us \verb|blockDim.x|.
+
+$\forall \, i \in \lbrace 0 ,1\dots \log_2{k_x} \rbrace$ (or $k_x <2^i$),
+\[
+g_i(k_x) = g_{i-1}(k_x) + g_{i-1}(k_x-2^i)  
+\]
+
+
+For \emph{(inclusive) scan},
+
+step : $O(\log{ n } )$ \\
+work : $O(n^2)$ \\
+
+For \emph{ Hillis/Steele },
+
+step : $O(\log{ n } )$ \\
+work : $O(n \log{n} )$ \\
+
+(more step efficient)
+
+For \emph{B}
+
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/880351210923#}{Inclusive Scan Revisited}, \href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/873907230923#}{Hillis Steele vs Blelloch Scan},\href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/880351220923#}{Hillis Steele Scan},
+
+
+\subsection{Blelloch scan}
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/880351240923#}{Blelloch Scan}
+
+\subsubsection{Blelloch scan, reduce, 1st part, up sweep } 
+
+My development: consider the most basic cases.  So for $f\in K^N$,
+\[
+\begin{gathered}
+  \begin{gathered}
+    i \in \lbrace 0 , 1 , \dots N -1 \rbrace   \\
+    2j, \qquad \, j \in \lbrace 1 , 2 , \dots, \lfloor N/2 \rfloor  \rbrace  \\
+    i = 2j - 1  \\
+    2^2 j - 1 , \qquad \, j\in \lbrace 1 ,2, \dots , \lfloor N/2^2 \rfloor \rbrace \\
+    2^3j -1 , \qquad \, j \in \lbrace 1  , 2 , \dots , \lfloor N/2^3 \rfloor \rbrace 
+    \end{gathered}
+\qquad \quad \, \begin{gathered}
+  N = 8 \qquad \, i \in \lbrace 0 , 1 , \dots, 8  - 1 = 7 \rbrace  \\
+  2j \in \lbrace 2 ,4 , 6 , 8 \rbrace, \, j \in \lbrace 1,2,3,4 \rbrace \\ 
+  i = 2j - 1 \in \lbrace 1,3,5,7 \rbrace \\
+  j \in \lbrace 1 , 2 \rbrace , \qquad \, i \in \lbrace 3 , 7 \rbrace \\
+  j\in \lbrace 1 \rbrace , \qquad \, i \in \lbrace 7 \rbrace
+  \end{gathered}
+\end{gathered}
+\]
+
+Then $\forall \, k = \lbrace 1, 2, \dots , \lfloor \log_2{ N} \rfloor \rbrace$,
+\[
+\begin{aligned}
+  & k =1 , \qquad \, f_{\text{out}}[i] = \begin{cases} f[i] + f[i-1] & \text{ if } i = 2j - 1 , \, j \in \lbrace 1,2, \dots \lfloor N/2 \rfloor \rbrace \\
+    f[i] & \text{ otherwise } \end{cases} \\
+    & k =2 , \qquad \, f_{\text{out}}[i] = \begin{cases} f[i] + f[i-2^{(k-1)}] & \text{ if } i = 2^2j - 1 , \, j \in \lbrace 1,2, \dots \lfloor N/2^2 \rfloor \rbrace \\
+    f[i] & \text{ otherwise } \end{cases} \\ 
+  & k \phantom{=1}  , \qquad \, f_{\text{out}}[i] = \begin{cases} f[i] + f[i-2^{(k-1)}] & \text{ if } i = 2^kj - 1 , \, j \in \lbrace 1,2, \dots \lfloor N/2^k \rfloor \rbrace \\
+    f[i] & \text{ otherwise } \end{cases}
+\end{aligned}
+\]
+
+Thus
+\begin{definition}[Blelloch scan: 1st part that's reduce, i.e. up sweep]
+  \[
+\forall \, k \in \lbrace 1, 2, \dots \lfloor \log_2{N} \rfloor \rbrace
+\]
+\begin{equation}
+  f_{\text{out}}[i] = \begin{cases} f[i] + f[i-2^{(k-1)}] & \text{ if } i = 2^kj - 1 , \, j \in \lbrace 1,2, \dots \lfloor N/2^k \rfloor \rbrace \\
+    f[i] & \text{ otherwise } \end{cases}
+  \end{equation}
+for
+\begin{tikzpicture}
+  \matrix (m) [matrix of math nodes, row sep=1.2em, column sep=5em, minimum width=2em]
+  {
+    f & f_{\text{out}} \\
+    K^N & K^N \\
+};
+  \path[|->]
+  (m-1-1) edge node [auto] {$\text{}$} (m-1-2);
+\path[->]
+  (m-2-1) edge node [auto] {$\text{}$} (m-2-2)
+  ;
+  \end{tikzpicture}
+  \end{definition}
+
+\subsubsection{Blelloch scan, down sweep part}
+
+Now consider the down sweep.  First, importantly, set the ``last'' element in the array, entry number $\lfloor \log_2{N} \rfloor$, $N$ being the length of the array, to the identity element of $K$.  
+
+I'll present the first few induction steps explicitly, and the general form can be guessed from there.
+
+
+\[
+\forall \, k \in \lbrace \lfloor \log_2N \rfloor , \lfloor \log_2N \rfloor -1, \dots , 2, 1 \rbrace
+\]
+If $i = 2^kj - 1$, \, $j\in \lbrace 1,2, \dots , \lfloor N/2^k \rfloor \rbrace$, for e.g. $k = \lfloor \log_2N \rfloor$,
+\[
+\begin{aligned}
+  & f_{\text{out}}[i-2^{(k-1)}] = f[i] \\ 
+  & f_{\text{out}}[i] = f[i] + f[i-2^{(k-1)} ]
+  \end{aligned}
+\]
+For $k = \lfloor \log_2 N \rfloor -1$, e.g. $k=3-1=2$, then for this exmaple, \\
+e.g. $i=2^kj-1 = 4j-1$; $j\in \lbrace 1,2 \rbrace$, $i\in \lbrace 3,7\rbrace$,
+\[
+\begin{aligned}
+  & f_{\text{out}}[i] = f[i] + f[i-2] \\ 
+  & f_{\text{out}}[i-2] = f[i]
+\end{aligned}
+\]
+
+Thus, in general,
+\begin{definition}[Blelloch scan: down sweep step]
+\[
+\forall \, k \in \lbrace \lfloor \log_2N \rfloor , \lfloor \log_2N \rfloor -1, \dots , 2, 1 \rbrace
+\]
+\begin{equation}
+\begin{cases}
+\begin{aligned} &   f_{\text{out}}[i] := f[i] + f[i-2^{(k-1)}] \\ 
+  & f_{\text{out}}[i-2^{(k-1)}] := f[i] \end{aligned} & \text{ if } i = 2^kj-1 \text{ and } j \in \lbrace 1,2, \dots , \lfloor N/2^k \rfloor \rbrace \\
+f_{\text{out}}[i] := f[i]  & \text{ otherwise}
+  \end{cases}
+\end{equation}
+\end{definition}
+
+
+
+
+cf.  \href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/907138050923#}{Problem Set 3} 
+
+\subsubsection*{Histogram Equalization}
+
+\begin{enumerate}
+\item Map
+\item Reduce
+\item Scatter
+\item Scan
+  \end{enumerate}
+
 \section{Pointers in C; Pointers in C categorified (interpreted in Category Theory)}
 
 Suppose $v\in \text{ObjData}$, category of data \textbf{Data}, \\
