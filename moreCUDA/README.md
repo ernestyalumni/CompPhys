@@ -12,8 +12,11 @@ to the CUDA programming model, Robert Hochberg](http://www.shodor.org/media/cont
   * more links I found
     - [5KK73 GPU assignment website 2014/2015](http://www.es.ele.tue.nl/~mwijtvliet/5KK73/?page=mmcuda)
     - [Tiled Matrix Multiplication Kernel](http://www.umiacs.umd.edu/~ramani/cmsc828e_gpusci/Lecture5.pdf)
+- **Hillis/Steele (inclusive)** and **Blelloch (i.e. Prefix, exclusive) scan(s)** in subdirectory `scan`
+
 
 In this `README.md`:
+- `scan`, containing **Hillis/Steele (inclusive)** and **Blelloch (i.e. Prefix, exclusive) scan(s)**
 - `cudaMemcpy`
 - Pitched Pointer, 2d array, 3d array on the device
 - Constant Memory, `__constant__`
@@ -26,6 +29,20 @@ In this `README.md`:
 | --------------- | :-------------------------------------: | :---------------------- |
 | `dev3darray.cu` | `cudaMalloc3DArray`                     |                         |
 | `learrays.cu`   | `__constant__`, `cudaMemcpy`, `cudaMalloc` | arrays of `float3`, on host, on device |
+| `./scan/`       | scan, scans, Hillis/Steele (inclusive) scan, Blelloch (exclusive) scan, Prefix scan | Hillis/Steele (inclusive) and Blelloch (i.e. Prefix, exclusive) scan(s) |     
+
+### Hillis/Steele (inclusive) scan, Blelloch (prefix; exclusive) scan(s)
+
+In the subdirectory [`scan` in Lesson Code Snippets 3](https://github.com/ernestyalumni/cs344/tree/master/Lesson%20Code%20Snippets/Lesson%203%20Code%20Snippets/scan) is an implementation in **CUDA C++11 and C++11**, with global memory, of the *Hillis/Steele* (inclusive) scan, *Blelloch* (prefix; exclusive) scan(s), each in both parallel and serial implementation.  
+
+As you can see, for large float arrays, running parallel implementations in CUDA C++11, where I used the GeForce GTX 980 Ti **smokes** being run serially on the CPU (I use for a CPU the *Intel® Xeon(R) CPU E5-1650 v3 @ 3.50GHz × 12*.
+
+![scansmain](https://ernestyalumni.files.wordpress.com/2016/11/scansmainscreenshot20from202016-11-042005-12-36.png)
+
+Note that I was learning about the Hillis/Steele and Blelloch (i.e. Prefix) scan(s) methods in conjunction with Udacity's cs344, <a href="https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/903740660923#">Lesson 3 - Fundamental GPU Algorithms (Reduce, Scan, Histogram), i.e. Unit 3.</a>.  I have a writeup of the notes I took related to these scans, formulating them mathematically, on my big <a href="https://github.com/ernestyalumni/CompPhys/blob/master/LaTeXandpdfs/CompPhys.pdf">CompPhys.pdf, Computational Physics notes</a>.    
+
+
+
 
 ## `cudaMemcpy`
 
