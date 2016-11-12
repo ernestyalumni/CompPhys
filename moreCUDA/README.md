@@ -39,7 +39,7 @@ In this `README.md`:
 
 
 | CUDA Runtime API  | Samples | Directory (in Toolkit 8.0) | folder (in Toolkit 8.0) |
-| : ------------- : | :------ | -------------------------: | ----------------------  |
+| :---------------: | :------ | -------------------------: | ----------------------  |
 | `cudaMallocArray` | Pitch Linear Texture, Simple Surface Write, Simple Texture | `0_Simple` | `simplePitchLinearTexture`, `simpleSurfaceWrite`, `simpleTexture` | 
 
 ### Hillis/Steele (inclusive) scan, Blelloch (prefix; exclusive) scan(s)
