@@ -19,6 +19,7 @@ In this `README.md`:
 - `scan`, containing **Hillis/Steele (inclusive)** and **Blelloch (i.e. Prefix, exclusive) scan(s)**
 - `cudaMemcpy`
 - Pitched Pointer, 2d array, 3d array on the device
+- `cudaMallocArray` and associated examples (in NVIDIA CUDA 8.0 Samples)
 - Constant Memory, `__constant__`
 - Finite-Difference, shared memory, tiling
 - C++ Classes on the device, GPU
@@ -30,6 +31,14 @@ In this `README.md`:
 | `dev3darray.cu` | `cudaMalloc3DArray`                     |                         |
 | `learrays.cu`   | `__constant__`, `cudaMemcpy`, `cudaMalloc` | arrays of `float3`, on host, on device |
 | `./scan/`       | scan, scans, Hillis/Steele (inclusive) scan, Blelloch (exclusive) scan, Prefix scan | Hillis/Steele (inclusive) and Blelloch (i.e. Prefix, exclusive) scan(s) |     
+
+
+| Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
+| ------- |
+| cf. [Table 5. CUDA Runtime API](http://docs.nvidia.com/cuda/cuda-samples/index.html#runtime-cudaapi) |
+| CUDA Runtime API  | Samples | Directory (in Toolkit 8.0) | folder (in Toolkit 8.0) |
+| : ------------- : | :------ | -------------------------: | ----------------------  |
+| `cudaMallocArray` | Pitch Linear Texture, Simple Surface Write, Simple Texture | `0_Simple` | `simplePitchLinearTexture`, `simpleSurfaceWrite`, `simpleTexture` |
 
 ### Hillis/Steele (inclusive) scan, Blelloch (prefix; exclusive) scan(s)
 
@@ -173,9 +182,12 @@ where `Type` species type of surface reference and is equal to
 `surfRef` is an arbitrary name (can be `outputSurf`, etc.)
 
 
+
 ### Shared Memory  
 
 [Using Shared Memory in CUDA C/C++](https://devblogs.nvidia.com/parallelforall/using-shared-memory-cuda-cc/) by [Mark Harris](https://devblogs.nvidia.com/parallelforall/author/mharris/)
+
+## `cudaMallocArray` and associated examples (in NVIDIA CUDA 8.0 Samples)
 
 ## Constant Memory, `__constant__`
 
