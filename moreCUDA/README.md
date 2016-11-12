@@ -13,7 +13,7 @@ to the CUDA programming model, Robert Hochberg](http://www.shodor.org/media/cont
     - [5KK73 GPU assignment website 2014/2015](http://www.es.ele.tue.nl/~mwijtvliet/5KK73/?page=mmcuda)
     - [Tiled Matrix Multiplication Kernel](http://www.umiacs.umd.edu/~ramani/cmsc828e_gpusci/Lecture5.pdf)
 - **Hillis/Steele (inclusive)** and **Blelloch (i.e. Prefix, exclusive) scan(s)** in subdirectory `scan`
-
+- Texture memory explanation and some examples in [`./samples02`](https://github.com/ernestyalumni/CompPhys/tree/master/moreCUDA/samples02)
 
 In this `README.md`:
 - `scan`, containing **Hillis/Steele (inclusive)** and **Blelloch (i.e. Prefix, exclusive) scan(s)**
@@ -31,7 +31,9 @@ In this `README.md`:
 | --------------- | :-------------------------------------: | :---------------------- |
 | `dev3darray.cu` | `cudaMalloc3DArray`                     |                         |
 | `learrays.cu`   | `__constant__`, `cudaMemcpy`, `cudaMalloc` | arrays of `float3`, on host, on device |
-| `./scan/`       | scan, scans, Hillis/Steele (inclusive) scan, Blelloch (exclusive) scan, Prefix scan | Hillis/Steele (inclusive) and Blelloch (i.e. Prefix, exclusive) scan(s) | | `./samples02/tex1dlinearmem.cu` | `texture<,,>`, `tex1D`,`cudaBindTexture` | texture memory of 1-dim. linear array |    
+| `./scan/`       | scan, scans, Hillis/Steele (inclusive) scan, Blelloch (exclusive) scan, Prefix scan | Hillis/Steele (inclusive) and Blelloch (i.e. Prefix, exclusive) scan(s) | | `./samples02/tex1dlinearmem.cu` | `texture<,,>`, `tex1D`,`cudaBindTexture` | texture memory of 1-dim. linear array, cf. [CUDA Advanced Memory Usage and Optimization, Yukai Hung, National Taiwan Univ.](http://www.math.ntu.edu.tw/~wwang/mtxcomp2010/download/cuda_04_ykhung.pdf) |    
+| `./samples02/tex1dlinearmemb.cu` | `texture<,,>`, `tex1D`,`cudaBindTexture` | texture memory of 1-dim. linear array, same as `tex1dlinearmem.cu`, but with print out of results (sanity checks) |    
+
 
 
 | Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
@@ -161,7 +163,28 @@ with `CHAR_BIT` being the size of 1 byte in bits and `sizeof(float)` being the s
 
 ### Texture memory
 
-[Textures from Moshovos, http://www.eecg.toronto.edu/~moshovos/CUDA08/slides/008 - Textures.ppt (1.742 Mb)](http://www.eecg.toronto.edu/~moshovos/CUDA08/doku.php?id=lecture_slides)
+One useful explanation: [Textures from Moshovos, http://www.eecg.toronto.edu/~moshovos/CUDA08/slides/008 - Textures.ppt (1.742 Mb)](http://www.eecg.toronto.edu/~moshovos/CUDA08/doku.php?id=lecture_slides)
+
+[`./samples02/tex1dlinearmemb.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/tex1dlinearmemb.cu) is an instructive, pedagogical, and simple example of texture memory, over linear memory.  Let's take a look at what stuff means for [*texture reference*](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#texture-reference-api).  
+
+From the [Texture Reference API documentation, 3.2.11.1.2.](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#texture-reference-api): texture reference is declared at file scope as variable of type texture:
+```
+texture<DataType, Type, ReadMode> texRef;
+```
+where:
+
+* `DataType` specifies type of texel;  
+* `Type` species type of texture reference and is equal to `cudaTextureType1D`, `cudaTextureType2D`, or `cudaTextureType3D`, for a one-dimensional, two-dimensional, or three-dimensional texture, respectively, or `cudaTextureType1DLayered` or `cudaTextureType2DLayered` for a one-dimensional or two-dimensional layered texture respectively; `Type` is an optional argument which defaults to `cudaTextureType1D`;  
+* `ReadMode` specifies the read mode; it is an optional argument which defaults to `cudaReadModeElementType`.
+
+A texture reference can only be declared as a static global variable and cannot be passed as an argument to a function
+
+
+Follow us: @GPUComputing on Twitter | NVIDIA on Facebook
+
+
+
+
 
 **If** you cannot write to texture memory, but only be able to write to surface memory, then I will implement in surface memory.  
 
