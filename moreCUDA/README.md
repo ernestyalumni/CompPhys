@@ -37,9 +37,10 @@ In this `README.md`:
 | ------- |
 | cf. [Table 5. CUDA Runtime API](http://docs.nvidia.com/cuda/cuda-samples/index.html#runtime-cudaapi) |
 
+
 | CUDA Runtime API  | Samples | Directory (in Toolkit 8.0) | folder (in Toolkit 8.0) |
 | : ------------- : | :------ | -------------------------: | ----------------------  |
-| `cudaMallocArray` | Pitch Linear Texture, Simple Surface Write, Simple Texture | `0_Simple` | `simplePitchLinearTexture`, `simpleSurfaceWrite`, `simpleTexture` |
+| `cudaMallocArray` | Pitch Linear Texture, Simple Surface Write, Simple Texture | `0_Simple` | `simplePitchLinearTexture`, `simpleSurfaceWrite`, `simpleTexture` | 
 
 ### Hillis/Steele (inclusive) scan, Blelloch (prefix; exclusive) scan(s)
 
