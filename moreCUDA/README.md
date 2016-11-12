@@ -20,6 +20,7 @@ In this `README.md`:
 - `cudaMemcpy`
 - Pitched Pointer, 2d array, 3d array on the device
 - `cudaMallocArray` and associated examples (in NVIDIA CUDA 8.0 Samples)
+- Texture memory
 - Constant Memory, `__constant__`
 - Finite-Difference, shared memory, tiling
 - C++ Classes on the device, GPU
@@ -30,7 +31,7 @@ In this `README.md`:
 | --------------- | :-------------------------------------: | :---------------------- |
 | `dev3darray.cu` | `cudaMalloc3DArray`                     |                         |
 | `learrays.cu`   | `__constant__`, `cudaMemcpy`, `cudaMalloc` | arrays of `float3`, on host, on device |
-| `./scan/`       | scan, scans, Hillis/Steele (inclusive) scan, Blelloch (exclusive) scan, Prefix scan | Hillis/Steele (inclusive) and Blelloch (i.e. Prefix, exclusive) scan(s) |     
+| `./scan/`       | scan, scans, Hillis/Steele (inclusive) scan, Blelloch (exclusive) scan, Prefix scan | Hillis/Steele (inclusive) and Blelloch (i.e. Prefix, exclusive) scan(s) | | `./samples02/tex1dlinearmem.cu` | `texture<,,>`, `tex1D`,`cudaBindTexture` | texture memory of 1-dim. linear array |    
 
 
 | Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
