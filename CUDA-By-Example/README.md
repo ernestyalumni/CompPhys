@@ -27,6 +27,7 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 | [gpujuliab.cu](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpujuliab.cu) | 46-57 | 4.2.2 A Fun Example    | Julia Sets! My own version, where you can set the scale factor when calling the executable (argv) |
 | gpuvecsumredux.cu  | 61-62 | 5.2.1 Vector Sums: Redux | GPU Vector Sums using Threads|
 | gpuvecsumredux2.cu  | 67-69 | 5.2.1 Vector Sums: Redux | GPU Vector Sums using Blocks and Threads|
+| gpuvecsumredux3.cu  | 63-69 | 5.2.1 Vector Sums: Redux | GPU Sums of Arbitrarily Long Threads |
 | gpuripple.cu  | 69-74 | 5.2.2 GPU Ripple Using Threads | Animated standing wave |
 | dotprod.cu    | 69-74 | 5.3.1 Dot product | illustrations sharing between threads in a block, novel dot product summation scheme, using `__shared__` |
 | dotprodcpp.cu    | 69-74 | 5.3.1 Dot product | Same as `dotprod.cu` but I attempt to implement C++11 coding methods, such as `new` and `delete`, as opposed to `malloc` and `free` |
@@ -48,6 +49,7 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 ### My own CUDA C/C++ scripts/projects
 | filename              | Directory | Description                  |
 | --------------------- | :-------: | :--------------------------: |
+| `gaussianprof.cu`     | `./`      | Sanity check for initializing on the device GPU a 1-dimensional gaussian |
 | `graphicsinteropb.cu` | `./`      | I wrote up a header file `gpu_bitmap.h` (see `./common/`) that packages up the CUDA and OpenGL buffer calls (so they call on the same buffer, which you access through the `devPtr` pointer) so that the bitmap gets rendered on the GPU and not the CPU; this file implements [`graphicsinterop.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/graphicsinterop.cu) |
 | `gpujuliac.cu`        | `./`      | Same as ['gpujulia.cu'](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpujulia.cu) but it's rendered on the GPU (as it should!) as opposed to being rendered (the Julia set, that is) on the CPU |
 
@@ -55,6 +57,10 @@ I'm also looking at Bjarne Stroustrup's **A Tour of C++** (2013) Addison-Wesley,
 ## Awesome gallery of results out of CUDA C/C++, CUDA By Examples
 
 Pretty graphics and animation keeps (me, at least) one motivated.
+
+From [`gaussianprof.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gaussianprof.cu)
+
+![From `gaussianprof.cu`](https://raw.githubusercontent.com/ernestyalumni/CompPhys/master/CUDA-By-Example/imgs/gaussianprofScreenshot%20from%202016-11-13%2014-08-03.png)
 
 From [`gpujulia.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/CUDA-By-Example/gpujulia.cu),
 
