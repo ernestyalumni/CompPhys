@@ -236,6 +236,7 @@ fetches from the CUDA array specified by the one-dimensional texture object `tex
 cf. [Programming Interface, CUDA Toolkit Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#axzz4PoIffz3h)
 
 The other attributes of a texture reference are mutable and can be changed at runtime through the host runtime. As explained in the reference manual, the runtime API has a *low-level* C-style interface and a *high-level* C++-style interface. The `texture` type is defined in the high-level API as a structure publicly derived from the `textureReference` type defined in the low-level API, `textureReference`:
+
 ```  
 struct textureReference {
     int                          normalized;
@@ -248,24 +249,27 @@ struct textureReference {
     float                        mipmapLevelBias;
     float                        minMipmapLevelClamp;
     float                        maxMipmapLevelClamp;
-}  
+}    
 ```
 
     * `normalized` specifies whether texture coordinates are normalized or not;  
     * `filterMode` specifies the filtering mode;  
     * `addressMode` specifies the addressing mode;  
     * `channelDesc` describes the format of the texel; it must match the DataType argument of the texture reference declaration; `channelDesc` is of the following type:
+
 ```
     struct cudaChannelFormatDesc {
       int x, y, z, w;
       enum cudaChannelFormatKind f;
     };
 ```
-    where `x`, `y`, `z`, and `w` are equal to the number of bits of each component of the returned value and f is:
+
+where `x`, `y`, `z`, and `w` are equal to the number of bits of each component of the returned value and f is:
         * `cudaChannelFormatKindSigned` if these components are of signed integer type,
         * `cudaChannelFormatKindUnsigned` if they are of unsigned integer type,
-        * `cudaChannelFormatKindFloat` if they are of floating point type.
-```  
+        * `cudaChannelFormatKindFloat` if they are of floating point type.  
+
+  
 The `cudaTextureDesc struct` is defined as  
 ```
 ‎        struct cudaTextureDesc {
