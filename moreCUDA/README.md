@@ -237,7 +237,7 @@ cf. [Programming Interface, CUDA Toolkit Documentation](http://docs.nvidia.com/c
 
 The other attributes of a texture reference are mutable and can be changed at runtime through the host runtime. As explained in the reference manual, the runtime API has a *low-level* C-style interface and a *high-level* C++-style interface. The `texture` type is defined in the high-level API as a structure publicly derived from the `textureReference` type defined in the low-level API, `textureReference`:
 
-```  
+  
 struct textureReference {
     int                          normalized;
     enum cudaTextureFilterMode   filterMode;
@@ -250,7 +250,7 @@ struct textureReference {
     float                        minMipmapLevelClamp;
     float                        maxMipmapLevelClamp;
 }    
-```
+
 
     * `normalized` specifies whether texture coordinates are normalized or not;  
     * `filterMode` specifies the filtering mode;  
