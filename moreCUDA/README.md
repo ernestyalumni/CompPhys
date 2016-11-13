@@ -291,7 +291,7 @@ The `cudaTextureDesc struct` is defined as
               };
 ```
 where  
-	* **`cudaTextureDesc::filterMode`**
+* **`cudaTextureDesc::filterMode`**
 `cudaTextureDesc::filterMode` specifies the filtering mode to be used when fetching from the texture. `cudaTextureFilterMode` is defined as:
 ```
     ‎        enum cudaTextureFilterMode {
@@ -320,8 +320,8 @@ texDesc.addressMode[1]   = cudaAddressModeWrap;
 texDesc.filterMode       = cudaFilterModeLinear;
 texDesc.readMode         = cudaReadModeElementType;
 texDesc.normalizedCoords = 1;
-```
-	* **`cudaTextureDesc::addressMode`**
+```  
+* **`cudaTextureDesc::addressMode`**  
 `cudaTextureDesc::addressMode` specifies the addressing mode for each dimension of the texture data. `cudaTextureAddressMode` is defined as:
 ```
     ‎        enum cudaTextureAddressMode {
@@ -366,7 +366,7 @@ __host__ ​cudaError_t cudaMemcpyToArray ( cudaArray_t dst,
 					 size_t hOffset,
 					 const void* src, size_t count,
 					 cudaMemcpyKind kind )
-```
+```  
 Copies data between host and device.  
 
 *Parameters*
@@ -383,24 +383,28 @@ Copies data between host and device.
     `kind`  
         - Type of transfer  
 
-    *Returns*
+    *Returns*  
 ```
     cudaSuccess,
     cudaErrorInvalidValue,
     cudaErrorInvalidDevicePointer,
     cudaErrorInvalidMemcpyDirection
-```
+```  
 *Description*
 
-    Copies count bytes from the memory area pointed to by src to the CUDA array dst starting at the upper left corner (wOffset, hOffset), where kind specifies the direction of the copy, and must be one of `cudaMemcpyHostToHost, cudaMemcpyHostToDevice, cudaMemcpyDeviceToHost, cudaMemcpyDeviceToDevice`, or `cudaMemcpyDefault`. Passing `cudaMemcpyDefault` is recommended, in which case the type of transfer is inferred from the pointer values. However, `cudaMemcpyDefault` is only allowed on systems that support unified virtual addressing.
+Copies count bytes from the memory area pointed to by src to the CUDA array dst starting at the upper left corner (wOffset, hOffset), where kind specifies the direction of the copy, and must be one of `cudaMemcpyHostToHost, cudaMemcpyHostToDevice, cudaMemcpyDeviceToHost, cudaMemcpyDeviceToDevice`, or `cudaMemcpyDefault`. Passing `cudaMemcpyDefault` is recommended, in which case the type of transfer is inferred from the pointer values. However, `cudaMemcpyDefault` is only allowed on systems that support unified virtual addressing.
 
-    Note:
+Note:
     * Note that this function may also return error codes from previous, asynchronous launches.   
-    * This function exhibits synchronous behavior for most use cases.
+    * This function exhibits synchronous behavior for most use cases.  
+e.g. 
+```
+float* hmatrix
+cudaArray* carray
+const int bytes = sizeof(float)*size*size
 
-
-
-
+cudaMemcpyToArray(carray,0,0,hmatrix,bytes,cudaMemcpyHostToDevice);
+```
 
 
 
