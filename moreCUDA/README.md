@@ -358,6 +358,47 @@ texDesc.filterMode       = cudaFilterModeLinear;
 texDesc.readMode         = cudaReadModeElementType;
 texDesc.normalizedCoords = 1;
 ```
+- **`cudaMemcpyToArray`**  
+cf. [Memory Management, CUDA Toolkit 8.0 Documentation](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1gcc65e278074cfe8f06aaa25788b7dc25)
+```
+__host__ ​cudaError_t cudaMemcpyToArray ( cudaArray_t dst,
+	 	     		       	 size_t wOffset,
+					 size_t hOffset,
+					 const void* src, size_t count,
+					 cudaMemcpyKind kind )
+```
+Copies data between host and device.  
+
+*Parameters*
+`dst`  
+	- Destination memory address   
+`wOffset`  
+        - Destination starting X offset  
+    `hOffset`  
+        - Destination starting Y offset   
+    `src`    
+        - Source memory address   
+    `count`  
+        - Size in bytes to copy  
+    `kind`  
+        - Type of transfer  
+
+    *Returns*
+```
+    cudaSuccess,
+    cudaErrorInvalidValue,
+    cudaErrorInvalidDevicePointer,
+    cudaErrorInvalidMemcpyDirection
+```
+*Description*
+
+    Copies count bytes from the memory area pointed to by src to the CUDA array dst starting at the upper left corner (wOffset, hOffset), where kind specifies the direction of the copy, and must be one of `cudaMemcpyHostToHost, cudaMemcpyHostToDevice, cudaMemcpyDeviceToHost, cudaMemcpyDeviceToDevice`, or `cudaMemcpyDefault`. Passing `cudaMemcpyDefault` is recommended, in which case the type of transfer is inferred from the pointer values. However, `cudaMemcpyDefault` is only allowed on systems that support unified virtual addressing.
+
+    Note:
+    * Note that this function may also return error codes from previous, asynchronous launches.   
+    * This function exhibits synchronous behavior for most use cases.
+
+
 
 
 
