@@ -36,6 +36,7 @@ In this `README.md`:
 | `./samples02/tex1dlinearmemb.cu` | `texture<,,>`, `tex1Dfetch`,`cudaBindTexture` | texture memory of 1-dim. linear array, same as `tex1dlinearmem.cu`, but with print out of results (sanity checks) |    
 | `./samples02/tex2dcuArray.cu` | `texture<,,>`, `tex2D`, `cudaArray`, `cudaChannelFormatDesc`, `cudaCreateChannelDesc`, `cudaMallocArray`, `.filterMode`, `.addressMode` | texture float memory over 2-dimensional cuda Array |
 | `./samples02/tex3dcuArray.cu` | `tex3D` | texture float memory over 3-dimensional cuda Array |
+| `./samples02/simpletransform.cu` | `cudaTextureObject_t`, `cudaCreateChannelDesc` | code sample, in *VERBATIM*, (attempting) to apply some simple transformation kernel to a texture cf. [3.2.11.1.1. Texture Object API of CUDA Toolkit 8 Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#abstract) |
 
 | Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
 | ------- |
@@ -299,7 +300,7 @@ where
                       cudaFilterModeLinear = 1
                   };
 ```
-e.g. from [`./samples02/tex2dcuArray.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/tex2dcuArray.cu), and `simplePitchLinearTexture.cu` in `NVIDIA_CUDA-8.0_Samples/0_Simple`, [Programming Interface, CUDA Toolkit Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#axzz4PoIffz3h)
+e.g. from [`./samples02/tex2dcuArray.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/tex2dcuArray.cu), and `simplePitchLinearTexture.cu` in `NVIDIA_CUDA-8.0_Samples/0_Simple`, indexed in [CUDA Runtime API Samples](http://docs.nvidia.com/cuda/cuda-samples/index.html#runtime-cudaapi), [Programming Interface, CUDA Toolkit Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#axzz4PoIffz3h)
 ```
 texture<float,2,cudaReadModeElementType> texreference;
 texture<float, 2, cudaReadModeElementType> texRefPL;
@@ -333,7 +334,7 @@ texDesc.normalizedCoords = 1;
 ```
 This is ignored if `cudaResourceDesc::resType` is `cudaResourceTypeLinear`. Also, if `cudaTextureDesc::normalizedCoords` is set to zero, `cudaAddressModeWrap` and `cudaAddressModeMirror` won't be supported and will be switched to `cudaAddressModeClamp`.
 
-e.g. from [`./samples02/tex2dcuArray.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/tex2dcuArray.cu), and `simplePitchLinearTexture.cu` in `NVIDIA_CUDA-8.0_Samples/0_Simple`, [Programming Interface, CUDA Toolkit Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#axzz4PoIffz3h)
+e.g. from [`./samples02/tex2dcuArray.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/tex2dcuArray.cu), and `simplePitchLinearTexture.cu` in `NVIDIA_CUDA-8.0_Samples/0_Simple`, indexed in [CUDA Runtime API Samples](http://docs.nvidia.com/cuda/cuda-samples/index.html#runtime-cudaapi), [Programming Interface, CUDA Toolkit Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#axzz4PoIffz3h)
 ```
 texture<float,2,cudaReadModeElementType> texreference;
 texture<float, 2, cudaReadModeElementType> texRefPL;
@@ -394,19 +395,72 @@ Copies data between host and device.
 
 Copies count bytes from the memory area pointed to by src to the CUDA array dst starting at the upper left corner (wOffset, hOffset), where kind specifies the direction of the copy, and must be one of `cudaMemcpyHostToHost, cudaMemcpyHostToDevice, cudaMemcpyDeviceToHost, cudaMemcpyDeviceToDevice`, or `cudaMemcpyDefault`. Passing `cudaMemcpyDefault` is recommended, in which case the type of transfer is inferred from the pointer values. However, `cudaMemcpyDefault` is only allowed on systems that support unified virtual addressing.
 
-Note:
-    * Note that this function may also return error codes from previous, asynchronous launches.   
-    * This function exhibits synchronous behavior for most use cases.  
-e.g. 
+Note:  
+* Note that this function may also return error codes from previous, asynchronous launches.    
+* This function exhibits synchronous behavior for most use cases.  
+e.g. cf. [`./samples02/tex2dcuArray.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/tex2dcuArray.cu), `simplePitchLinearTexture.cu` in `NVIDIA_CUDA-8.0_Samples/0_Simple`
 ```
 float* hmatrix
 cudaArray* carray
 const int bytes = sizeof(float)*size*size
 
+// Set array size
+const int nx = 2048;
+const int ny = 2048;
+
+// Host allocation and initialization
+float *h_idata = (float *) malloc(sizeof(float) * nx * ny ) ; 
+
+// Array intput data
+cudaArray *d_idataArray;
+
+// 0 is the wOffset, destination starting X offset
+// 0 is the hOffset, destination starting Y offset
 cudaMemcpyToArray(carray,0,0,hmatrix,bytes,cudaMemcpyHostToDevice);
+
+cudaMemcpyToArray(d_idataArray,
+		0,
+		0,
+		h_idata,
+		nx * ny * sizeof(float),
+		cudaMemcpyHostToDevice));
 ```
+- **`memset`**
+cf. [**`memset`**](http://www.cplusplus.com/reference/cstring/memset/), 
 
 
+.
+function
+<cstring>
+memset
+
+void * memset ( void * ptr, int value, size_t num );
+
+Fill block of memory
+Sets the first num bytes of the block of memory pointed by ptr to the specified value (interpreted as an unsigned char).
+
+Parameters
+
+ptr
+    Pointer to the block of memory to fill.
+value
+    Value to be set. The value is passed as an int, but the function fills the block of memory using the unsigned char conversion of this value.
+num
+    Number of bytes to be set to the value.
+    size_t is an unsigned integral type.
+e.g. [CUDA pro tip kepler texture objects](https://devblogs.nvidia.com/parallelforall/cuda-pro-tip-kepler-texture-objects-improve-performance-and-flexibility/)
+```
+memset(&resDesc, 0, sizeof(resDesc));
+```
+- **`cudaCreateChannelDesc`**  
+
+
+e.g. from [3.2.11.1.1. Texture Object API of CUDA Toolkit 8 Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#abstract), and also [`./samples02/simpletransform.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/simpletransform.cu)
+```
+cudaChannelFormatDesc channelDesc =
+		      cudaCreateChannelDesc(32, 0, 0, 0,
+		      				cudaChannelFormatKindFloat);
+```
 
 
 **If** you cannot write to texture memory, but only be able to write to surface memory, then I will implement in surface memory.  
