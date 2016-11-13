@@ -453,6 +453,45 @@ e.g. [CUDA pro tip kepler texture objects](https://devblogs.nvidia.com/parallelf
 memset(&resDesc, 0, sizeof(resDesc));
 ```
 - **`cudaCreateChannelDesc`**  
+cf. [4.23. Texture Reference Management](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TEXTURE.html#group__CUDART__TEXTURE_1g39df9e3b6edc41cd6f189d2109672ca5)
+```  
+__host__ ​cudaChannelFormatDesc cudaCreateChannelDesc ( int  x, int  y, int  z, int  w,
+	 		       			       cudaChannelFormatKind f )
+```  
+Returns a channel descriptor using the specified format. 
+
+Further,
+```
+__host__ ​cudaChannelFormatDesc cudaCreateChannelDesc ( int  x, int  y, int  z, int  w,
+	 cudaChannelFormatKind f )
+```
+    Returns a channel descriptor using the specified format.
+
+*Parameters*
+    x
+        - X component 
+    y
+        - Y component 
+    z
+        - Z component 
+    w
+        - W component 
+    f
+        - Channel format
+
+    *Returns*  
+    Channel descriptor with format f
+
+    *Description*  
+    Returns a channel descriptor with format f and number of bits of each component x, y, z, and w. The cudaChannelFormatDesc is defined as:
+```
+    ‎  struct cudaChannelFormatDesc {
+              int x, y, z, w;
+              enum cudaChannelFormatKind 
+                      f;
+            };
+```
+    where cudaChannelFormatKind is one of cudaChannelFormatKindSigned, cudaChannelFormatKindUnsigned, or cudaChannelFormatKindFloat. 
 
 
 e.g. from [3.2.11.1.1. Texture Object API of CUDA Toolkit 8 Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#abstract), and also [`./samples02/simpletransform.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/simpletransform.cu)
@@ -461,6 +500,8 @@ cudaChannelFormatDesc channelDesc =
 		      cudaCreateChannelDesc(32, 0, 0, 0,
 		      				cudaChannelFormatKindFloat);
 ```
+
+
 
 
 **If** you cannot write to texture memory, but only be able to write to surface memory, then I will implement in surface memory.  
