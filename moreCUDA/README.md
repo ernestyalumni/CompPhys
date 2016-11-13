@@ -233,6 +233,38 @@ T tex1D(cudaTextureObject_t texObj, float x);
 ```
 fetches from the CUDA array specified by the one-dimensional texture object `texObj` using texture coordinate x.
 - **`cudaTextureDesc`**  
+cf. [Programming Interface, CUDA Toolkit Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#axzz4PoIffz3h)
+
+The other attributes of a texture reference are mutable and can be changed at runtime through the host runtime. As explained in the reference manual, the runtime API has a *low-level* C-style interface and a *high-level* C++-style interface. The `texture` type is defined in the high-level API as a structure publicly derived from the `textureReference` type defined in the low-level API, `textureReference`:
+```
+struct textureReference {
+    int                          normalized;
+    enum cudaTextureFilterMode   filterMode;
+    enum cudaTextureAddressMode  addressMode[3];
+    struct cudaChannelFormatDesc channelDesc;
+    int                          sRGB;
+    unsigned int                 maxAnisotropy;
+    enum cudaTextureFilterMode   mipmapFilterMode;
+    float                        mipmapLevelBias;
+    float                        minMipmapLevelClamp;
+    float                        maxMipmapLevelClamp;
+}
+```
+    * `normalized` specifies whether texture coordinates are normalized or not;  
+    * `filterMode` specifies the filtering mode;  
+    * `addressMode` specifies the addressing mode;  
+    * `channelDesc` describes the format of the texel; it must match the DataType argument of the texture reference declaration; `channelDesc` is of the following type:
+```
+    struct cudaChannelFormatDesc {
+      int x, y, z, w;
+      enum cudaChannelFormatKind f;
+    };
+```
+    where `x`, `y`, `z`, and `w` are equal to the number of bits of each component of the returned value and f is:
+        * `cudaChannelFormatKindSigned` if these components are of signed integer type,
+        * `cudaChannelFormatKindUnsigned` if they are of unsigned integer type,
+        * `cudaChannelFormatKindFloat` if they are of floating point type.
+```  
 The `cudaTextureDesc struct` is defined as  
 ```
 ‎        struct cudaTextureDesc {
@@ -262,11 +294,14 @@ where
                       cudaFilterModeLinear = 1
                   };
 ```
-e.g. from [`./samples02/tex2dcuArray.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/tex2dcuArray.cu), and `simplePitchLinearTexture.cu` in `NVIDIA_CUDA-8.0_Samples/0_Simple`
+e.g. from [`./samples02/tex2dcuArray.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/tex2dcuArray.cu), and `simplePitchLinearTexture.cu` in `NVIDIA_CUDA-8.0_Samples/0_Simple`, [Programming Interface, CUDA Toolkit Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#axzz4PoIffz3h)
 ```
 texture<float,2,cudaReadModeElementType> texreference;
 texture<float, 2, cudaReadModeElementType> texRefPL;
 texture<float, 2, cudaReadModeElementType> texRefArray;
+
+struct cudaTextureDesc texDesc;
+memset(&texDesc,0, sizeof(texDesc));
 
 texreference.filterMode=cudaFilterModePoint;
 
@@ -274,6 +309,12 @@ texRefPL.normalized = 1;
 texRefPL.filterMode = cudaFilterModePoint;
 texRefArray.normalized = 1;
 texRefArray.filterMode = cudaFilterModePoint;
+
+texDesc.addressMode[0]   = cudaAddressModeWrap;
+texDesc.addressMode[1]   = cudaAddressModeWrap;
+texDesc.filterMode       = cudaFilterModeLinear;
+texDesc.readMode         = cudaReadModeElementType;
+texDesc.normalizedCoords = 1;
 ```
 	* **`cudaTextureDesc::addressMode`**
 `cudaTextureDesc::addressMode` specifies the addressing mode for each dimension of the texture data. `cudaTextureAddressMode` is defined as:
@@ -287,25 +328,32 @@ texRefArray.filterMode = cudaFilterModePoint;
 ```
 This is ignored if `cudaResourceDesc::resType` is `cudaResourceTypeLinear`. Also, if `cudaTextureDesc::normalizedCoords` is set to zero, `cudaAddressModeWrap` and `cudaAddressModeMirror` won't be supported and will be switched to `cudaAddressModeClamp`.
 
-e.g. from [`./samples02/tex2dcuArray.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/tex2dcuArray.cu), and `simplePitchLinearTexture.cu` in `NVIDIA_CUDA-8.0_Samples/0_Simple`
-
+e.g. from [`./samples02/tex2dcuArray.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/tex2dcuArray.cu), and `simplePitchLinearTexture.cu` in `NVIDIA_CUDA-8.0_Samples/0_Simple`, [Programming Interface, CUDA Toolkit Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#axzz4PoIffz3h)
 ```
 texture<float,2,cudaReadModeElementType> texreference;
 texture<float, 2, cudaReadModeElementType> texRefPL;
 texture<float, 2, cudaReadModeElementType> texRefArray;
+
+struct cudaTextureDesc texDesc;
+memset(&texDesc,0, sizeof(texDesc));
 
 	// set texture address mode property
 	// use cudaAddressModeClamp or cudaAddressModeWrap
 texreference.addressMode[0]=cudaAddressModeWrap;
 texreference.addressMode[1]=cudaAddressModeClamp;
 
-
 texRefPL.addressMode[0] = cudaAddressModeWrap;
 texRefPL.addressMode[1] = cudaAddressModeWrap;
 texRefArray.addressMode[0] = cudaAddressModeWrap;
 texRefArray.addressMode[1] = cudaAddressModeWrap;
 
+texDesc.addressMode[0]   = cudaAddressModeWrap;
+texDesc.addressMode[1]   = cudaAddressModeWrap;
+texDesc.filterMode       = cudaFilterModeLinear;
+texDesc.readMode         = cudaReadModeElementType;
+texDesc.normalizedCoords = 1;
 ```
+
 
 
 
