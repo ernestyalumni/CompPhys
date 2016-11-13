@@ -3,6 +3,10 @@
  * gaussian profile on the GPU
  * Ernest Yeung ernestyalumni@gmail.com
  * 20160617
+ * 
+ * Compilation: I did this and it worked
+ * nvcc gaussianprof.cu -o gaussianprof -lglut -lGL
+ * 
  * */
 //#include <iostream>
 //using namespace std;
