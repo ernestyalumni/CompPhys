@@ -31,7 +31,8 @@ In this `README.md`:
 | --------------- | :-------------------------------------: | :---------------------- |
 | `dev3darray.cu` | `cudaMalloc3DArray`                     |                         |
 | `learrays.cu`   | `__constant__`, `cudaMemcpy`, `cudaMalloc` | arrays of `float3`, on host, on device |
-| `./scan/`       | scan, scans, Hillis/Steele (inclusive) scan, Blelloch (exclusive) scan, Prefix scan | Hillis/Steele (inclusive) and Blelloch (i.e. Prefix, exclusive) scan(s) | | `./samples02/tex1dlinearmem.cu` | `texture<,,>`, `tex1D`,`cudaBindTexture` | texture memory of 1-dim. linear array, cf. [CUDA Advanced Memory Usage and Optimization, Yukai Hung, National Taiwan Univ.](http://www.math.ntu.edu.tw/~wwang/mtxcomp2010/download/cuda_04_ykhung.pdf) |    
+| `./scan/`       | scan, scans, Hillis/Steele (inclusive) scan, Blelloch (exclusive) scan, Prefix scan | Hillis/Steele (inclusive) and Blelloch (i.e. Prefix, exclusive) scan(s) |
+| `./samples02/tex1dlinearmem.cu` | `texture<,,>`, `tex1D`,`cudaBindTexture` | texture memory of 1-dim. linear array, cf. [CUDA Advanced Memory Usage and Optimization, Yukai Hung, National Taiwan Univ.](http://www.math.ntu.edu.tw/~wwang/mtxcomp2010/download/cuda_04_ykhung.pdf) |    
 | `./samples02/tex1dlinearmemb.cu` | `texture<,,>`, `tex1D`,`cudaBindTexture` | texture memory of 1-dim. linear array, same as `tex1dlinearmem.cu`, but with print out of results (sanity checks) |    
 
 
@@ -161,7 +162,7 @@ with `CHAR_BIT` being the size of 1 byte in bits and `sizeof(float)` being the s
 
 [3.2.11.3. CUDA Arrays, CUDA Toolkit 7.5 Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cuda-arrays) "CUDA arrays are opaque memory layouts optimized for texture fetching. They are one dimensional, two dimensional, or three-dimensional and composed of elements, each of which has 1, 2 or 4 components that may be signed or unsigned 8-, 16-, or 32-bit integers, 16-bit floats, or 32-bit floats. **CUDA arrays are only accessible by kernels through texture fetching as described in Texture Memory or surface reading and writing as described in Surface Memory**."
 
-### Texture memory
+## Texture memory
 
 One useful explanation: [Textures from Moshovos, http://www.eecg.toronto.edu/~moshovos/CUDA08/slides/008 - Textures.ppt (1.742 Mb)](http://www.eecg.toronto.edu/~moshovos/CUDA08/doku.php?id=lecture_slides)
 
@@ -177,10 +178,65 @@ where:
 * `Type` species type of texture reference and is equal to `cudaTextureType1D`, `cudaTextureType2D`, or `cudaTextureType3D`, for a one-dimensional, two-dimensional, or three-dimensional texture, respectively, or `cudaTextureType1DLayered` or `cudaTextureType2DLayered` for a one-dimensional or two-dimensional layered texture respectively; `Type` is an optional argument which defaults to `cudaTextureType1D`;  
 * `ReadMode` specifies the read mode; it is an optional argument which defaults to `cudaReadModeElementType`.
 
-A texture reference can only be declared as a static global variable and cannot be passed as an argument to a function
+A texture reference can only be declared as a static global variable and cannot be passed as an argument to a function.
+
+e.g. from [`./samples02/tex1dlinearmemb.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/tex1dlinearmemb.cu), and [CUDA Pro Tip:Kepler Texture Objects Improve Performance and Flexibility | Parallel Forall](https://devblogs.nvidia.com/parallelforall/cuda-pro-tip-kepler-texture-objects-improve-performance-and-flexibility/)
+```
+texture<float,1,cudaReadModeElementType> texreference
+```
+
+- **`cudaBindTexture`**, cf. [4.28. C++ API Routines](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__HIGHLEVEL.html#group__CUDART__HIGHLEVEL_1gfaa25560127f9feb99cb5dd6bc4ce2dc)
+```
+template < class T, int dim, enum cudaTextureReadMode readMode >
+__host__ ​cudaError_t cudaBindTexture ( size_t* offset, const texture < T, dim, readMode > & tex, const void* devPtr, size_t size = UINT_MAX ) [inline]
+```
+*Parameters*  
+`offset`  
+    - Offset in bytes  
+`tex`  
+    - Texture to bind   
+`devPtr`  
+    - Memory area on device   
+`size`  
+    - Size of the memory area pointed to by devPtr  
+
+*Description*
+Binds `size` bytes of the memory area pointed to by `devPtr` to texture reference `tex`. The channel descriptor is inherited from the texture reference type. The `offset` parameter is an optional byte offset as with the low-level `cudaBindTexture( size_t*, const struct textureReference*, const void*, const struct cudaChannelFormatDesc*, size_t)` function. Any memory previously bound to `tex` is unbound.
+
+e.g.
+```
+float* diarray;
+const int ARRAY_SIZE=3200;
+
+cudaBindTexture(0, texreference, diarray, sizeof(float)*ARRAY_SIZE); // or
+
+```
+
+- *`tex1Dfetch()`* vs. **`tex1D()`, `tex2D()`,`tex3D()`**
+
+cf. [9.2.4.1. Additional Texture Capabilities](http://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#additional-texture-capabilities)
+"If textures are fetched using `tex1D()`, `tex2D()`, or `tex3D()` rather than `tex1Dfetch()`, hardware provides other capabilities that might be useful for some applications", some of those applications listed in Table 4, filtering (fast, low-precision interpolation between texels), normalized texture coordinates (resolution-independent coding), addressing modes (automatic handling of boundary cases).  
+
+From [B.8.1. Texture Object API](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#texture-object-api-appendix),
+     * **`tex1Dfetch()`**
+```
+template<class T>
+T tex1Dfetch(cudaTextureObject_t texObj, int x);
+```
+fetches from the region of linear memory specified by the one-dimensional texture object `texObj` using integer texture coordinate x. `tex1Dfetch()` only works with non-normalized coordinates, so only the border and clamp addressing modes are supported. It does not perform any texture filtering. For integer types, it may optionally promote the integer to single-precision floating point.
+	* **`tex1D()`**
+```
+template<class T>
+T tex1D(cudaTextureObject_t texObj, float x);
+```
+fetches from the CUDA array specified by the one-dimensional texture object `texObj` using texture coordinate x.
 
 
-Follow us: @GPUComputing on Twitter | NVIDIA on Facebook
+
+
+
+
+
 
 
 
