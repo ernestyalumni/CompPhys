@@ -32,10 +32,10 @@ In this `README.md`:
 | `dev3darray.cu` | `cudaMalloc3DArray`                     |                         |
 | `learrays.cu`   | `__constant__`, `cudaMemcpy`, `cudaMalloc` | arrays of `float3`, on host, on device |
 | `./scan/`       | scan, scans, Hillis/Steele (inclusive) scan, Blelloch (exclusive) scan, Prefix scan | Hillis/Steele (inclusive) and Blelloch (i.e. Prefix, exclusive) scan(s) |
-| `./samples02/tex1dlinearmem.cu` | `texture<,,>`, `tex1D`,`cudaBindTexture` | texture memory of 1-dim. linear array, cf. [CUDA Advanced Memory Usage and Optimization, Yukai Hung, National Taiwan Univ.](http://www.math.ntu.edu.tw/~wwang/mtxcomp2010/download/cuda_04_ykhung.pdf) |    
-| `./samples02/tex1dlinearmemb.cu` | `texture<,,>`, `tex1D`,`cudaBindTexture` | texture memory of 1-dim. linear array, same as `tex1dlinearmem.cu`, but with print out of results (sanity checks) |    
-
-
+| `./samples02/tex1dlinearmem.cu` | `texture<,,>`, `tex1Dfetch`,`cudaBindTexture` | texture memory of 1-dim. linear array, cf. [CUDA Advanced Memory Usage and Optimization, Yukai Hung, National Taiwan Univ.](http://www.math.ntu.edu.tw/~wwang/mtxcomp2010/download/cuda_04_ykhung.pdf) |    
+| `./samples02/tex1dlinearmemb.cu` | `texture<,,>`, `tex1Dfetch`,`cudaBindTexture` | texture memory of 1-dim. linear array, same as `tex1dlinearmem.cu`, but with print out of results (sanity checks) |    
+| `./samples02/tex2dcuArray.cu` | `texture<,,>`, `tex2D`,`cudaArray`,`cudaChannelFormatDesc`,`cudaCreateChannelDesc`,`cudaMallocArray`,`.filterMode`,`.addressMode` | texture float memory over 2-dimensional cuda Array |
+| `./samples02/tex3dcuArray.cu` | `tex3D` | texture float memory over 3-dimensional cuda Array |
 
 | Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
 | ------- |
@@ -188,7 +188,9 @@ texture<float,1,cudaReadModeElementType> texreference
 - **`cudaBindTexture`**, cf. [4.28. C++ API Routines](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__HIGHLEVEL.html#group__CUDART__HIGHLEVEL_1gfaa25560127f9feb99cb5dd6bc4ce2dc)
 ```
 template < class T, int dim, enum cudaTextureReadMode readMode >
-__host__ ​cudaError_t cudaBindTexture ( size_t* offset, const texture < T, dim, readMode > & tex, const void* devPtr, size_t size = UINT_MAX ) [inline]
+__host__ ​cudaError_t cudaBindTexture ( size_t* offset,
+	 	     		       const texture < T, dim, readMode > & tex,
+				       const void* devPtr, size_t size = UINT_MAX ) [inline]
 ```
 *Parameters*  
 `offset`  
