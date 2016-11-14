@@ -153,6 +153,24 @@ Let's generalize this (as this is my template).  Let `testfx, testdfx, testdfx_r
 
 You'd have to use the `<<` C++ "operator" to input into your ofile, an "instance" of `std::ofstream` each string.  
 
+**See also**, for an *example of usage* [Writing .csv files from C++](http://stackoverflow.com/questions/25201131/writing-csv-files-from-c), in particular, this answer from [BHawk](http://stackoverflow.com/users/4434679/bhawk):
+```  
+#include <iostream>
+#include <fstream>
+int main( int argc, char* argv[] )
+{
+      ofstream myfile;
+      myfile.open ("example.csv");
+      myfile << "This is the first cell in the first column.\n";
+      myfile << "a,b,c,\n";
+      myfile << "c,s,v,\n";
+      myfile << "1,2,3.456\n";
+      myfile << "semi;colon";
+      myfile.close();
+      return 0;
+}
+```  
+This is what I implemented and adopted here in [`../moreCUDA/samples02/sinsin2dtex.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/sinsin2dtex.cu).  
 
 
 cf. `program1.cpp` in `./progs/ch03` subdirectory; pp. 51 Subsection 3.1.1.1 Initializations and main program, Ch. 3 Numerical differentiation and interpolation of Hjorth-Jensen (2015); [CompPhysics/ComputationalPhysicsMSU/doc/Programs/LecturePrograms/programs/Classes/cpp/
