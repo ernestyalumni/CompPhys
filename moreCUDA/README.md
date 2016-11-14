@@ -501,7 +501,13 @@ cudaChannelFormatDesc channelDesc =
 		      				cudaChannelFormatKindFloat);
 ```
 
+### Implementation (of texture memory)
 
+As a sanity check, I made sure that I can copy from host to device, and then onto texture memory the function
+
+$f(x) = sin( 2\pi x) \cdot sin(2\pi y) \qquad \forall \, x, y \in [0,1]$
+
+and then, after saving to `.csv` files, plot them with Python's `matplotlib` and displayed them in a jupyter notebook.  I did it here, in [`sinsin2dtex.ipynb`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/sinsin2dtex.ipynb)
 
 
 **If** you cannot write to texture memory, but only be able to write to surface memory, then I will implement in surface memory.  
@@ -532,6 +538,31 @@ where `Type` species type of surface reference and is equal to
 [Using Shared Memory in CUDA C/C++](https://devblogs.nvidia.com/parallelforall/using-shared-memory-cuda-cc/) by [Mark Harris](https://devblogs.nvidia.com/parallelforall/author/mharris/)
 
 ## `cudaMallocArray` and associated examples (in NVIDIA CUDA 8.0 Samples)
+cf.  [4.9 Memory Management, CUDA Runtime API Documentation](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1g6728eb7dc25f332f50bdb16a19620d3d)
+```
+__host__ ​cudaError_t cudaMallocArray ( cudaArray_t* array,
+	 	     		       const cudaChannelFormatDesc* desc,
+				       size_t width, size_t height = 0,
+				       unsigned int  flags = 0 )
+```
+    Allocate an array on the device.
+
+*Parameters*
+
+    `array`
+        - Pointer to allocated array in device memory 
+    `desc`
+        - Requested channel format 
+    `width`
+        - Requested array allocation width 
+    `height`
+        - Requested array allocation height 
+    `flags`
+        - Requested properties of allocated array
+
+
+
+
 
 ## Constant Memory, `__constant__`
 
