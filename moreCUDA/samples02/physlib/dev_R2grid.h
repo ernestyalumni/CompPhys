@@ -2,11 +2,15 @@
  * R2 under discretization (discretize functor) to a thread block
  * Ernest Yeung  ernestyalumni@gmail.com
  * 20161114
+ * 
+ * compilation tip: (compile separately)
+ * nvcc -std=c++11 -c ./physlib/dev_R2grid.cu -o dev_R2grid.o
+ * 
  */
 #ifndef __DEV_R2GRID_H__
 #define __DEV_R2GRID_H__
 
-#include "../commonlib/errors.h"
+#include "../commonlib/checkerror.h"  // checkCudaErrors
 
 extern __constant__ int dev_Ld[2]; // L^{d=2} = (L_x,L_y) \in \mathbb{N}^2
 
@@ -27,9 +31,13 @@ class dev_Grid2d
 		float *dev_E;
 		float *dev_E_out;
 
+		cudaArray* cuArr_rho;
+		cudaChannelFormatDesc channelDesc_rho;
+
 		// constructor
 		__host__ dev_Grid2d( dim3 );
 
+		// destructor
 		__host__ ~dev_Grid2d();
 
 		__host__ int NFLAT();
