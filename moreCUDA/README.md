@@ -675,6 +675,32 @@ Consider what this means
                     cudaArraySurfaceLoadStore);
 ```  
 
+cf. [3.2.11.2.2. Surface Reference API](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#surface-reference-api)
+
+Unlike texture memory, surface memory uses byte addressing. This means that the x-coordinate used to access a texture element via texture functions needs to be multiplied by the byte size of the element to access the same element via a surface function. For example, the element at texture coordinate x of a one-dimensional floating-point CUDA array bound to a texture reference `texRef` and a surface reference `surfRef` is read using `tex1d(texRef, x)` via `texRef`, but `surf1Dread(surfRef, 4*x)` via `surfRef`. Similarly, the element at texture coordinate x and y of a two-dimensional floating-point CUDA array bound to a texture reference texRef and a surface reference surfRef is accessed using `tex2d(texRef, x, y)` via `texRef`, but `surf2Dread(surfRef, 4*x, y)` via `surfRef` (the byte offset of the y-coordinate is internally calculated from the underlying line pitch of the CUDA array).
+
+The following code sample applies some simple transformation kernel to a texture.
+```  
+// 2D surfaces
+surface<void, 2> inputSurfRef;
+surface<void, 2> outputSurfRef;
+            
+// Simple copy kernel
+__global__ void copyKernel(int width, int height) 
+{
+    // Calculate surface coordinates
+    unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
+    if (x < width && y < height) {
+        uchar4 data;
+        // Read from input surface
+        surf2Dread(&data,  inputSurfRef, x * 4, y);
+        // Write to output surface
+        surf2Dwrite(data, outputSurfRef, x * 4, y);
+    }  
+```  
+
+
 
 
 
