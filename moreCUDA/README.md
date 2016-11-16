@@ -517,7 +517,6 @@ cf. [4.9 Memory Management, CUDA Runtime API Documentation](http://docs.nvidia.c
 
 There are *many* different `cudaMemcpy*`'s to try, from the CUDA Toolkit v8.0 Documentation.  I can't find any basic examples to illustrate each one, so I'll go one-by-one trying them.  
 
--
 ```
 __host__ ​cudaError_t cudaMemcpy2D ( void* dst,
 	 	     		    size_t dpitch,
@@ -528,7 +527,7 @@ __host__ ​cudaError_t cudaMemcpy2D ( void* dst,
 				    cudaMemcpyKind kind )
 ```  
     Copies data between host and device. 
--
+
 ```
 __host__ ​cudaError_t cudaMemcpy2DArrayToArray ( cudaArray_t dst,
 	 	     			      	size_t wOffsetDst,
@@ -541,7 +540,7 @@ __host__ ​cudaError_t cudaMemcpy2DArrayToArray ( cudaArray_t dst,
 						cudaMemcpyKind kind = cudaMemcpyDeviceToDevice )
 ```						
     Copies data between host and device. 
--
+
 ```
 __host__ ​ __device__ ​cudaError_t cudaMemcpy2DAsync ( void* dst,
 	  	     		 		     size_t dpitch,
@@ -614,10 +613,11 @@ __host__ ​cudaError_t cudaMemcpyToArrayAsync ( cudaArray_t dst,
 					      size_t count,
 					      cudaMemcpyKind kind,
 					      cudaStream_t stream = 0 )  
-```  					      
-    Copies data between host and device. 
+```   
+      Copies data between host and device. 
 
 From [`./samples02/simplelinear2dtex.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/simplelinear2dtex.cu) is an example of `cudaMemcpyToArray`:  
+
 ```  
 cudaMemcpyToArray(cuArray,0,0,(grid2d.rho).data(), sizeof(float)*grid2d.NFLAT(), cudaMemcpyHostToDevice)
 ```  
