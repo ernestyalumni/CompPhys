@@ -461,11 +461,11 @@ __host__ ​cudaChannelFormatDesc cudaCreateChannelDesc ( int  x, int  y, int  z
 Returns a channel descriptor using the specified format. 
 
 Further,
-```
+```  
 __host__ ​cudaChannelFormatDesc cudaCreateChannelDesc ( int  x, int  y, int  z, int  w,
 	 cudaChannelFormatKind f )
-```
-    Returns a channel descriptor using the specified format.
+```  
+Returns a channel descriptor using the specified format.
 
 *Parameters*
     x
@@ -484,17 +484,16 @@ __host__ ​cudaChannelFormatDesc cudaCreateChannelDesc ( int  x, int  y, int  z
 
     *Description*  
     Returns a channel descriptor with format f and number of bits of each component x, y, z, and w. The cudaChannelFormatDesc is defined as:
-```
+```  
     ‎  struct cudaChannelFormatDesc {
               int x, y, z, w;
               enum cudaChannelFormatKind 
                       f;
             };
-```
-    where cudaChannelFormatKind is one of cudaChannelFormatKindSigned, cudaChannelFormatKindUnsigned, or cudaChannelFormatKindFloat. 
+```  
+where cudaChannelFormatKind is one of cudaChannelFormatKindSigned, cudaChannelFormatKindUnsigned, or cudaChannelFormatKindFloat. 
 
-
-e.g. from [3.2.11.1.1. Texture Object API of CUDA Toolkit 8 Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#abstract), and also [`./samples02/simpletransform.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/simpletransform.cu)
+e.g. from [3.2.11.1.1. Texture Object API of CUDA Toolkit 8 Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#abstract), and also [`./samples02/simpletransform.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/simpletransform.cu)  
 ```
 cudaChannelFormatDesc channelDesc =
 		      cudaCreateChannelDesc(32, 0, 0, 0,
@@ -516,7 +515,6 @@ and then, after saving to `.csv` files, plot them with Python's `matplotlib` and
 cf. [4.9 Memory Management, CUDA Runtime API Documentation](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1g6728eb7dc25f332f50bdb16a19620d3d)
 
 There are *many* different `cudaMemcpy*`'s to try, from the CUDA Toolkit v8.0 Documentation.  I can't find any basic examples to illustrate each one, so I'll go one-by-one trying them.  
-
 ```
 __host__ ​cudaError_t cudaMemcpy2D ( void* dst,
 	 	     		    size_t dpitch,
@@ -526,8 +524,7 @@ __host__ ​cudaError_t cudaMemcpy2D ( void* dst,
 				    size_t height,
 				    cudaMemcpyKind kind )
 ```  
-    Copies data between host and device. 
-
+Copies data between host and device. 
 ```
 __host__ ​cudaError_t cudaMemcpy2DArrayToArray ( cudaArray_t dst,
 	 	     			      	size_t wOffsetDst,
@@ -539,8 +536,7 @@ __host__ ​cudaError_t cudaMemcpy2DArrayToArray ( cudaArray_t dst,
 						size_t height,
 						cudaMemcpyKind kind = cudaMemcpyDeviceToDevice )
 ```						
-    Copies data between host and device. 
-
+Copies data between host and device. 
 ```
 __host__ ​ __device__ ​cudaError_t cudaMemcpy2DAsync ( void* dst,
 	  	     		 		     size_t dpitch,
