@@ -42,7 +42,10 @@ __host__ dev_Grid2d::dev_Grid2d( dim3 Ld_in) : Ld(Ld_in)
 	(this->channelDesc_rho) = cudaCreateChannelDesc<float>();
 	checkCudaErrors(
 		cudaMallocArray(&(this->cuArr_rho), &(this->channelDesc_rho), (this->Ld).x, (this->Ld).y ) ); 
-	
+
+	checkCudaErrors(
+		cudaMallocArray(&(this->cuArr_rho_out), &(this->channelDesc_rho), (this->Ld).x, (this->Ld).y ) ); 
+
 }
 
 // destructor
@@ -74,8 +77,10 @@ __host__ dev_Grid2d::~dev_Grid2d() {
 	checkCudaErrors(
 		cudaFreeArray( this->cuArr_rho ) );
 
-}
+	checkCudaErrors(
+		cudaFreeArray( this->cuArr_rho_out ) );
 
+}
 
 
 __host__ int dev_Grid2d :: NFLAT() {

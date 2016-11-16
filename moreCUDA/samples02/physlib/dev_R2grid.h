@@ -32,6 +32,7 @@ class dev_Grid2d
 		float *dev_E_out;
 
 		cudaArray* cuArr_rho;
+		cudaArray* cuArr_rho_out;
 		cudaChannelFormatDesc channelDesc_rho;
 
 		// constructor
