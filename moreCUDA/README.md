@@ -546,16 +546,22 @@ __host__ ​ __device__ ​cudaError_t cudaMemcpy2DAsync ( void* dst,
 						     size_t height,
 						     cudaMemcpyKind kind,
 						     cudaStream_t stream = 0 )
-```						     
-    Copies data between host and device. 
-__host__ ​cudaError_t cudaMemcpy2DFromArray ( void* dst, size_t dpitch, cudaArray_const_t src, size_t wOffset, size_t hOffset, size_t width, size_t height, cudaMemcpyKind kind )
-    Copies data between host and device. 
+```  						     
+Copies data between host and device. 
+```  
+__host__ ​cudaError_t cudaMemcpy2DFromArray ( void* dst, size_t dpitch, cudaArray_const_t src, size_t wOffset, size_t hOffset, size_t width, size_t height, cudaMemcpyKind kind )  
+```  
+Copies data between host and device. 
 __host__ ​cudaError_t cudaMemcpy2DFromArrayAsync ( void* dst, size_t dpitch, cudaArray_const_t src, size_t wOffset, size_t hOffset, size_t width, size_t height, cudaMemcpyKind kind, cudaStream_t stream = 0 )
     Copies data between host and device. 
+```
 __host__ ​cudaError_t cudaMemcpy2DToArray ( cudaArray_t dst, size_t wOffset, size_t hOffset, const void* src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind )
-    Copies data between host and device. 
+```  
+Copies data between host and device. 
+```  
 __host__ ​cudaError_t cudaMemcpy2DToArrayAsync ( cudaArray_t dst, size_t wOffset, size_t hOffset, const void* src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind, cudaStream_t stream = 0 )
-    Copies data between host and device. 
+```  
+Copies data between host and device. 
 __host__ ​cudaError_t cudaMemcpy3D ( const cudaMemcpy3DParms* p )
     Copies data between 3D objects. 
 __host__ ​ __device__ ​cudaError_t cudaMemcpy3DAsync ( const cudaMemcpy3DParms* p, cudaStream_t stream = 0 )
