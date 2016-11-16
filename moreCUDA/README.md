@@ -21,6 +21,7 @@ In this `README.md`:
 - Pitched Pointer, 2d array, 3d array on the device
 - `cudaMallocArray` and associated examples (in NVIDIA CUDA 8.0 Samples)
 - Texture memory
+- Surface memory
 - Constant Memory, `__constant__`
 - Finite-Difference, shared memory, tiling
 - C++ Classes on the device, GPU
@@ -460,30 +461,24 @@ __host__ ​cudaChannelFormatDesc cudaCreateChannelDesc ( int  x, int  y, int  z
 ```  
 Returns a channel descriptor using the specified format. 
 
-Further,
-```  
-__host__ ​cudaChannelFormatDesc cudaCreateChannelDesc ( int  x, int  y, int  z, int  w,
-	 cudaChannelFormatKind f )
-```  
-Returns a channel descriptor using the specified format.
 
-*Parameters*
+*Parameters*  
     `x`  
-        - X component 
+        - X component  
     `y`  
-        - Y component  
-    `z`
-        - Z component  
-    `w`
-        - W component  
-    `f`
-        - Channel format  
+        - Y component   
+    `z`  
+        - Z component   
+    `w`  
+        - W component    
+    `f`   
+        - Channel format   
 
 *Returns*  
-    Channel descriptor with format f
+    Channel descriptor with format `f`   
 
 *Description*  
-    Returns a channel descriptor with format f and number of bits of each component x, y, z, and w. The cudaChannelFormatDesc is defined as:
+    Returns a channel descriptor with format `f` and number of bits of each component `x, y, z`, and `w`. The `cudaChannelFormatDesc` is defined as:
 ```  
     ‎  struct cudaChannelFormatDesc {
               int x, y, z, w;
@@ -491,7 +486,7 @@ Returns a channel descriptor using the specified format.
                       f;
             };
 ```  
-where cudaChannelFormatKind is one of cudaChannelFormatKindSigned, cudaChannelFormatKindUnsigned, or cudaChannelFormatKindFloat. 
+where `cudaChannelFormatKind` is one of `cudaChannelFormatKindSigned`, `cudaChannelFormatKindUnsigned`, or `cudaChannelFormatKindFloat`. 
 
 e.g. from [3.2.11.1.1. Texture Object API of CUDA Toolkit 8 Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#abstract), and also [`./samples02/simpletransform.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/simpletransform.cu)  
 ```
@@ -555,7 +550,11 @@ Copies data between host and device.
 __host__ ​cudaError_t cudaMemcpy2DFromArrayAsync ( void* dst, size_t dpitch, cudaArray_const_t src, size_t wOffset, size_t hOffset, size_t width, size_t height, cudaMemcpyKind kind, cudaStream_t stream = 0 )
     Copies data between host and device. 
 ```
-__host__ ​cudaError_t cudaMemcpy2DToArray ( cudaArray_t dst, size_t wOffset, size_t hOffset, const void* src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind )
+__host__ ​cudaError_t cudaMemcpy2DToArray ( cudaArray_t dst,
+	 	     			   size_t wOffset, size_t hOffset,
+					   const void* src, size_t spitch,
+					   size_t width, size_t height,
+					   cudaMemcpyKind kind )
 ```  
 Copies data between host and device. 
 ```  
@@ -626,10 +625,13 @@ cudaMemcpyToArray(cuArray,0,0,(grid2d.rho).data(), sizeof(float)*grid2d.NFLAT(),
 
 
 
+## Surface Memory
 
-### Surface Memory
+*EY : 20161116* I was having trouble reading and writing with *Texture Object* by modifying the associated array on the device.  See [`./samples02/texdynamics/`](https://github.com/ernestyalumni/CompPhys/tree/master/moreCUDA/samples02/texdynamics), which is what I have so far.  
 
 cf. [3.2.11.2.2. Surface Reference API](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#surface-reference-api)
+
+
 
 surface reference is declared at file scope (at the top?) as a variable of type surface:
 ```
@@ -646,9 +648,40 @@ where `Type` species type of surface reference and is equal to
 
 `surfRef` is an arbitrary name (can be `outputSurf`, etc.)
 
+cf. [CUDA Runtime API Samples](http://docs.nvidia.com/cuda/cuda-samples/#runtime-cudaapi)
+
+*Table 5. CUDA Runtime API and Associated Samples*
+
+| CUDA Runtime API |	Samples  |
+| :--------------- | :---------: |
+| `cudaBindSurfaceToArray` | Simple Surface Write |
+
+* Added `2_Graphics/bindlessTexture` - demonstrates use of `cudaSurfaceObject, cudaTextureObject`, and MipMap support in CUDA. Requires Compute Capability 3.0 or higher.
+
+Take a look at [3.2.11.2.1. Surface Object API](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#surface-object-api)
+
+Consider what this means
+```
+// Allocate CUDA arrays in device memory
+    cudaChannelFormatDesc channelDesc =
+             cudaCreateChannelDesc(8, 8, 8, 8,
+                                   cudaChannelFormatKindUnsigned);  
+
+    cudaArray* cuInputArray;
+    cudaMallocArray(&cuInputArray, &channelDesc, width, height,
+                    cudaArraySurfaceLoadStore);
+    cudaArray* cuOutputArray;
+    cudaMallocArray(&cuOutputArray, &channelDesc, width, height,
+                    cudaArraySurfaceLoadStore);
+```  
 
 
-### Shared Memory  
+
+
+
+
+
+## Shared Memory  
 
 [Using Shared Memory in CUDA C/C++](https://devblogs.nvidia.com/parallelforall/using-shared-memory-cuda-cc/) by [Mark Harris](https://devblogs.nvidia.com/parallelforall/author/mharris/)
 
