@@ -512,6 +512,119 @@ and then, after saving to `.csv` files, plot them with Python's `matplotlib` and
 
 **If** you cannot write to texture memory, but only be able to write to surface memory, then I will implement in surface memory.  
 
+## *Many* different `cudaMemcpy*`'s to try (I honestly don't know which one to use)
+cf. [4.9 Memory Management, CUDA Runtime API Documentation](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1g6728eb7dc25f332f50bdb16a19620d3d)
+
+There are *many* different `cudaMemcpy*`'s to try, from the CUDA Toolkit v8.0 Documentation.  I can't find any basic examples to illustrate each one, so I'll go one-by-one trying them.  
+
+-
+```
+__host__ ​cudaError_t cudaMemcpy2D ( void* dst,
+	 	     		    size_t dpitch,
+				    const void* src,
+				    size_t spitch,
+				    size_t width,
+				    size_t height,
+				    cudaMemcpyKind kind )
+```  
+    Copies data between host and device. 
+-
+```
+__host__ ​cudaError_t cudaMemcpy2DArrayToArray ( cudaArray_t dst,
+	 	     			      	size_t wOffsetDst,
+						size_t hOffsetDst,
+						cudaArray_const_t src,
+						size_t wOffsetSrc,
+						size_t hOffsetSrc,
+						size_t width,
+						size_t height,
+						cudaMemcpyKind kind = cudaMemcpyDeviceToDevice )
+```						
+    Copies data between host and device. 
+-
+```
+__host__ ​ __device__ ​cudaError_t cudaMemcpy2DAsync ( void* dst,
+	  	     		 		     size_t dpitch,
+						     const void* src,
+						     size_t spitch,
+						     size_t width,
+						     size_t height,
+						     cudaMemcpyKind kind,
+						     cudaStream_t stream = 0 )
+```						     
+    Copies data between host and device. 
+__host__ ​cudaError_t cudaMemcpy2DFromArray ( void* dst, size_t dpitch, cudaArray_const_t src, size_t wOffset, size_t hOffset, size_t width, size_t height, cudaMemcpyKind kind )
+    Copies data between host and device. 
+__host__ ​cudaError_t cudaMemcpy2DFromArrayAsync ( void* dst, size_t dpitch, cudaArray_const_t src, size_t wOffset, size_t hOffset, size_t width, size_t height, cudaMemcpyKind kind, cudaStream_t stream = 0 )
+    Copies data between host and device. 
+__host__ ​cudaError_t cudaMemcpy2DToArray ( cudaArray_t dst, size_t wOffset, size_t hOffset, const void* src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind )
+    Copies data between host and device. 
+__host__ ​cudaError_t cudaMemcpy2DToArrayAsync ( cudaArray_t dst, size_t wOffset, size_t hOffset, const void* src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind, cudaStream_t stream = 0 )
+    Copies data between host and device. 
+__host__ ​cudaError_t cudaMemcpy3D ( const cudaMemcpy3DParms* p )
+    Copies data between 3D objects. 
+__host__ ​ __device__ ​cudaError_t cudaMemcpy3DAsync ( const cudaMemcpy3DParms* p, cudaStream_t stream = 0 )
+    Copies data between 3D objects. 
+__host__ ​cudaError_t cudaMemcpy3DPeer ( const cudaMemcpy3DPeerParms* p )
+    Copies memory between devices. 
+-
+```
+__host__ ​cudaError_t cudaMemcpy3DPeerAsync ( const cudaMemcpy3DPeerParms* p, cudaStream_t stream = 0 )
+
+```  
+    Copies memory between devices asynchronously. 
+-  
+```  
+__host__ ​cudaError_t cudaMemcpyArrayToArray ( cudaArray_t dst,
+	 	     			      size_t wOffsetDst,
+					      size_t hOffsetDst,
+					      cudaArray_const_t src,
+					      size_t wOffsetSrc,
+					      size_t hOffsetSrc,
+					      size_t count,
+					      cudaMemcpyKind kind = cudaMemcpyDeviceToDevice )
+```  					      
+    Copies data between host and device. 
+-
+```  
+__host__ ​cudaError_t cudaMemcpyFromArray ( void* dst,
+	 	     			   cudaArray_const_t src,
+					   size_t wOffset,
+					   size_t hOffset,
+					   size_t count,
+					   cudaMemcpyKind kind )
+```   
+    Copies data between host and device. 
+-
+```  
+__host__ ​cudaError_t cudaMemcpyToArray ( cudaArray_t dst,
+	 	     		       	 size_t wOffset,
+					 size_t hOffset,
+					 const void* src,
+					 size_t count,
+					 cudaMemcpyKind kind )
+```  					 
+    Copies data between host and device. 
+-
+```
+__host__ ​cudaError_t cudaMemcpyToArrayAsync ( cudaArray_t dst,
+	 	     			      size_t wOffset,
+					      size_t hOffset,
+					      const void* src,
+					      size_t count,
+					      cudaMemcpyKind kind,
+					      cudaStream_t stream = 0 )  
+```  					      
+    Copies data between host and device. 
+
+From [`./samples02/simplelinear2dtex.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/simplelinear2dtex.cu) is an example of `cudaMemcpyToArray`:  
+```  
+cudaMemcpyToArray(cuArray,0,0,(grid2d.rho).data(), sizeof(float)*grid2d.NFLAT(), cudaMemcpyHostToDevice)
+```  
+
+
+
+
 ### Surface Memory
 
 cf. [3.2.11.2.2. Surface Reference API](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#surface-reference-api)
