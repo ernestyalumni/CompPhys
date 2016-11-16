@@ -468,21 +468,21 @@ __host__ ​cudaChannelFormatDesc cudaCreateChannelDesc ( int  x, int  y, int  z
 Returns a channel descriptor using the specified format.
 
 *Parameters*
-    x
+    `x`  
         - X component 
-    y
-        - Y component 
-    z
-        - Z component 
-    w
-        - W component 
-    f
-        - Channel format
+    `y`  
+        - Y component  
+    `z`
+        - Z component  
+    `w`
+        - W component  
+    `f`
+        - Channel format  
 
-    *Returns*  
+*Returns*  
     Channel descriptor with format f
 
-    *Description*  
+*Description*  
     Returns a channel descriptor with format f and number of bits of each component x, y, z, and w. The cudaChannelFormatDesc is defined as:
 ```  
     ‎  struct cudaChannelFormatDesc {
