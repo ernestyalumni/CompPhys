@@ -117,23 +117,32 @@ __global__ void addrxyf2Kernel( cudaSurfaceObject_t inputSurfObj,
 		return ; }
 
 	float2 c, r, tempval;
-
+/*
+ *	CUDA Toolkit documentation said byte-addressing in Surface Object API was 4 bytes for a float, as an example.
+ *	But when someone does sizeof(float2), one gets 4; so what's the number of bytes to do Data Alignment 
+ *	when using float2?  
+ * 
+ * cf. http://www.cs.nthu.edu.tw/~cherung/teaching/2010gpucell/CUDA02.pdf
+ * gave a very clear answer on Data Alignment: 8 for float2
+ *
+*/
 	const int RADIUS = 1;
 	int stencilindex_x = k_x + RADIUS;
 	stencilindex_x = min( max( stencilindex_x,0), L_x-1) ;
-	surf2Dread(&c, inputSurfObj, k_x * 4, k_y ) ; 
-	surf2Dread(&r, inputSurfObj, ( stencilindex_x ) * 4, k_y , cudaBoundaryModeClamp) ; 
+	surf2Dread(&c, inputSurfObj, k_x * 8, k_y ) ; 
+	surf2Dread(&r, inputSurfObj, ( stencilindex_x ) * 8, k_y , cudaBoundaryModeClamp) ; 
 	
 //	tempval = c+r;
 	tempval.x = c.x + r.x ;
 	tempval.y = c.y + r.y ; 
-	surf2Dwrite( tempval, outputSurfObj, k_x * 4, k_y); 
+	surf2Dwrite( tempval, outputSurfObj, k_x * 8, k_y); 
 								
 }
 
 int main(int argc, char* argv[]) {
 	// sanity check - surface memory read/writes use byte-addressing, so what's the number of bytes of a float?
 	std::cout << "\n sizeof(float) : " << sizeof(float) << std::endl ;
+	std::cout << "\n sizeof(float2) : " << sizeof(float) << std::endl ;
 
 	// boilerplate
 //	constexpr const int DISPLAY_SIZE { 14 };
@@ -312,19 +321,22 @@ int main(int argc, char* argv[]) {
 	SurfObj2d surf_u_out( dev_grid2d.cuArr_u_out ) ;
 	// Invoke kernel
 	// testing out once (1) addrxyKernel
-/*
- * misaligned address 
 	addrxyf2Kernel<<<dimGrid, M_i>>>( surf_u.surfObj, 
 									surf_u_out.surfObj,
 										L_X,L_Y);
-									 
-*/										
+
+/*
+ * misaligned address 
+ * FIXED (keep in mind the byte-addressing for float2, i.e. not float
+									*/										
+
 	// copy results, output arrays from device to host memory				
-/*	checkCudaErrors(
+	checkCudaErrors(
 		cudaMemcpyFromArray( (grid2d.u).data(), dev_grid2d.cuArr_u,
 							0,0, dev_grid2d.NFLAT()*sizeof(float2), cudaMemcpyDeviceToHost) );
-
-misaligned address cudaMemcpyFromArray( (grid2d.u).data(), dev_grid2d.cuArr_u, 0,0, dev_grid2d.NFLAT()*sizeof(float2), cudaMemcpyDeviceToHost)
+/*
+ * misaligned address cudaMemcpyFromArray( (grid2d.u).data(), dev_grid2d.cuArr_u, 0,0, dev_grid2d.NFLAT()*sizeof(float2), cudaMemcpyDeviceToHost)
+ * FIXED (mind the byte-addressing for float2, i.e. not float)
 
 	checkCudaErrors(
 		cudaMemcpyFromArray( dev_grid2d.dev_u, dev_grid2d.cuArr_u,
@@ -337,7 +349,7 @@ misaligned address cudaMemcpyFromArray( (grid2d.u).data(), dev_grid2d.cuArr_u, 0
 */
 
 
-/*
+
 	// C++ file Input/Output <fstream>
 	std::ofstream addrxyf2_u_x_file, addrxyf2_u_y_file ;
 	addrxyf2_u_x_file.open("./dataout/addrxyf2_u_x.csv");
@@ -385,7 +397,6 @@ misaligned address cudaMemcpyFromArray( (grid2d.u).data(), dev_grid2d.cuArr_u, 0
 	}
 	addrxyf2_u_out_x_file.close();
 	addrxyf2_u_out_y_file.close();
-*/	
 	
 	
 //	checkCudaErrors(
