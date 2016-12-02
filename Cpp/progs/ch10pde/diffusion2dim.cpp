@@ -11,6 +11,12 @@
  * https://raw.githubusercontent.com/CompPhysics/ComputationalPhysics/master/doc/Programs/LecturePrograms/programs/PDE/cpp/diffusion2dim.cpp
  * 
  * */
+/*
+ * Compilation tip
+ * 
+ * g++ -lgsl -lgslcblas diffusion2dim.cpp -o diffusion2dim
+ * 
+ * */
 
 #include <iostream>
 #include <iomanip>  // std::setiosflags
