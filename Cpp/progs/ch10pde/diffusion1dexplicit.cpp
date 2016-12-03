@@ -27,9 +27,9 @@ int main(int argc, char * argv[]) {
 	double l_x = 1.0; 
 	
 	// discretization parameters
-	int L_x = 100;
-	double dx = l_x / ( static_cast<float>( L_x ) );
-	double dt = 1.0e-5;
+	int L_x = 1000;
+	double dx = l_x / ( static_cast<double>( L_x ) );
+	double dt = 1.0e-7;
 //	double tolerance = 1.0e-12;
 
 	int Titers = 100;
