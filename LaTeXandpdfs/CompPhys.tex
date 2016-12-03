@@ -2237,7 +2237,148 @@ From there, then we can obtain Simpson's rule,
 cf. Hjorth-Jensen (2015) \cite{Hjor2015}, Section 5.3 Gaussian Quadrature, Chapter 5 Numerical Integration
 
 
+\section{Runge-Kutta methods (RK) }
 
+cf. Hjorth-Jensen (2015) \cite{Hjor2015}, Section 8.4 \emph{More on finite difference methods, Runge-Kutta methods} and \emph{wikipedia}, ``Runge-Kutta methods,'' \url{https://en.wikipedia.org/wiki/Runge\%E2\%80\%93Kutta_methods}
+
+While Runge-Kutta methods are useful initially for ordinary differential equations, remember that under certain (very general, in fact, for smooth manifolds even) conditions, vector fields admit integral lines and there you simply solve an system of linear ODEs.  
+
+
+\section{Partial Differential Equations}
+
+\subsubsection{Explicit Scheme}
+cf. Hjorth-Jensen (2015) \cite{Hjor2015}, Section 10.2.1 Explicit Scheme
+
+Consider
+\begin{equation}
+\begin{gathered}
+  \begin{gathered}
+    u = u(t,x) \in C^{\infty}(M) = C^{\infty}(\mathbb{R}\times N)  
+  \end{gathered} \\
+      \Delta u = \frac{ \partial u}{ \partial t}(t,x)
+  \end{gathered}
+  \end{equation}
+with initial conditions
+\[
+  \begin{gathered}
+    u(0,x)=g(x) \qquad \, \forall \, 0 < x < L_x \text{ or } x \in \Omega \subset N \, \text{(in general)}
+    \end{gathered}
+  \]
+  e.g. $L_x=1$ \\
+
+  and boundary conditions
+  \[
+\begin{aligned}
+  & u(t,0) = a(t) & t \geq 0 \\ 
+  & u(t,L) = b(t) & t \geq 0 
+\end{aligned}
+  \]
+
+  Consider the act of discretization as a transformation or a functor:
+  \begin{equation}
+\begin{gathered}
+  \frac{ \partial u}{ \partial t} = \frac{ u(t+\Delta t,x) - u(t,x) }{ \Delta t} + O(\Delta t) \xrightarrow{ \text{ discretize } } \frac{ u(t_j + \Delta t, x_i) - u(t_j,x_i) }{ \Delta t } \\
+  \frac{ \partial^2 u}{ \partial (x^i)^2 } \approx \frac{ u(t,x + \Delta x) - 2 u(t,x) + u(t, x-\Delta x) }{ (\Delta x)^2 }  \xrightarrow{ \text{ discretize } } \frac{ u(t_j  , x_i+\Delta x) - 2 u(t_j,x_i) + u(t_j,x_i-\Delta x) }{ ( \Delta x)^2 } 
+\end{gathered}
+  \end{equation}
+
+  \begin{equation}
+\Longrightarrow u(t_j + \Delta t, x_i) = \frac{ \Delta t}{ (\Delta x)^2 } u(t_j,x_i + \Delta x) + \left( 1 - \frac{ 2 \Delta t}{ (\Delta x)^2 } \right) u (t_j,x_i) + \frac{ \Delta t}{ (\Delta x)^2 } u(t_j,x_i - \Delta x)
+  \end{equation}
+
+  Discretize the initial conditions:
+  \begin{equation}
+u(0,x) = g(x) \xrightarrow{ \text{ discretize } } u(0,x_i) = g(x_i)
+\end{equation}
+
+and so, for the first step,
+\begin{equation}
+u(\Delta t, x_i) = \frac{ \Delta t}{ (\Delta x)^2 } g(x_i + \Delta x) + \left( 1 - \frac{ 2 \Delta t}{ (\Delta x)^2 } \right) g(x_i) + \frac{ \Delta t}{ (\Delta x)^2 } g(x_i - \Delta x)
+\end{equation}
+It would appear to be instructive to show what discretize is doing, as a commutative diagram:
+\begin{equation}
+\begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=6em, column sep=6em, minimum width=1em]
+  {
+    \mathbb{R} \times N           &  \mathbb{Z}^+ \times ( \lbrace 0 \dots L_x-1 \rbrace \times \lbrace 0 \dots L_y-1 \rbrace \times \lbrace 0 \dots L_z -1 \rbrace) \subset \mathbb{Z}^+ \times \mathbb{Z}^d   \\
+    C^{\infty}(\mathbb{R}\times N)  & C^{\infty}( \mathbb{Z}^+ \times ( \lbrace 0 \dots L_x-1 \rbrace \times \lbrace 0 \dots L_y -1 \rbrace \times \lbrace 0 \dots L_z -1 \rbrace ) ) \subset C^{\infty}(\mathbb{Z}^+ \times \mathbb{Z}^d)  \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] { \text{discretize}} (m-1-2)
+  edge node [auto] {} (m-2-1)
+  (m-2-1) edge node [auto] { \text{ discretize } } (m-2-2)
+  (m-1-2) edge node [auto] { } (m-2-2) 
+;  
+  \end{tikzpicture}   
+  \end{equation}
+  Then there's this so-called ``sparse'' (I think this means that there are a lot more zeros as values for the entries in a matrix than there are nonzero values), tridiagonal (diagonal and next to the diagonal, diagonals) matrices representation of the time-evolution transformation/operator.  I'll call this transformation over to this matrix representation, this functor, \emph{matricer}.
+
+\begin{equation}
+  \begin{gathered}
+    C^{\infty}(\mathbb{Z}^+ \times ( \lbrace 0 \dots L_x-1 \rbrace \times \lbrace 0 \dots L_y -1 \rbrace \times \lbrace 0 \dots L_z -1 \rbrace ) ) \xrightarrow{ \text{ matricer } } \mathbb{Z}^+ \times \mathbb{R}^{ L_x L_y L_z} = \mathbb{Z}^+ \times \text{Mat}_{\mathbb{R}}(L_x,L_y,L_z)
+    \end{gathered}
+\end{equation}
+
+  For the boundary conditions,
+\[
+\begin{gathered}
+  \begin{aligned}
+    & u(t,0) = a(t) & \qquad \, t \geq 0 \\ 
+    & u(t,L) = b(t) & \qquad \, t \geq 0 
+    \end{aligned} \xrightarrow{ \text{ discretize } }   \begin{aligned}
+    & u(t,0) = a(t)    \\ 
+    & u(t,x_{L_x-1}) = b(t)  
+    \end{aligned}
+\end{gathered}
+\]
+
+  For 1-dim. case, $V_j \in \text{Mat}_{\mathbb{R}}(L_x)$ (vector or ``column'' matrix)
+\[
+  V_j = \left[ \begin{matrix} u(t_j,x_2) \\
+      u(t_j,x_3) \\
+      \vdots \\
+      u(t_j,x_{L_x-3}) \end{matrix} \right]
+\]
+  and so the ``time-evolution'' operator/transformation is
+\begin{equation}
+  \begin{gathered}
+    \widehat{A} \in \text{Mat}_{\mathbb{R}}(L_x-4,L_x-4) = \text{End}(\mathbb{R}^{L_x-4}, \mathbb{R}^{L_x-4}) \\
+    \widehat{A} = \left[ \begin{matrix}
+         \frac{ \Delta t}{ (\Delta x)^2 } & 1 -  2 \frac{ \Delta t}{ (\Delta x)^2 } &  \frac{ \Delta t}{ (\Delta x)^2 } & 0 & 0 & \dots & 0  \\ 
+         0 &  \frac{ \Delta t}{ (\Delta x)^2 } & 1 - 2  \frac{ \Delta t}{ (\Delta x)^2 } &  \frac{ \Delta t}{ (\Delta x)^2 } & 0 & \dots & 0 \\
+         &  &  & \ddots  &   &   & \\
+      0   & 0  & \dots  & 0        &  \frac{ \Delta t}{ (\Delta x)^2 } & 1 - 2  \frac{ \Delta t}{ (\Delta x)^2 } &  \frac{ \Delta t}{ (\Delta x)^2 } 
+        \end{matrix} \right]
+  \end{gathered}
+\end{equation}  
+
+Note that in the specialized 1-dim. case where $a(t) = b(t)=0$ (boundary conditions for both ends is of value $0$), then we can, in this specialized case, define the matrix $\widehat{A}$ to be
+\begin{equation}
+  \begin{gathered}
+    \widehat{A} \in \text{Mat}_{\mathbb{R}}(L_x-2,L_x-2) = \text{End}(\mathbb{R}^{L_x-2}, \mathbb{R}^{L_x-2}) \\
+    \widehat{A} = \left[ \begin{matrix}
+        1 - 2  \frac{ \Delta t}{ (\Delta x)^2 } &  \frac{ \Delta t}{ (\Delta x)^2 } & 0 & 0 & \dots  &  0 & 0 \\
+         \frac{ \Delta t}{ (\Delta x)^2 } & 1 -  2 \frac{ \Delta t}{ (\Delta x)^2 } &  \frac{ \Delta t}{ (\Delta x)^2 } & 0 & 0 & \dots & 0  \\ 
+         0 &  \frac{ \Delta t}{ (\Delta x)^2 } & 1 - 2  \frac{ \Delta t}{ (\Delta x)^2 } &  \frac{ \Delta t}{ (\Delta x)^2 } & 0 & \dots & 0 \\
+         &  &  & \ddots  &   &   & \\
+         0   & 0  & \dots  & 0        &  \frac{ \Delta t}{ (\Delta x)^2 } & 1 - 2  \frac{ \Delta t}{ (\Delta x)^2 } &  \frac{ \Delta t}{ (\Delta x)^2 }  \\
+         0 & 0 & 0 & \dots & 0 &  \frac{ \Delta t}{ (\Delta x)^2 } & 1 - 2  \frac{ \Delta t}{ (\Delta x)^2 } 
+        \end{matrix} \right]
+  \end{gathered}
+\end{equation}  
+
+e.g.
+\[
+g(x) = \sin{ \left( \frac{ \pi }{ l_x} x \right) }
+\]
+with an analytic solution of
+\[
+u(t,x) = \sin{ \left( \frac{\pi}{l_x}x \right) } \exp{ \left( - \left( \frac{\pi}{l_x}\right)^2 t \right) }
+\]
+
+It was bizarre to me that in Hjorth-Jensen (2015) \cite{Hjor2015}, Section 10.2.1 Explicit Scheme, on pp. 307, Hjorth-Jensen went through a lengthy and thorough explanation of this ``matricer'' operation, i.e. doing the time-evolution with a matrix on a vector of values at grid points, and yet in the pseudo-code, essentially, there is no trace of that matrix!  It's essentially a local ``stencil'' operation.  What the heck?
+
+I present the ``matrix form'' code in my github repository: \href{https://github.com/ernestyalumni/CompPhys/blob/master/Cpp/progs/ch10pde/diffusion1dexplicit.cpp}{`diffusion1dexplicit.cpp`}.  To be explicit, the code follows the previous writeup, with its notation, essentially one-to-one.  
 
 
 \section{Call by reference - Call by Value, Call by reference (in C and in C++)}
