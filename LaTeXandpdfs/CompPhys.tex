@@ -2380,6 +2380,50 @@ It was bizarre to me that in Hjorth-Jensen (2015) \cite{Hjor2015}, Section 10.2.
 
 I present the ``matrix form'' code in my github repository: \href{https://github.com/ernestyalumni/CompPhys/blob/master/Cpp/progs/ch10pde/diffusion1dexplicit.cpp}{`diffusion1dexplicit.cpp`}.  To be explicit, the code follows the previous writeup, with its notation, essentially one-to-one.  
 
+\subsubsection{Implicit scheme}
+cf. Hjorth-Jensen (2015) \cite{Hjor2015}, Section 10.2.2 Implicit Scheme
+
+Consider
+\begin{equation}
+\begin{aligned}
+  & \text{ backwards formula : }       & \frac{ \partial u }{ \partial t}(t,x) \approx \frac{ u(t_j,x_i) - u(t_j-\Delta t, x_i) }{ \Delta t} \text{ or even } \\
+  & \text{ midpoint approximations : } &  \frac{ \partial u }{ \partial t}(t,x) \approx \frac{ u(t_j + \Delta t,x_i) - u(t_j-\Delta t, x_i) }{ 2 \Delta t}
+\end{aligned}
+\end{equation}
+
+Consider the same spatial discretization as before for the Laplacian:
+\[
+\frac{ \partial^2 u}{ \partial (x^i)^2 } \approx \frac{ u(t,x + \Delta x) - 2 u(t,x) + u(t, x-\Delta x) }{ (\Delta x)^2 }  \xrightarrow{ \text{ discretize } } \frac{ u(t_j  , x_i+\Delta x) - 2 u(t_j,x_i) + u(t_j,x_i-\Delta x) }{ ( \Delta x)^2 } 
+\]
+and so for the backwards formula case, 
+\begin{equation}
+  \begin{gathered}
+ \frac{ u(t_j,x_i) - u(t_j-\Delta t, x_i) }{ \Delta t}   =  \frac{ u(t_j  , x_i+\Delta x) - 2 u(t_j,x_i) + u(t_j,x_i-\Delta x) }{ ( \Delta x)^2 }  \\
+ u(t_j - \Delta t, x_i) = -\frac{ \Delta t}{ (\Delta x)^2 } u(t_j,x_i + \Delta x) + \left( 1 + \frac{ 2 \Delta t}{ (\Delta x)^2 } \right) u (t_j,x_i) - \frac{ \Delta t}{ (\Delta x)^2 } u(t_j,x_i - \Delta x)
+    \end{gathered}
+ \end{equation}
+resulting in the backwards time-evolution matrix $\widehat{A}$ (keeping in mind the special boundary condition of $0$ value for $u$ at both ends, for the sake of a simplified discussion):
+\begin{equation}
+  \begin{gathered}
+    \widehat{A} \in \text{Mat}_{\mathbb{R}}(L_x-2,L_x-2) = \text{End}(\mathbb{R}^{L_x-2}, \mathbb{R}^{L_x-2}) \\
+    \widehat{A} = \left[ \begin{matrix}
+        1 + 2  \frac{ \Delta t}{ (\Delta x)^2 } &  -\frac{ \Delta t}{ (\Delta x)^2 } & 0 & 0 & \dots  &  0  \\
+         -\frac{ \Delta t}{ (\Delta x)^2 } & 1 +  2 \frac{ \Delta t}{ (\Delta x)^2 } &  -\frac{ \Delta t}{ (\Delta x)^2 } & 0 &  \dots & 0  \\ 
+                 &  &  & \ddots  &   &   & \\
+         0   & 0  & \dots  &   -\frac{ \Delta t}{ (\Delta x)^2 } & 1 + 2  \frac{ \Delta t}{ (\Delta x)^2 } & - \frac{ \Delta t}{ (\Delta x)^2 }  \\
+         0 & 0 & 0 & \dots &  - \frac{ \Delta t}{ (\Delta x)^2 } & 1 + 2  \frac{ \Delta t}{ (\Delta x)^2 } 
+        \end{matrix} \right]
+  \end{gathered}
+\end{equation}  
+\[
+\widehat{A}u^j = u^{j-1}
+\]
+and so
+\[
+\widehat{A}^{-1}u^{j-1} = u^j
+\]
+
+
 
 \section{Call by reference - Call by Value, Call by reference (in C and in C++)}
 
