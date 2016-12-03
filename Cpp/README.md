@@ -46,7 +46,9 @@ See Hjorth-Jensen's lectures for 2015.
 | program1.cpp    | ./progs/ch05/  | 5       | 5.3.6   | 127       | example using trapezoid rule, Simpson's rule, Gauss-Legendre method|
 | integrate1d.h   | ./progs/ch05/  | 5       | 5.3.6   | 127       | header file for 1-dimensional numerical integration routines, only |
 | integrate1d.cpp | ./progs/ch05/  | 5       | 5.3.6   | 127       | function definitions for 1-dimensional numerical integration routines, only |
-| diffusion2dim.cpp | ./progs/ch10pde | 10   |         |           | Solves 2-dim. diffusion equation or Poisson equation using Jacobi's iterative method, but this version uses **`gsl`** Scientific library (C/C++) for linear algebra.  cf. [`diffusion2dim.cpp` from `CompPhysics`](https://github.com/CompPhysics/ComputationalPhysics/blob/master/doc/Programs/LecturePrograms/programs/PDE/cpp/diffusion2dim.cpp)  |
+| diffusion1dexplict.cpp | ./progs/ch10pde/ | 10 | 10.2.1 | 307    | 1-dim. diffusion eq. solved with *"explicit method"*; while Hjorth-Jensen explained at lengths about transforming the problem into a matrix multipying a vector problem, in his pseudocode, there's no matrix multiplication!  Here it is, using `gsl`  |
+| diffusion2dim.cpp | ./progs/ch10pde/ | 10   |         |           | Solves 2-dim. diffusion equation or Poisson equation using Jacobi's iterative method, but this version uses **`gsl`** Scientific library (C/C++) for linear algebra.  cf. [`diffusion2dim.cpp` from `CompPhysics`](https://github.com/CompPhysics/ComputationalPhysics/blob/master/doc/Programs/LecturePrograms/programs/PDE/cpp/diffusion2dim.cpp)  |
+
 
 ## Listing of which program or script corresponds to which section, chapter, part for Stroustrup's **A Tour of C++** (2013)
 
