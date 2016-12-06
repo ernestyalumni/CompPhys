@@ -1710,6 +1710,9 @@ f_{\text{out}}[i] := f[i]  & \text{ otherwise}
 
 
 
+
+
+
 cf.  \href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/907138050923#}{Problem Set 3} 
 
 \subsubsection*{Histogram Equalization}
@@ -1720,6 +1723,17 @@ cf.  \href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts
 \item Scatter
 \item Scan
   \end{enumerate}
+
+
+\subsection{Reduce, Parallel Reduction}
+
+I will expound upon the excellent article from Mark Harris, ``Optimizing Parallel Reduction in CUDA''.  cf. \href{http://developer.download.nvidia.com/compute/cuda/1.1-Beta/x86_website/projects/reduction/doc/reduction.pdf}{\emph{Optimizing Parallel Reduction in CUDA}, Mark Harris} : \url{http://developer.download.nvidia.com/compute/cuda/1.1-Beta/x86_website/projects/reduction/doc/reduction.pdf}
+
+
+
+
+
+
 
 \section{Pointers in C; Pointers in C categorified (interpreted in Category Theory)}
 
@@ -2422,6 +2436,89 @@ and so
 \[
 \widehat{A}^{-1}u^{j-1} = u^j
 \]
+
+\subsection{Crank-Nicolson method}
+
+Hjorth-Jensen (2015) \cite{Hjor2015}, Section 10.2.3 Crank Nicholson scheme has a write up about the Crank-Nicolson method, but the derivation is unclear (and sloppy, in that after the Taylor expansions, he says that the terms magically add up to the desired result, and the ``approximation'' notation is vacuous in that nothing new was conveyed).  Rather, look at \href{http://people.sc.fsu.edu/~jpeterson/5-CrankNicolson.pdf}{Crank Nicolson Scheme for the Heat Equation} for a clearer derivation, that drives home the point of looking at the time between time steps.
+
+Consider the following Taylor expansions about $t^{1/2} := t + \frac{ \Delta t}{2}$.
+
+\[
+\begin{aligned}
+  & u(t+\Delta t,x) = u(t + \frac{ \Delta t}{2} + \frac{ \Delta t}{2} ,x ) \equiv u(t^{1/2} + \frac{ \Delta t}{2} ,x ) = u(t^{1/2},x) + \frac{ \Delta t}{2} \frac{ \partial u}{\partial t}(t^{1/2},x) + \frac{1}{2} \left( \frac{ \Delta t}{2} \right)^2 \frac{ \partial^2 u}{\partial t^2}(t^{1/2},x) + O((\Delta t)^3) \\ 
+  & u(t,x) = u(t + \frac{ \Delta t}{2} - \frac{ \Delta t}{2} ,x ) \equiv u(t^{1/2} - \frac{ \Delta t}{2} ,x ) = u(t^{1/2},x) - \frac{ \Delta t}{2} \frac{ \partial u}{\partial t}(t^{1/2},x) + \frac{1}{2} \left( \frac{ \Delta t}{2} \right)^2 \frac{ \partial^2 u}{\partial t^2}(t^{1/2},x) + O((\Delta t)^3)    \\
+  & u(t+\Delta t,x) - u(t,x) = \Delta t \frac{ \partial u}{ \partial t}(t^{1/2},x) + O((\Delta t)^3) 
+\end{aligned}
+\]
+\[
+\Longrightarrow \frac{ \partial u}{ \partial t}(t^{1/2},x) = \frac{ u(t+\Delta t,x) - u(t,x) }{\Delta t}
+\]
+with $O((\Delta t)^2)$ order of accuracy.
+
+To approximate
+\[
+\frac{ \partial^2 u}{ \partial x^2}(t+ \frac{ \Delta t}{2}, x) \equiv \frac{ \partial^2 u}{ \partial x^2}(t^{1/2},x) 
+\]
+use average of second, centered differences for $\frac{ \partial^2 u}{ \partial x^2}(t+\Delta t,x) $ and $\frac{ \partial^2 u}{ \partial x^2}(t,x)$.
+
+\[
+\begin{gathered}
+\frac{ \partial^2 u}{ \partial x^2 }(t+\frac{\Delta t}{2},x) \approx \frac{1}{2} \left[ \frac{ u(t+ \Delta t, x+\Delta x) - 2u(t+\Delta t,x) + u(t+\Delta t,x-\Delta x) }{ (\Delta x)^2 } + \frac{ u(t,x+\Delta x) - 2u(t,x) + u(t,x-\Delta x) }{ (\Delta x)^2 } \right]
+  \end{gathered}
+\]
+Then for
+\[
+\begin{gathered}
+  \frac{ \partial u }{ \partial t}(t^{1/2},x) = C_0 \Delta u(t^{1/2},x) \xrightarrow{ discretize } \\ 
+  u(t+\Delta t,x)-u(t,x) = \\
+   = \frac{1}{2} C_0 \frac{\Delta t}{(\Delta x)^2 }(u(t+\Delta t, x+\Delta x) - 2u(t+\delta t, x) + u(t+\Delta t,x-\Delta x) ) + \frac{1}{2} C_0 \frac{ \Delta t}{ (\Delta x)^2 }u(t,x+\Delta x) + \frac{ -\Delta t}{(\Delta x)^2 }C_0 u(t,x) + \frac{1}{2} \frac{ \Delta t}{ (\Delta x)^2 }C_0u(t,x-\Delta x)
+  \end{gathered}
+  \]
+
+  Let
+\[
+  \alpha := \frac{ \Delta t}{ (\Delta x)^2 }
+  \]
+Then
+\begin{equation}
+  \frac{-1}{2} \alpha u(t+\Delta t, x+\Delta x) + (1+\alpha) u(t+\Delta t,x) - \frac{\alpha}{2} u(t+\Delta t, x-\Delta x) = \frac{ \alpha}{2}u(t,x+\Delta x) + (1-\alpha)u(t,x) + \frac{\alpha}{2}u(t,x-\Delta x)
+\end{equation}
+  
+In general
+\begin{equation}
+\begin{gathered}
+  \frac{-\alpha}{2} C_0 u(t+\Delta t,x+\Delta x) + (1 + C_0 \alpha)u(t+\Delta t,x) - \frac{ C_0 \alpha}{2} u(t+\Delta t, x-\Delta x) = \\
+  = \frac{ C_0 \alpha}{2} u(t,x+\Delta x) + (1- C_0 \alpha)u(t,x) + \frac{C_0\alpha}{2}u(t,x-\Delta x)
+  \end{gathered}
+  \end{equation}
+
+This scheme necessitates a matrix representation.  In matrix form,
+\begin{equation}
+  \begin{gathered}
+    \left[ \begin{matrix}
+        1 + C_0 \alpha & - \frac{ \alpha C_0}{2} & 0 & \dots & 0 & 0 & \dots & 0 \\
+        \frac{ -C_0\alpha}{2} & 1 + C_0 \alpha & \frac{ -\alpha C_0 }{2} & 0 & 0 & \dots & 0 \\
+        0 & \frac{ -C_0 \alpha}{2} & 1 +C_0\alpha & \frac{ -C_0 \alpha}{2} & 0 & \dots & 0 \\
+         &                         &              & \ddots &                   &      &   \\
+        0 & 0 & \dots & 0 & \frac{-\alpha}{2} & 1 + C_0 \alpha & \frac{-\alpha}{2} \\
+        0 & 0 & \dots & 0 & 0                 & \frac{ -\alpha}{2} & 1 + C_0 \alpha \end{matrix} \right] u_i^{t+\Delta t} = \\
+    = \left[ \begin{matrix}
+        1 - C_0 \alpha & \frac{C_0 \alpha }{2} & 0 & 0 & 0 & \dots & 0 \\
+        \frac{C_0 \alpha}{2} & 1 - C_0 \alpha & \frac{C_0 \alpha}{2} & 0 & 0 & \dots 0 \\
+        0 & \frac{C_0 \alpha}{2} & 1 - C_0\alpha & \frac{C_0 \alpha}{2} & 0 & \dots & 0 \\
+        &                       &               & \ddots             &    &      & \\
+        0 & 0 & 0                        & \dots & \frac{C_0 \alpha}{2} & 1 - C_0 \alpha & \frac{C_0 \alpha}{2} \\
+        0 & 0 & 0 &                \dots &  0  & \frac{C_0 \alpha}{2} & 1 - C_0 \alpha \end{matrix} \right]  u_i^t  \\
+    \Longrightarrow \widehat{B} u_i^{t+ \Delta t } = \widehat{A} u_i^{t} \text{ or } \\
+    u_i^{t+\Delta t} = \widehat{B}^{-1}\widehat{A}u_i^t
+\end{gathered}
+\end{equation}
+
+\subsection{Jacobi method, SOR method, for the Laplace and Poisson equation}
+
+\href{http://www.physics.buffalo.edu/phy410-505/2011/topic3/app1/index.html}{3.1 Poisson's Equation and Relaxation Methods} of 410-505 Physics had a good, online, clear explanation of Jacobi method and improvements, namely the Successive Over Relaxation (SOR) method, applied to Laplace and Poisson equation, with clearly labelled diagrams: \url{http://www.physics.buffalo.edu/phy410-505/2011/topic3/app1/index.html}
+
+
 
 
 
