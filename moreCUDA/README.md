@@ -38,6 +38,7 @@ In this `README.md`:
 | `./samples02/tex2dcuArray.cu` | `texture<,,>`, `tex2D`, `cudaArray`, `cudaChannelFormatDesc`, `cudaCreateChannelDesc`, `cudaMallocArray`, `.filterMode`, `.addressMode` | texture float memory over 2-dimensional cuda Array |
 | `./samples02/tex3dcuArray.cu` | `tex3D` | texture float memory over 3-dimensional cuda Array |
 | `./samples02/simpletransform.cu` | `cudaTextureObject_t`, `cudaCreateChannelDesc` | code sample, in *VERBATIM*, (attempting) to apply some simple transformation kernel to a texture cf. [3.2.11.1.1. Texture Object API of CUDA Toolkit 8 Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#abstract) |
+| `./thruststuff/reduce_eg.cu` | `thrust::reduce`, `thrust::sequence`, `thrust::device_vector`, `thrust::host_vector` | Uses `reduce` to sum up all elements of a vector "directly" on the device GPU; uses `thrust::sequence` to make up some non-trivial initial values; I needed to test out `thrust`'s *reduce* algorithm | 
 
 | Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
 | ------- |
@@ -561,19 +562,24 @@ Copies data between host and device.
 __host__ ​cudaError_t cudaMemcpy2DToArrayAsync ( cudaArray_t dst, size_t wOffset, size_t hOffset, const void* src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind, cudaStream_t stream = 0 )
 ```  
 Copies data between host and device. 
-__host__ ​cudaError_t cudaMemcpy3D ( const cudaMemcpy3DParms* p )
-    Copies data between 3D objects. 
+```  
+__host__ ​cudaError_t cudaMemcpy3D ( const cudaMemcpy3DParms* p )  
+```  
+Copies data between 3D objects. 
+```  
 __host__ ​ __device__ ​cudaError_t cudaMemcpy3DAsync ( const cudaMemcpy3DParms* p, cudaStream_t stream = 0 )
-    Copies data between 3D objects. 
+```  
+Copies data between 3D objects.   
+```
 __host__ ​cudaError_t cudaMemcpy3DPeer ( const cudaMemcpy3DPeerParms* p )
     Copies memory between devices. 
--
+
 ```
 __host__ ​cudaError_t cudaMemcpy3DPeerAsync ( const cudaMemcpy3DPeerParms* p, cudaStream_t stream = 0 )
 
 ```  
     Copies memory between devices asynchronously. 
--  
+  
 ```  
 __host__ ​cudaError_t cudaMemcpyArrayToArray ( cudaArray_t dst,
 	 	     			      size_t wOffsetDst,
@@ -584,8 +590,8 @@ __host__ ​cudaError_t cudaMemcpyArrayToArray ( cudaArray_t dst,
 					      size_t count,
 					      cudaMemcpyKind kind = cudaMemcpyDeviceToDevice )
 ```  					      
-    Copies data between host and device. 
--
+Copies data between host and device. 
+
 ```  
 __host__ ​cudaError_t cudaMemcpyFromArray ( void* dst,
 	 	     			   cudaArray_const_t src,
@@ -594,8 +600,8 @@ __host__ ​cudaError_t cudaMemcpyFromArray ( void* dst,
 					   size_t count,
 					   cudaMemcpyKind kind )
 ```   
-    Copies data between host and device. 
--
+Copies data between host and device. 
+
 ```  
 __host__ ​cudaError_t cudaMemcpyToArray ( cudaArray_t dst,
 	 	     		       	 size_t wOffset,
@@ -604,8 +610,8 @@ __host__ ​cudaError_t cudaMemcpyToArray ( cudaArray_t dst,
 					 size_t count,
 					 cudaMemcpyKind kind )
 ```  					 
-    Copies data between host and device. 
--
+Copies data between host and device. 
+
 ```
 __host__ ​cudaError_t cudaMemcpyToArrayAsync ( cudaArray_t dst,
 	 	     			      size_t wOffset,
@@ -700,9 +706,189 @@ __global__ void copyKernel(int width, int height)
     }  
 ```  
 
+cf. [B.9.1. Surface Object API](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#surface-object-api-appendix)
+
+B.9.1.1. surf1Dread()
+
+template<class T>
+T surf1Dread(cudaSurfaceObject_t surfObj, int x,
+               boundaryMode = cudaBoundaryModeTrap);
+
+reads the CUDA array specified by the one-dimensional surface object surfObj using coordinate x.
+B.9.1.2. surf1Dwrite
+
+template<class T>
+void surf1Dwrite(T data,
+                  cudaSurfaceObject_t surfObj,
+                  int x,
+                  boundaryMode = cudaBoundaryModeTrap);
+
+writes value data to the CUDA array specified by the one-dimensional surface object surfObj at coordinate x.  
+[B.9.1.3. surf2Dread()](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#surf2dread-object)
+```  
+template<class T>
+T surf2Dread(cudaSurfaceObject_t surfObj,
+              int x, int y,
+              boundaryMode = cudaBoundaryModeTrap);
+template<class T>
+void surf2Dread(T* data,
+                 cudaSurfaceObject_t surfObj,
+                 int x, int y,
+                 boundaryMode = cudaBoundaryModeTrap);  
+```  
+reads the CUDA array specified by the two-dimensional surface object surfObj using coordinates x and y.
+[B.9.1.4. surf2Dwrite()](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#surf2dwrite-object)
+```  
+template<class T>
+void surf2Dwrite(T data,
+                  cudaSurfaceObject_t surfObj,
+                  int x, int y,
+                  boundaryMode = cudaBoundaryModeTrap);  
+```  
+writes value data to the CUDA array specified by the two-dimensional surface object surfObj at coordinate x and y.  
+[B.9.1.5. surf3Dread()](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#surf3dread-object)
+
+template<class T>
+T surf3Dread(cudaSurfaceObject_t surfObj,
+              int x, int y, int z,
+              boundaryMode = cudaBoundaryModeTrap);
+template<class T>
+void surf3Dread(T* data,
+                 cudaSurfaceObject_t surfObj,
+                 int x, int y, int z,
+                 boundaryMode = cudaBoundaryModeTrap);
+
+reads the CUDA array specified by the three-dimensional surface object surfObj using coordinates x, y, and z.
+B.9.1.6. surf3Dwrite()
+
+template<class T>
+void surf3Dwrite(T data,
+                  cudaSurfaceObject_t surfObj,
+                  int x, int y, int z,
+                  boundaryMode = cudaBoundaryModeTrap);
+
+writes value data to the CUDA array specified by the three-dimensional object surfObj at coordinate x, y, and z.
+B.9.1.7. surf1DLayeredread()
+
+template<class T>
+T surf1DLayeredread(
+                 cudaSurfaceObject_t surfObj,
+                 int x, int layer,
+                 boundaryMode = cudaBoundaryModeTrap);
+template<class T>
+void surf1DLayeredread(T data,
+                 cudaSurfaceObject_t surfObj,
+                 int x, int layer,
+                 boundaryMode = cudaBoundaryModeTrap);
+
+reads the CUDA array specified by the one-dimensional layered surface object surfObj using coordinate x and index layer.
+B.9.1.8. surf1DLayeredwrite()
+
+template<class Type>
+void surf1DLayeredwrite(T data,
+                 cudaSurfaceObject_t surfObj,
+                 int x, int layer,
+                 boundaryMode = cudaBoundaryModeTrap);
+
+writes value data to the CUDA array specified by the two-dimensional layered surface object surfObj at coordinate x and index layer.
+B.9.1.9. surf2DLayeredread()
+
+template<class T>
+T surf2DLayeredread(
+                 cudaSurfaceObject_t surfObj,
+                 int x, int y, int layer,
+                 boundaryMode = cudaBoundaryModeTrap);
+template<class T>
+void surf2DLayeredread(T data,
+                         cudaSurfaceObject_t surfObj,
+                         int x, int y, int layer,	
+                         boundaryMode = cudaBoundaryModeTrap);
+
+reads the CUDA array specified by the two-dimensional layered surface object surfObj using coordinate x and y, and index layer.
+B.9.1.10. surf2DLayeredwrite()
+
+template<class T>
+void surf2DLayeredwrite(T data,
+                          cudaSurfaceObject_t surfObj,
+                          int x, int y, int layer,
+                          boundaryMode = cudaBoundaryModeTrap);
+
+writes value data to the CUDA array specified by the one-dimensional layered surface object surfObj at coordinate x and y, and index layer.
+B.9.1.11. surfCubemapread()
+
+template<class T>
+T surfCubemapread(
+                 cudaSurfaceObject_t surfObj,
+                 int x, int y, int face,
+                 boundaryMode = cudaBoundaryModeTrap);
+template<class T>
+void surfCubemapread(T data,
+                 cudaSurfaceObject_t surfObj,
+                 int x, int y, int face,
+                 boundaryMode = cudaBoundaryModeTrap);
+
+reads the CUDA array specified by the cubemap surface object surfObj using coordinate x and y, and face index face.
+B.9.1.12. surfCubemapwrite()
+
+template<class T>
+void surfCubemapwrite(T data,
+                 cudaSurfaceObject_t surfObj,
+                 int x, int y, int face,
+                 boundaryMode = cudaBoundaryModeTrap);
+
+writes value data to the CUDA array specified by the cubemap object surfObj at coordinate x and y, and face index face.
+B.9.1.13. surfCubemapLayeredread()
+
+template<class T>
+T surfCubemapLayeredread(
+             cudaSurfaceObject_t surfObj,
+             int x, int y, int layerFace,
+             boundaryMode = cudaBoundaryModeTrap);
+template<class T>
+void surfCubemapLayeredread(T data,
+             cudaSurfaceObject_t surfObj,
+             int x, int y, int layerFace,
+             boundaryMode = cudaBoundaryModeTrap);
+
+reads the CUDA array specified by the cubemap layered surface object surfObj using coordinate x and y, and index layerFace.
+B.9.1.14. surfCubemapLayeredwrite()
+```  
+template<class T>
+void surfCubemapLayeredwrite(T data,
+             cudaSurfaceObject_t surfObj,
+             int x, int y, int layerFace,
+             boundaryMode = cudaBoundaryModeTrap);
+```  
+writes value data to the CUDA array specified by the cubemap layered object surfObj at coordinate x and y, and index layerFace.
 
 
+[stackoverflow: CUDA textures and clamping](http://stackoverflow.com/questions/5757294/cuda-textures-and-clamping)
 
+From [pQB](http://stackoverflow.com/users/714967/pqb)'s answer, "We can also clamp the boundary and trap it (make kernel fail) what is the default when using the surface memory."
+
+
+[4.31. Data types used by CUDA Runtime](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html#axzz4QD8orpjR)
+
+```  
+enum cudaSurfaceBoundaryMode
+```  
+CUDA Surface boundary modes
+
+**Values**
+```  
+    cudaBoundaryModeZero = 0
+```    
+Zero boundary mode 
+```  
+cudaBoundaryModeClamp = 1
+```  
+Clamp boundary mode 
+```  
+cudaBoundaryModeTrap = 2
+```  
+Trap boundary mode 
+
+So the default value for the `boundaryMode` argument in `surf2Dread`, `surf2Dwrite` and other `surf*` is `cudaBoundaryModeTrap, which fails when access is outside the array.  
 
 
 
