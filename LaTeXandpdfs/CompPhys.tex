@@ -4719,13 +4719,656 @@ $N_x$ (i.e. \verb|mx|) can be large and we're requiring a 2-dim. array of size $
 
 \pagebreak
 
-\section{Mapping scalar (data) to colors}
+\section{Mapping scalar (data) to colors; Data Visualization}
 
 Links I found useful:
 
 Taku Komura has good lectures on visualization with computers; it was heavily based on using VTK, but I found the principles and overview he gave to be helpful: here's \href{http://www.inf.ed.ac.uk/teaching/courses/vis/lecture_notes/lecture6.pdf}{Lecture 6 Scalar Algorithms: Colour Mapping}.  (Komura's teaching in the UK, hence spelling ``colour'')
 
-Good article on practical implementation of a rainbow: \url{https://www.particleincell.com/2014/colormap/}
+Good article on practical implementation of a rainbow: \url{https://www.particleincell.com/2014/colormap/}, i.e. \href{https://www.particleincell.com/2014/colormap/}{Converting Scalars to RGB Colormap}.
+
+I will formulate the problem mathematically (and clearly).
+
+What we want is this, a bijection:
+
+\begin{equation}
+\begin{gathered}
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2.5em, column sep=3.0em, minimum width=2em]
+  {
+    \mathbb{R}     & \left[ 0, 255 \right]^3 \equiv RGB   \\
+    \left[ \left. 0,1 \right) \right.    &  RGB \\
+    }
+    ;
+  \path[->]
+  (m-1-1) edge node [auto] {$ $ } (m-1-2)
+  (m-2-1) edge node [auto] {$$} (m-2-2)
+  ;  
+  \end{tikzpicture} \\
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=2.5em, column sep=3.0em, minimum width=2em]
+  {
+    U \subset \mathbb{R}     &   \left[ \left. 0 , 1 \right) \right. &  RGB   \\
+    x \in U & f = \frac{ x - \text{minval} }{ \text{maxval - minval} } & (r,g,b) \\
+    }
+    ;
+  \path[->]
+  (m-1-1) edge node [auto] {$ $ } (m-1-2)
+  (m-1-2) edge node [auto] {$ $ } (m-1-3);
+\path[|->]
+(m-2-1) edge node [auto] {$$} (m-2-2)
+(m-2-2) edge node [auto] {$$ } (m-2-3)
+  ;  
+\end{tikzpicture}
+  \end{gathered}
+  \end{equation}
+with
+\[
+\begin{gathered}
+\begin{aligned}
+& \text{ minval } := \min_{ x\in U} x \\ 
+& \text{ maxval } := \max_{ x \in U} x \end{aligned} \text{ and } \\
+r,g,b \in [0, \dots , 255] \subset \mathbb{Z} \end{gathered}
+\]
+
+Let $n= $ number of ``mapping segments'' or ``segments'' (matplotlib terminology).  e.g. $n=5$.
+
+Consider $\frac{1}{n}$, e.g. $\frac{1}{n} = \frac{1}{5} = 0.20$.
+
+Let
+\begin{equation}
+y := \lfloor 255 (nf - \lfloor nf \rfloor ) \rfloor \in [0, 255] 
+  \end{equation}
+
+Then
+\begin{equation}
+  (r,g,b) = \begin{cases}
+    (255, y,0) & \text{ if } \lfloor nf \rfloor = 0 \text{ or } 0 \leq nf < 1   \\
+    (255-y, 255,0) & \text{ if } \lfloor nf \rfloor = 1 \text{ or } 1 \leq nf < 2   \\
+    (0, 255,y) & \text{ if } \lfloor nf \rfloor = 2 \text{ or } 2 \leq nf < 3   \\
+    (0, 255-y,255) & \text{ if } \lfloor nf \rfloor = 3 \text{ or } 3 \leq nf < 4   \\
+    (y, 0,255) & \text{ if } \lfloor nf \rfloor = 4 \text{ or } 4 \leq nf < 5   \\
+    (255, 0,255) & \text{ if } \lfloor nf \rfloor = 5    \end{cases}
+  \end{equation}
+
+To understand how this color mapping is implemented in \verb|matplotlib|, take a look at
+
+\verb|class matplotlib.colors.LinearSegmentedColormap(name, segmentdata, N=256, gamma=1.0)| of \href{http://matplotlib.org/api/colors_api.html}{colors - Matplotlib 1.5.3 documentation },
+
+and look at
+
+row i:   x  y0  y1       \\
+               /         \\
+              /          \\
+row i+1: x  y0  y1
+
+\url{http://scipy.github.io/old-wiki/pages/Cookbook/Matplotlib/Show_colormaps} and \url{http://stackoverflow.com/questions/16834861/create-own-colormap-using-matplotlib-and-plot-color-scale}, for more examples of creating color maps, color bars.  
+
+\section{On Griebel, Dornseifer, and Neunhoeffer's \emph{Numerical Simulation in Fluid Dynamics: A Practical Introduction}}
+
+Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}
+
+See also \href{http://wissrech.ins.uni-bonn.de/research/software/}{Software of Research group of Prof. Dr. M. Griebel, Institute f\"{u}r Numerische Simulation} \url{http://wissrech.ins.uni-bonn.de/research/software/}
+
+
+\subsection{Boundary conditions}
+
+cf. Sec. 2.1. The Mathematical Mode: The Navier-Stokes Equations, Ch. 2 The Mathematical Description of Flows, Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}, pp. 12-13
+
+Let
+\[
+\begin{aligned}
+  & \varphi_n \equiv \text{ component of velocity orthogonal to boundary (in exterior normal direction) } \\
+  & \varphi_t \equiv \text{ component of velocity parallel to boundary (in tangential direction) } 
+\end{aligned}
+\]
+
+derivatives in normal direction:
+\[
+\begin{aligned}
+  & \frac{ \partial \varphi_n}{ \partial n } \\ 
+  &   \frac{ \partial \varphi_t}{ \partial n } 
+  \end{aligned}
+\]
+
+Let fixed boundary $\Gamma := \partial \Omega$.  Consider
+
+\begin{enumerate}
+\item \emph{No-slip condition}.
+
+  No fluid penetrates boundary.    \\
+  fluid is at rest there; i.e.
+  \begin{equation}
+\begin{aligned}
+  & \varphi_n(x,y) = 0 \\
+  & \varphi_t(x,y) = 0 
+  \end{aligned}
+  \end{equation}
+\item \emph{Free-slip condition}.
+
+  No fluid penetrates boundary.  \\
+  Contrary to no-slip condition,  
+  
+  there's no frictional losses at boundary, i.e.
+  \begin{equation}
+\begin{aligned}
+  & \varphi_n(x,y) = 0 \\
+  & \frac{ \partial \varphi_t}{ \partial n}(x,y) = 0 
+  \end{aligned}
+  \end{equation}
+
+Free-slip condition often imposed along line or plane of symmetry in problem, thereby reducing size of domain, where flow needs to be comprised by half.  
+  
+  \end{enumerate}
+
+cf. 2.2.2. Conservation of Momentum, Ch. 2 The Mathematical Description of Flows, Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}, pp. 16
+
+For incompressible fluids,
+\[
+\rho(\mathbf{x},t) = \rho_{\infty} = \text{ const }
+\]
+
+\begin{equation}
+  \frac{ \partial \mathbf{u}}{ \partial t} + u^j \frac{ \partial \mathbf{u} }{ \partial x^j} + \frac{1}{\rho_{\infty}} \text{grad}p = \frac{ \mu}{ \rho_{\infty} } \Delta \mathbf{u} + \mathbf{g}
+  \end{equation}
+with
+\[
+\begin{aligned}
+  & \text{ dynamic viscosity $\mu$ } \\
+  & \text{ kinematic viscosity } \nu = \frac{ \mu }{ \rho_{\infty}} \end{aligned}
+\]
+
+\subsubsection{Dynamic Similarity of Flows}
+
+cf. 2.3 Dynamic Similarity of Flows, Ch. 2 The Mathematical Description of Flows, Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}, pp. 17
+
+For incompressible flows,
+\begin{equation}
+  \begin{aligned}
+    (x^i)^* := \frac{ x^i}{L}   \\
+    t^* := \frac{u_{\infty} t}{L} \\
+    (u^i)^* := \frac{u^i}{ u_{\infty} } \\
+    p^* := \frac{ p - p_{\infty} }{ \rho_{\infty} u^2_{\infty} }
+    \end{aligned}
+  \end{equation}
+
+\[
+\begin{gathered}
+  \frac{ \partial \mathbf{u}^*}{ \partial t^*} \left( \frac{u_{\infty} }{ L/u_{\infty} } \right) + \frac{u_{\infty}^2 }{L} (u^j)^* \frac{ \partial \mathbf{u}^* }{ \partial (x^j)^*} + \frac{1}{\rho_{\infty}} \frac{ \rho_{\infty} u_{\infty}^2 }{ L} \text{grad}^*p^* = \frac{ \mu}{ \rho_{\infty} } \frac{1}{L^2} u_{\infty} \Delta^* ( \mathbf{u})^* + \mathbf{g} \Longrightarrow
+  \end{gathered}
+\]
+\begin{equation}\label{Eq:momconsvincompresssimilar}
+\frac{ \partial \mathbf{u}^*}{ \partial t^*} + (u^j)^* \frac{ \partial \mathbf{u}^* }{ \partial (x^j)^* } + \text{grad}^* p^* = \frac{ \mu}{ \rho_{\infty} u_{\infty} L} \Delta^* \mathbf{u}^* + \frac{L}{u^2_{\infty} } \mathbf{g}
+  \end{equation}
+
+\begin{equation}
+\begin{aligned}
+  \text{Re} := \frac{ \rho_{\infty} u_{\infty} L}{ \mu}  \qquad \, & \qquad \, (\text{Reynolds number}) \\
+  \text{Fr} := \frac{  u_{\infty} }{ \sqrt{ L \| \mathbf{g} \| } }  \qquad \, & \qquad \, (\text{Froude number}) \\
+  \end{aligned}
+  \end{equation}
+
+Compare this Eq. \ref{Eq:momconsvincompresssimilar}, derived with dynamic similarity, to Eq. (2.2a) of Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}, and my version of the dimensionless momentum conservation equation: 
+\begin{equation}
+  \frac{ \partial \mathbf{u}}{\partial t} + u^j \frac{ \partial \mathbf{u} }{ \partial x^j} + \text{grad} p = \frac{1}{\text{Re}} \Delta \mathbf{u} + \mathbf{g}^*  \qquad \, (\text{incompressible})
+  \end{equation}
+
+However, Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997} writes it as
+\begin{equation}
+  \begin{gathered}
+  \frac{ \partial \mathbf{u}}{\partial t} + \frac{ \partial u^j\mathbf{u} }{ \partial x^j} + \text{grad} p = \frac{1}{\text{Re}} \Delta \mathbf{u} + \mathbf{g}^*  \qquad \,  \\
+\text{div}(\mathbf{u}) = 0 
+    \end{gathered}
+\end{equation}
+as, separately, a \emph{momentum equation} and \emph{continuity equation}.  Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997} ends up implementing this version and so I needed to keep in mind the continuity equation condition.  
+
+\subsection{Discretization of the Navier-Stokes Equations}
+
+cf. 3.1.2 Discretization of the Navier-Stokes Equations, Ch. 3 The Numerical Treatment of the Navier-Stokes Equations, Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}, pp. 26
+
+\subsubsection{Gridding (revisited); staggered grid}
+
+Consider again $C^2_{ij}$ a 2-(cubic) simplex.
+\[
+\begin{aligned}
+  & i = 1,2 , \dots L_x \\ 
+  & j = 1,2 , \dots L_y 
+  \end{aligned} \xrightarrow{ \text{ Griebel, et.al's notation } }
+\begin{aligned}
+  & i = 1,2, \dots i_{\text{max}} \\ 
+  & j = 1,2, \dots j_{\text{max}}  
+  \end{aligned}
+\]
+
+Assume rectangles of all same size, width $\delta x$, length $\delta y$.
+
+To clarify (or drive home the point), cell $(i,j)$, $C_{ij}^2$ occupies
+\[
+  [(i-1)\delta x, i \delta x] \times [(j-1) \delta y, j \delta y ] \qquad \, \forall \, \begin{aligned} & \quad \\ & i = 1, 2, \dots L_x \\
+    & j = 1,2, \dots L_y \end{aligned}
+\]
+  cell centers:
+  \[
+  x_{i-0.5, j-0.5}  \equiv (x_{i-0.5, j-0.5}) = ((i-0.5)\delta x, (j-0.5)\delta y) 
+  \]
+4 1-(cubic) simplices (edges)
+\[
+\begin{gathered}
+  \begin{aligned}
+&    C^1_{i,j-0.5} = \lbrace i\delta x \rbrace \times [ (j-0.5) \delta y, j \delta y] \\ 
+&    C^1_{i-1,j-0.5} = \lbrace (i-1)\delta x \rbrace \times [ (j-0.5) \delta y, j \delta y] \\ 
+  \end{aligned} \qquad \qquad \,
+    \begin{aligned}
+&    C^1_{i-0.5,j} = [ (i-0.5) \delta x, i \delta x] \times \lbrace j\delta y \rbrace   \\ 
+&    C^1_{i-0.5,j-1} =  [ (i-0.5) \delta x, i \delta x] \times \lbrace (j-1)\delta y \rbrace  \\ 
+  \end{aligned}
+\end{gathered}
+\]
+
+$(i,j)$ assigned to pressure at cell center, $u^x$ velocity at right edge, $u^y$-velocity at upper edge of cell, i.e.
+\[
+\begin{aligned}
+  & p:(i,j) \mapsto p_{i,j} \mapsto ((i-0.5)\delta x, (j-0.5) \delta y) \qquad \, & \qquad \, \forall (i,j) \in \lbrace 1,2, \dots L_x \rbrace \times \lbrace 1,2, \dots L_y \rbrace, \text{ so } (i,j) \mapsto x_{ij} \in \Omega \\ 
+  & u^x:(i,j) \mapsto u^x_{i,j} \mapsto (i\delta x, (j-0.5) \delta y) \qquad \, & \qquad \, \forall (i,j) \in \lbrace 1,2, \dots L_x \rbrace \times \lbrace 1,2, \dots L_y \rbrace, \text{ so } (i,j) \mapsto x_{ij} \in \Omega \\ 
+  & u^y:(i,j) \mapsto u^y_{i,j} \mapsto ((i-0.5)\delta x, j \delta y) \qquad \, & \qquad \, \forall (i,j) \in \lbrace 1,2, \dots L_x \rbrace \times \lbrace 1,2, \dots L_y \rbrace, \text{ so } (i,j) \mapsto x_{ij} \in \Omega 
+\end{aligned}
+\]
+where domain $\Omega$ cell $(i,j)$, $\begin{aligned} & \quad \\
+  & i = 1\dots L_x \\
+  & j = 1\dots L_y \end{aligned}$.  $[(i-1)\delta x, i\delta x] \times [(j-1)\delta y, j\delta y]$.  
+
+To reiterate,
+\[
+\begin{matrix}
+& (i-0.5, j) & \\
+  (i-1,j-0.5) & (i-0.5, j-0.5) & (i,j-0.5) \\
+  & (i-0.5, j-1) & 
+\end{matrix} \xleftarrow{ \text{ discretization } }
+\begin{matrix}
+& ((i-0.5)\delta x, j \delta y) & \\ 
+ ((i-1)\delta x, (j-0.5)\delta y ) & ((i-0.5)\delta x, (j-0.5) \delta y) & (i\delta x, (j-0.5) \delta y ) \\
+ & ((i-0.5)\delta x, (j-1) \delta y) & \end{matrix}
+\]
+
+\subsubsection{Discretization of the Spatial Derivatives; Treatment of the Spatial Derivatives}
+
+ cf. 3.1.1 Simple Discretization Formulas, Ch. 3 The Numerical Treatment of the Navier-Stokes Equations, Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}.
+
+\[
+\begin{aligned}
+  & \text{ forward difference } & \left[ \frac{du}{dx} \right]_i^r := \frac{ u(x_{i+1}) - u(x_i) }{ \delta x}   \\ 
+  & \text{ backward difference } & \left[ \frac{du}{dx} \right]_i^l := \frac{ u(x_i) - u(x_{i-1}) }{ \delta x} \\
+  & \text{ central difference } & \left[ \frac{du}{dx} \right]_i^c := \frac{ u(x_{i+1}) - u(x_{i-1}) }{ 2\delta x}
+\end{aligned}
+\]
+
+\subsubsection{Stability problems, unphysical oscillations }
+
+Upwind difference or upwinding
+\begin{equation}
+\left[ \frac{du}{dx} \right]_i^{\text{up}} := \frac{ (1+\epsilon)(u_i - u_{i-1} ) + (1-\epsilon)(u_{i+1} - u_i) }{ 2\delta x} \text{ with } \epsilon := \text{sign}(k)
+  \end{equation}
+cf. Eq. (3.9) Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}
+
+where $k$ is in $\frac{d^2u}{dx^2} + k \frac{du}{dx} =f $ in $\Omega$
+
+Consider the weighted average of both.
+
+\[
+\begin{gathered}
+  \gamma \in [0,1] \\
+ \gamma \cdot \text{ upwind difference } + (1-\gamma) \cdot \text{ central difference } \\ 
+ \gamma \cdot \left[ \frac{du}{dx} \right]^{\text{up}}_i + (1-\gamma ) \left[ \frac{du}{dx} \right]_i^c
+\end{gathered}
+\]
+
+donor-cell scheme.  Consider $ \frac{d(ku)}{dx}$,  $k\in C^{\infty}(\mathbb{R})$.
+
+e.g. $\mathbb{R} \xrightarrow{ \text{ discretization } } \mathbb{Z}$.  Consider $x_i \equiv i \delta x$, $i\in \mathbb{Z}$.
+
+Consider $\begin{aligned} & \quad \\
+  & k_l := k_{i-0.5} \\
+  & k_r := k_{i+0.5} \end{aligned}$
+
+So then
+\begin{equation}
+  \left[ \frac{d(ku)}{dx} \right]_i^{dc} := \frac{k_ru_r - k_l u_l }{ \delta x} 
+\end{equation}
+cf. Eq. (3.11) Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}
+
+And so defining
+\begin{equation}
+  \begin{aligned}
+    & u_r := \begin{cases} u_i & k_r > 0 \\ u_{i+1} & k_r < 0 \end{cases} \\
+    & u_l := \begin{cases} u_{i-1} & k_l > 0 \\ u_i & k_l < 0 \end{cases}
+    \end{aligned}
+  \end{equation}
+can be rewritten as
+
+\begin{equation}\label{Eq:donorcellmethod}
+  \begin{aligned}
+    \left[ \frac{d(ku) }{dx} \right]_i^{dc} & = \frac{1}{2\delta x} ((k_r - |k_r| ) u_{i+1}  + (k_r + |k_r|  - k_l + |k_l| )u_i + (-k_l - |k_l| ) u_{i-1})  = \\
+    &= \frac{1}{2\delta x} (k_r (u_i + u_{i+1} ) - k_l (u_{i-1} + u_i ) + |k_r| (u_i - u_{i+1}) - |k_l|(u_{i-1} - u_i ) )
+    \end{aligned}
+  \end{equation}
+cf. Eq. (3.12), pp. 25, Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}.
+
+Consider terms such as
+\[
+\frac{ \partial (u^j \mathbf{u} )}{ \partial x^j}
+\]
+Take the average:
+\begin{equation}
+\begin{aligned}
+  & \left[ \frac{ \partial (u^x u^y ) }{ \partial y} \right]_{i,j} := \frac{1}{ \delta y } \left( \frac{ (u^y_{i,j} + u^y_{i+1,j} )}{2} \frac{ (u^x_{i,j} + u^x_{i,j+1} )}{2} - \frac{ (u^y_{i,j-1} + u^y_{i+1,j-1} )}{2} \frac{ (u^x_{i,j-1} + u^x_{i,j} )}{2} \right) \\ 
+  & \left[ \frac{ \partial ((u^x)^2) }{ \partial x} \right]_{i,j} := \frac{1}{ \delta x} \left( \left( \frac{ u_{i,j}  + u_{i+1,j} }{2} \right)^2 - \left(  \frac{ u_{i-1,j}  + u_{i,j} }{2} \right)^2 \right)
+  \end{aligned}
+  \end{equation}
+
+To understand these formulas, \textbf{take a look at Fig. 3.6. on pp. 28} of Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}. 
+
+
+
+Continuity equation.
+
+\begin{equation}
+  \text{div}\mathbf{u} = 0
+\end{equation}
+cf. Eq. (2.2c)
+\[
+\begin{gathered}
+  \text{div}\mathbf{u} = 0 \xrightarrow{ discretization } \begin{aligned}
+    & \left[ \frac{ \partial u}{ \partial x} \right]_{i,j} := \frac{ u_{i,j} - u_{i-1,j} }{ \delta x} \\ 
+    & \left[ \frac{ \partial u^y}{ \partial y} \right]_{i,j} := \frac{ u^y_{i,j} - u^y_{i,j-1} }{ \delta y}
+    \end{aligned}
+  \end{gathered}
+\]
+
+Also note this result that'll be used for the Poisson equation describing pressure $p$:
+
+\begin{equation}
+  \boxed{
+\text{div}\text{grad} p = \Delta p = \text{div} \left( - \frac{ \partial (u^j \mathbf{u} )}{ \partial x^j} + \frac{1}{\text{Re} }\Delta \mathbf{u} + \mathbf{g}^* \right)
+    }
+  \end{equation}
+where
+\[
+\xrightarrow{ \text{div}\mathbf{u} } \text{div} \left( \frac{ \partial \mathbf{u} }{ \partial t} \right) = \frac{ \partial }{ \partial t} \text{div}\mathbf{u} = 0 
+\]
+was used.  
+
+\subsubsection{$F$,$G$ terms (which include central difference, c, and donor-cell, dc, methods)}
+
+Page 29 of cf. 3.1.2 Discretization of the Navier-Stokes Equations, Ch. 3 The Numerical Treatment of the Navier-Stokes Equations, Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997} is \emph{gold} for understanding the implementation Griebel, Dornseifer, and Neunhoeffer had used and how to implement the computation or calculationg of $F,G$.
+
+$\forall \, $ cell $(i,j)$, $i=1 \dots i_{\text{max}} - 1$, $j=1 \dots j_{\text{max}}$, for $u$ at the midpoint of the \emph{right edge} of the cell, then from Eq. (3.19)a,
+
+\begin{equation}
+  \begin{gathered}
+    \left[ \frac{ \partial (u^2) }{ \partial x } \right]_{i,j}  := \frac{1}{\delta x} \left( \left( \frac{ u_{ij} + u_{i+1j}}{2} \right)^2 - \left( \frac{ u_{i-1j} + u_{ij}}{2} \right)^2 \right) +  \\
+    + \gamma \frac{1}{\delta x} \left( \frac{ |u_{ij} + u_{i+1j } |}{2} \frac{ (u_{ij} - u_{i+1j} ) }{2} - \frac{ |u_{i-1j} + u_{ij} | }{2} \frac{ (u_{i-1j } -u_{ij} )}{2} \right) 
+    \end{gathered}
+  \end{equation}
+Indeed, in this case
+\[
+\begin{aligned}
+  & k_r := \frac{u_{ij} + u_{i+1j} }{2} \\ 
+  & k_l := \frac{u_{i-1j} + u_{ij} }{2} \\ 
+  \end{aligned}
+\]
+and Eq. \ref{Eq:donorcellmethod} tells us (cf. Eq. 3.12 of Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}), which again is
+\[
+\left[ \frac{d(ku)}{dx} \right]_i^{dc}  = \frac{1}{2\delta x} (k_r (u_i + u_{i+1} ) - k_l (u_{i-1} + u_i ) + |k_r| (u_i - u_{i+1}) - |k_l|(u_{i-1} - u_i ) )
+\]
+and so in this case
+{\small
+\[
+\begin{aligned}
+  \left[ \frac{ \partial (u^2)}{ \partial x} \right]^{dc}_{ij} & = \frac{1}{\delta x} \left[ \left( \frac{ u_{ij} + u_{i+1j} }{2} \right)\left( \frac{u_{ij} + u_{i+1j}}{2} \right) - \left( \frac{u_{i-1j} + u_{ij} }{2} \right)\left( \frac{u_{i-1j} + u_{ij} }{2} \right)  + \frac{ |u_{ij} + u_{i+1j} | }{2} \frac{ (u_{ij} - u_{i+1j} )}{2} + \frac{ |u_{i-1j} +u_{ij} |}{2} \frac{(u_{i+1j}-u_{ij} )}{2} \right] = \\
+  & = \left[ \frac{ \partial (u^2)}{ \partial x^2} \right]^c_{ij} + \frac{1}{\delta x} \left( \frac{ |u_{ij} + u_{i+1j} | }{2} \frac{ (u_{ij} - u_{i+1j} )}{2} + \frac{ |u_{i-1j} +u_{ij} |}{2} \frac{(u_{i+1j}-u_{ij} )}{2} \right)
+\end{aligned}
+\]
+}
+
+Consider Fig. 3.6 on pp. 28 of Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}, ``Values required for the discretization of the $u$-momentum equation.
+
+\[
+\begin{aligned}
+& \begin{matrix}
+    & & u_{ij+1} & & \\
+    & v_{ij} &  & v_{i+1j} &  \\
+u_{i-1j} &         & u_{ij}  &          &  u_{i+1j} \\     
+& v_{ij-1} &        & v_{i+1j-1} &         \\
+&         & u_{ij-1} &          & 
+  \end{matrix} \qquad \, \Longrightarrow \quad \, 
+  \begin{matrix}
+          & u^x_{ij+1}       &      \\
+u^x_{i-1j} & \mathbf{u}_{ij} & \mathbf{u}_{i+1j} \\ 
+         & \mathbf{u}_{ij-1} & u^y_{i+1j-1} 
+  \end{matrix}
+  \end{aligned}
+\]
+
+\[
+\begin{aligned}
+& \begin{matrix}
+    & & v_{ij+1} & & \\
+    & u_{i-1j+1} &  & u_{ij+1} &  \\
+v_{i-1j} &         & v_{ij}  &          &  v_{i+1j} \\     
+& u_{i-1j} &        & u_{ij} &         \\
+&         & v_{ij-1} &          & 
+  \end{matrix} \qquad \, \Longrightarrow \quad \, 
+  \begin{matrix}
+u^x_{i-1j+1}          & \mathbf{u}_{ij+1}       &      \\
+\mathbf{u}_{i-1j} & \mathbf{u}_{ij} & u^y_{i+1j} \\ 
+         & u^y_{ij-1} &  
+  \end{matrix}
+  \end{aligned}
+\]
+
+
+\begin{equation}
+\begin{aligned}
+  & F := (u^x)^n + \delta t \left[ \frac{1}{\text{Re}}\Delta u^x - \frac{ \partial (u^ju^x)}{ \partial x^j} + (g^*)^x \right] \\
+  & G := (u^y)^n + \delta t \left[ \frac{1}{\text{Re}}\Delta u^y - \frac{ \partial (u^ju^y)}{ \partial x^j} + (g^*)^y \right]
+  \end{aligned}
+  \end{equation}
+
+So.  \emph{Compute $u^{(n+1)}$, $v^{(n+1)}$ according to (3.34), (3.35)}.  cf. pp. 34, 3.2.2 The Discrete Momentum Equations, Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}.
+
+\begin{equation}
+  u_{i,j}^{(n+1)} = F_{i,j}^{(n)} - \frac{ \delta t}{ \delta x }( p_{i+1,j}^{(n+1)} - p_{i,j}^{(n+1)} ) \qquad \, \begin{aligned}  & i = 1 \dots i_{\text{max}} - 1  \\
+    & j = 1 \dots j_{\text{max}} \end{aligned} 
+\end{equation}
+cf. (3.34) Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}
+
+\begin{equation}
+  v_{i,j}^{(n+1)} = G_{i,j}^{(n)} - \frac{ \delta t}{ \delta y }( p_{i,j+1}^{(n+1)} - p_{i,j}^{(n+1)} ) \qquad \, \begin{aligned}  & i = 1 \dots i_{\text{max}}   \\
+    & j = 1 \dots j_{\text{max}} -1 \end{aligned} 
+\end{equation}
+cf. (3.34) Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}
+
+with $F,G$, cf. (3.29), and with \\
+
+$F$ discretized at right edge of cell $(i,j)$ \\ 
+$G$ discretized at upper edge of cell $(i,j)$ \\
+
+which is 
+\begin{equation}
+  F_{i,j} := u_{i,j} + \delta t\left( \frac{1}{ \text{Re}} \left( \left[ \frac{ \partial^2 u}{ \partial x^2} \right]_{i,j} + \left[ \frac{ \partial^2 v}{ \partial y^2 }\right]_{i,j} \right) - \left[ \frac{ \partial (u^2) }{ \partial x} \right]_{i,j} - \left[ \frac{ \partial (uv) }{ \partial y} \right]_{i,j} + g_x \right) \qquad \, \begin{aligned} & i = 1 \dots i_{\text{max}}-1  \\
+    & j = 1\dots j_{\text{max}}  \end{aligned}
+\end{equation}
+cf. Eq. (3.36) Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}, and 
+\begin{equation}
+  G_{i,j} := v_{i,j} + \delta t\left( \frac{1}{ \text{Re}} \left( \left[ \frac{ \partial^2 v}{ \partial x^2} \right]_{i,j} + \left[ \frac{ \partial^2 v}{ \partial y^2 }\right]_{i,j} \right) - \left[ \frac{ \partial (uv) }{ \partial x} \right]_{i,j} - \left[ \frac{ \partial (v^2) }{ \partial y} \right]_{i,j} + g_y \right) \qquad \, \begin{aligned} & i = 1 \dots i_{\text{max}}  \\
+    & j = 1\dots j_{\text{max}} - 1 \end{aligned}
+\end{equation}
+cf. Eq. (3.37) Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}.  
+
+Consider where the set of cells $C_{ij}$ intersect or overlap that are needed for $u_{i,j}^{n+1}$ and $v_{i,j}^{(n+1)}$.
+\[
+\lbrace (i,j) | \begin{aligned} & i = 1\dots i_{\text{max}}-1  \\
+  & j = 1 \dots j_{\text{max}} - 1 \end{aligned} \rbrace \Longleftrightarrow u^{(n+1)}_{i,j} = ((u^x)^{(n+1)}_{i,j}, (u^y)^{(n+1)}_{i,j} )
+\]
+
+
+For Eq. (3.36), (3.37) of Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}, which are quoted for the implementation or algorithm,
+\begin{equation}
+  F_{i,j} := u_{i,j} + \delta t\left( \frac{1}{ \text{Re}} \left( \left[ \frac{ \partial^2 u}{ \partial x^2} \right]_{i,j} + \left[ \frac{ \partial^2 v}{ \partial y^2 }\right]_{i,j} \right) - \left[ \frac{ \partial (u^2) }{ \partial x} \right]_{i,j} - \left[ \frac{ \partial (uv) }{ \partial y} \right]_{i,j} + g_x \right) \qquad \, \begin{aligned} & i = 1 \dots i_{\text{max}}-1  \\
+    & j = 1\dots j_{\text{max}}  \end{aligned}
+\end{equation}
+cf. Eq. (3.36) Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}, and 
+\begin{equation}
+  G_{i,j} := v_{i,j} + \delta t\left( \frac{1}{ \text{Re}} \left( \left[ \frac{ \partial^2 v}{ \partial x^2} \right]_{i,j} + \left[ \frac{ \partial^2 v}{ \partial y^2 }\right]_{i,j} \right) - \left[ \frac{ \partial (uv) }{ \partial x} \right]_{i,j} - \left[ \frac{ \partial (v^2) }{ \partial y} \right]_{i,j} + g_y \right) \qquad \, \begin{aligned} & i = 1 \dots i_{\text{max}}  \\
+    & j = 1\dots j_{\text{max}} - 1 \end{aligned}
+\end{equation}
+cf. Eq. (3.37) Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}.  
+
+Eq. (3.38) of Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997} is essentially the discretization of the Poisson equation (that takes advantage of the fact that we're dealing with the incompressible case):
+\begin{equation}
+  \Delta p = \frac{1}{\delta t}\text{div}((F,G)) \xrightarrow{ \text{discretization }}
+  \end{equation}
+
+\begin{equation}
+  \frac{ p_{i+1,j}^{(n+1)} - 2p_{i,j}^{(n+1)} + p_{i-1,j}^{(n+1)} }{ (\delta x)^2 } +   \frac{ p_{i,j+1}^{(n+1)} - 2p_{i,j}^{(n+1)} + p_{i,j-1}^{(n+1)} }{ (\delta y)^2 } = \frac{1}{\delta t} \left( \frac{ F_{i,j}^{(n)} - F_{i-1,j}^{(n)} }{ \delta x} + \frac{ G_{i,j}^{(n)} - G_{i,j-1}^{(n)} }{\delta y} \right) \qquad \, \begin{aligned} & i = 1 \dots i_{\text{max}} \\
+    & j = 1\dots j_{\text{max}} \end{aligned}
+\end{equation}
+cf. Eq. (3.38) of Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}, pp. 35, 3.2.3. The Poisson Equation for the Pressure.  
+
+\subsubsection{Poisson equation for pressure (for this incompressible case), and towards SOR (successive Over Relaxation) method}
+
+\begin{equation}
+  \begin{gathered}
+    \frac{  \epsilon_i^E (p_{i+1,j}^{(n+1)} - p_{i,j}^{(n+1)} ) - \epsilon_i^W (p_{i,j}^{(n+1)} - p_{i-1,j}^{(n+1)} ) }{ (\delta x)^2 } + \frac{ \epsilon_j^N (p_{i,j+1}^{(n+1)} - p_{i,j}^{(n+1)} ) - \epsilon_j^S(p_{i,j}^{(n+1)} - p_{i,j-1}^{(n+1)} ) }{ (\delta y)^2 } = \\
+     = \frac{1}{ \delta t} \left( \frac{F_{i,j}^{(n)} - F_{i-1,j}^{(n)} }{\delta x} + \frac{ G_{i,j}^{(n)} - G_{i,j-1}^{(n)} }{ \delta y } \right) \\
+    \qquad \, \begin{aligned} & i = 1\dots i_{\text{max}} \\
+    & j = 1\dots j_{\text{max}} \end{aligned}
+\end{gathered}
+  \end{equation}
+where
+\[
+\begin{aligned}
+  & \epsilon_i^W := \begin{cases} 0 & i  =1 \\ 1 & i > 1 \end{cases} \\ 
+  & \epsilon_i^E := \begin{cases} 1 & i  < i_{\text{max}} \\ 0 & i =i_{\text{max}} \end{cases} \\ 
+  & \epsilon_j^S := \begin{cases} 0 & j  =1 \\ 1 & j > 1 \end{cases} \\ 
+  & \epsilon_j^N := \begin{cases} 1 & j  < j_{\text{max}} \\ 0 & j = j_{\text{max}} \end{cases} 
+\end{aligned}
+\]
+cf. Eq. (3.43)  Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}.  
+
+e.g., for $1 < i < i_{\text{max}}$, and $1< j < j_{\text{max}}$, 
+\[
+\begin{gathered}
+  \frac{   (p_{i+1,j}^{(n+1)} - p_{i,j}^{(n+1)} ) -  (p_{i,j}^{(n+1)} - p_{i-1,j}^{(n+1)} ) }{ (\delta x)^2 } + \frac{  (p_{i,j+1}^{(n+1)} - p_{i,j}^{(n+1)} ) - (p_{i,j}^{(n+1)} - p_{i,j-1}^{(n+1)} ) }{ (\delta y)^2 } = \\
+  = \frac{1}{ \delta t} \left( \frac{F_{i,j}^{(n)} - F_{i-1,j}^{(n)} }{\delta x} + \frac{ G_{i,j}^{(n)} - G_{i,j-1}^{(n)} }{ \delta y } \right) 
+\end{gathered}
+\]
+Indeed it takes into account the discretized boundary conditions, which was obtained from the so-called \emph{Chorin projection method} (which is based on the Hodge-Helmholtz decomposition).
+\begin{equation}
+  \begin{aligned}
+    &   p_{0,j} = p_{i,j} ; \qquad \, & p_{imax+1,j} = p_{imax,j} , \qquad \, j=1\dots j_{\text{max} } \\ 
+        &   p_{i,0} = p_{i,1} ; \qquad \, & p_{i,jmax+1} = p_{i,jmax} , \qquad \, i=1\dots i_{\text{max} }  
+    \end{aligned}
+  \end{equation}
+cf. Eq. (3.41) Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}.  
+
+\subsubsection{Successive Over Relaxation (SOR) method}
+
+$\forall \, it = 1\dots it_{\text{max}}$ 
+
+\phantom{ \qquad \, } $i=1\dots i_{\text{max}}$,
+
+\phantom{ \qquad \qquad \, } $j=1 \dots j_{\text{max}}$
+
+\begin{equation}
+  \begin{gathered}
+    p^{it+1}_{i,j} := (1-\omega) p_{i,j}^{it} + \\
+    + \frac{ \omega}{ \left( \frac{ \epsilon_i^E + \epsilon_i^W}{ (\delta x)^2 } + \frac{ \epsilon_j^N + \epsilon_j^S }{ (\delta y)^2 } \right) } \cdot \left( \frac{ \epsilon_i^E p_{i+1,j}^{it} + \epsilon^W_i p_{i-1,j}^{it+1} }{  (\delta x)^2 } + \frac{ \epsilon_j^N p_{i,j+1}^{it} + \epsilon_j^S p_{i,j-1}^{it +1} }{ (\delta y)^2 } - \text{rhs}_{ij} \right)
+    \end{gathered}
+  \end{equation}
+cf. Eq. (3.44)  Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}.  
+
+\subsubsection{Implementation, routines, algorithms for incompressible Navier-Stokes equations solver}
+
+Consider the serial version of the incompressible Navier-Stokes equations solver with finite difference:
+\begin{itemize}
+  \item $t:=0$, $n:= 0$ 
+  \item initial values of $u,v, p$ i.e. $\mathbf{u},p$
+  \item While $t<t_{\text{end}}$ \begin{itemize}
+  \item select $\delta t$ (according to (3.50) if stepsize control is used)
+  \item set boundary values for $u,v$
+  \item Compute $F^{(n)}$ and $G^{(n)}$ according to (3.36), (3.37)
+  \item Compute RHS of pressure Eq. (3.38)
+  \item Set $it := 0$ 
+  \item While $it < it_{\text{max}}$ and $\| r^{it} \| > \text{eps} $ (resp., $\|r^{it} \| > \text{eps } \| p^0 \|$) \begin{itemize}
+    \item Perform an SOR cycle according to (3.44) 
+    \item Compute the residual norm for the pressure equation, $\| r^{it} \|$
+      \item $it:= it +1$
+  \end{itemize}
+ \item   Compute $u^{(n+1)}$ and $v^{(n+1)}$ according to (3.34), (3.35)
+ \item $t:= t+ \delta t$ 
+\item $n := n+1$
+  \end{itemize}
+\end{itemize}
+\textbf{Algorithm 1}. Base version (or serial version), pp. 40, of Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}.
+
+Compare this with the parallelized version:
+\begin{itemize}
+  \item $t:=0$, $n:= 0$ 
+  \item initial values of $u,v, p$ i.e. $\mathbf{u},p$
+  \item While $t<t_{\text{end}}$ \begin{itemize}
+  \item select $\delta t$ (according to (3.50) if stepsize control is used)
+  \item set boundary values for $u,v$
+  \item Compute $F^{(n)}$ and $G^{(n)}$ according to (3.36), (3.37)
+  \item Compute RHS of pressure Eq. (3.38)
+  \item Set $it := 0$ 
+  \item While $it < it_{\text{max}}$ and $\| r^{it} \| > \text{eps} $ (resp., $\|r^{it} \| > \text{eps } \| p^0 \|$) \begin{itemize}
+    \item Perform an SOR cycle according to (3.44) 
+    \item Exchange the pressure values in the boundary strips
+    \item Compute the partial residual and send these to the master process
+    \item \emph{Master process} computes the residual norm of the pressure equation $\|r^{it}\|$ and broadcasts it to all processes
+      \item $it:= it +1$
+  \end{itemize}
+ \item   Compute (update) $u^{(n+1)}$ and $v^{(n+1)}$ according to (3.34), (3.35)
+ \item $t:= t+ \delta t$ 
+\item $n := n+1$
+  \end{itemize}
+\end{itemize}
+\textbf{Algorithm 3}. Parallel version, pp. 115 of Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}
+
+
+
+ 
+\subsubsection{Lid-Driven Cavity}
+
+cf. 5.1. Lid-Driven Cavity.   Ch. 5 Example Applications, Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}.
+
+On $S_N \subset \partial \Omega \subset \Omega \subset \mathbb{R}^2$ (``northern'' $N$ boundary of domain $\Omega$, which is a submanifold of $\Omega$ or of $\mathbb{R}^2$,
+\begin{equation}
+\begin{aligned}
+  & u^x(x) = \overline{u} \\ 
+  & u^y(x) = 0 
+  \end{aligned} \qquad \, \forall \, x \in S_N
+\end{equation}
+
+For the \emph{discretization}, consider the staggered grid and how $u^x$ or i.e. the $x$-component of velocity field $\mathbf{u}$, $u$, is at the center of each edge (or i.e. face), and by convention, the cell index $(i,j)$ corresponds to the ``right'' face.  So
+\[
+\begin{matrix}
+  u^x_{i-1,j_{\text{max}}+1} & & u^x_{i,j_{\text{max}} +1}   \\
+  & u^x_{i-\frac{1}{2},j_{\text{max}}+\frac{1}{2}} & \\
+  u^x_{i-1,j_{\text{max}}} & & u^x_{i,j_{\text{max}}} 
+  \end{matrix}
+\]
+and so
+\begin{equation}
+  \begin{gathered}
+    u^x_{i,j_{\text{max}}+\frac{1}{2}} = \frac{ u^x_{i,j_{\text{max}}+1} + u^x_{i,j_{\text{max}}} }{2} = \overline{u} \text{ or } \\
+u^x_{i,j_{\text{max}}+1} = 2\overline{u} - u^x_{i-1,j_{\text{max}}} \, ; \, \qquad \, i = 1 \dots i_{\text{max}}
+    \end{gathered}
+  \end{equation}
+
+
+
 
 
 \end{multicols*}
@@ -4764,6 +5407,11 @@ Jason Sanders, Edward Kandrot.  \textbf{CUDA by Example: An Introduction to Gene
 Joel H. Ferziger and Milovan Peric.  \textbf{Computational Methods for Fluid Dynamics}.  Springer; 3rd edition (October 4, 2013).  ISBN-13: 978-3540420743
 
 I used the 2002 edition since that was the only copy I had available.  
+
+\bibitem{GDN1997}
+Michael Griebel, Thomas Dornsheifer, Tilman Neunhoeffer.  \textbf{Numerical Simulation in Fluid Dynamics: A Practical Introduction (Monographs on Mathematical Modeling and Computation)}.  SIAM: Society for Industrial and Applied Mathematics (December 1997).  ISBN-13: 978-0898713985  QA911.G718  1997
+  
+See also \href{http://wissrech.ins.uni-bonn.de/research/software/}{Software of Research group of Prof. Dr. M. Griebel, Institute f\"{u}r Numerische Simulation} \url{http://wissrech.ins.uni-bonn.de/research/software/}
 
 \end{thebibliography}
 
