@@ -402,7 +402,7 @@ I propose that ``adding another dimension'' or the 2-dimension, that Prof. Owen 
 
 Most general syntax:
 
-Configuring the kernel launch
+Configuring the kernel launhc
 \begin{lstlisting}
   kernel<<<grid of blocks, block of threads >>>(...)
 
@@ -1730,6 +1730,297 @@ cf.  \href{https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts
 I will expound upon the excellent article from Mark Harris, ``Optimizing Parallel Reduction in CUDA''.  cf. \href{http://developer.download.nvidia.com/compute/cuda/1.1-Beta/x86_website/projects/reduction/doc/reduction.pdf}{\emph{Optimizing Parallel Reduction in CUDA}, Mark Harris} : \url{http://developer.download.nvidia.com/compute/cuda/1.1-Beta/x86_website/projects/reduction/doc/reduction.pdf}
 
 
+\subsection{Unit 4}
+
+\subsection{Unit 5}
+
+\subsubsection{Occupancy}
+
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/109244577/concepts/1118375690923#}{Occupancy Part 1}
+
+Each SM (streaming multi-processor) has a limited number of
+\begin{itemize}
+\item thread blocks (so there's a maximum number of thread blocks, e.g. 8)
+\item threads (so there's a maximum number of threads, e.g. 1536-2048)
+\item registers for all threads (every thread takes a certain number of registers, and there's a maximum number of registers for all the threads, e.g. 65536)
+\item bytes of shared memory
+  \end{itemize}
+
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/109244577/concepts/1110067030923}{Quiz: Occupancy Part 2}
+
+Compile and run \verb|deviceQuery_simplified.cpp| (can be found in Lesson 5 Code Snippets).
+
+Look at
+
+\begin{itemize}
+\item Total amount of shared memory per block
+\item Maximum number of threads per multiprocessor  
+\item Maximum number of threads per block  
+\end{itemize}
+  
+For Luebke's laptop, it's 49152 bytes, 2048, 1024 respectively, and 65536 total registers available per block.  
+
+\subsubsection{Thread Divergence}
+
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/109244577/concepts/1109210790923#}{Quiz: Swith Statements and Thread Divergence}
+
+Threads in warp is 32 (check hardware, usually this is the case for modern GPUs).  Only 32 threads in a warp, i.e. $2^5$.
+
+CUDA assigns thread IDs to warps:
+
+\begin{itemize}
+\item $x$ varies fastest
+\item $y$ varies slower
+\item $z$ varies slowest
+\end{itemize}
+warp assignment, consider $(M_x,M_y,M_z) \equiv $ number of threads in a single thread block, in each dimensional direction.
+
+Consider
+\[
+\begin{aligned}
+  & i_x \in \lbrace 0 , \dots , M_x - 1 \rbrace \\ 
+  & i_y \in \lbrace 0 , \dots , M_y - 1 \rbrace
+  \end{aligned}
+\]
+
+If $M_x/2^5 \in \mathbb{Z}^+$, i.e. $M_x/2^5\geq 1$, then threads in $x$-direction are in warps that branch (go to same case in if-else, or switch, case statement in kernel) to same case.
+
+\subsubsection{Problem Set 5}
+
+2. One Basic Strategy
+
+A. Sort the Data, into bins, sort the input data, into coarse bins
+
+B. use threads, compute local histogram, use each thread block, to compute local histogram
+
+c. concatenate
+
+e.g.
+
+Consider
+
+$J = $ total number of coarse bins, $J\in \mathbb{Z}^+$.
+
+$j\in \lbrace 0 \dots J-1 \rbrace$, e.g. $J=10$.
+
+$K = $ total number of bins,
+
+$k\in \lbrace 0 \dots K-1 \rbrace$,  e.g. $K = 100$
+
+The condition is that $J< K$
+
+For each thread block,
+
+\subsubsection{Parallel radix sort}
+
+cf. look at, in the directory 
+\url{http://www.compsci.hunter.cuny.edu/~sweiss/course_materials/csci360/lecture_notes/}
+for the parallel radix sort implementation called \verb|radix_sort_cuda.cc|.
+
+Let $M_x \in \mathbb{Z}^+$ represent
+\begin{equation}
+  M_x \leftrightarrow \verb|blockDim.x |
+  \end{equation}
+
+  \begin{equation}
+j_x \in \lbrace 0 , 1 , \dots M_x -1 \rbrace \leftrightarrow \verb| blockIdx.x |
+    \end{equation}
+
+  $\forall \, j_x \in \lbrace 0 , 1 \dots , M_x - 1\rbrace $, $j_x $ denote which thread block we are in.
+
+  $j_x$ also corresponds to the so-called coarse bin id.  
+
+
+\subsection{Final for Udacity cs344}
+
+\subsubsection{Quiz: Final - Question 7}
+
+cf. \url{https://classroom.udacity.com/courses/cs344/lessons/2133758814/concepts/1421890260923#}
+
+Second question:
+
+What is the ratio (expressed as a percentage) between kernel that uses more memory bandwidth and the kernel that uses less?
+
+For both parts of this question, here's how to approach it.
+
+Consider a stencil of radius $\text{RAD} \equiv R = 2$.  So the filter-width in 1-dimension for this 2-dimensional stencil is
+\[
+\text{filterwidth} \equiv W  = 2 \cdot \text{RAD}  +1 = 5
+\]
+$W^2$ multiples, and $W^2-1$ adds.
+
+$\forall \, k \in K$, a (single) pixel of greyscale image, $k\in \lbrace 0 , 1, \dots N-1 \rbrace$, \\
+
+Consider the threads per block configuration (i.e. a single thread block).
+
+Let $M \equiv M_x M_y = 1024$ in both, either, case, i.e. totla number of threads per block is 1024.
+
+Consider $\begin{aligned} & \quad \\
+  & (M_x,M_y) = (1024, 1) \text{ vs. } \\ 
+  & (M_x,M_y) = (32, 32) \text{ vs. } \end{aligned}$,  \\
+Correspoding to
+\[
+\verb|dim3| M_i(M_x,M_y)
+\]
+for
+\[
+\text{smooth} \verb| <<<  , M_i >>> |( \verb|v_new|, v) ;
+\]
+
+The big idea is that we have a tile of input data we want to load into 2-dimensional shared memory.  It is of size
+\begin{equation}
+  (M_x + 2R) (M_y + 2R)
+\end{equation}
+Compare this quantity to when $(M_x,M_y) = (1024,1)$ vs. when it's $(32,32)$.
+\[
+\begin{gathered}
+  (1024 +4 )(1+4) / (32 +4)*(32 +4) = \boxed{ 3.966 }
+  \end{gathered}
+\]
+This is the ratio between the kernel with more memory bandwidth and the kernel with less memory bandwidth.  
+
+Note, in the Udacity forum, \href{https://discussions.udacity.com/t/final-updated-questions-7-8/88801/2}{Final: Updated Questions 7 \& 8}, jlmayfield gave the hint to consider those stencil halo cells or what I call the radius $R$ of the stencil, as this stencil is $5x5$.    
+
+\subsubsection{Quiz: Final - Question 8}
+
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/2133758814/concepts/1421890280923}{Quiz:Final - Question 8}
+
+$32 \times 32 $ block, but consider
+\begin{itemize}
+\item 4x storage per SM
+\item 4x registers
+\item 4x shared memory
+  \end{itemize}
+now 64 x 64 since, in each dimension, 2x the global memory available ($2\times 2 = 4$).  
+
+Express, in decimals, what the speedup is on this new GPU.
+
+Here's how I approached this problem:  
+
+so in a single thread block, we can have a much larger tile with inputted data to reside in shared memory and so we can process a much larger tile of inputted data in a single thread block:
+\begin{equation}
+\begin{gathered}
+  (M_x + 2R)(M_y + 2R) = ( 64 + 2*2)*(64 + 2*2) = 4624
+\end{gathered}
+\end{equation}
+instead of when $(M_x,M_y)=(32,32)$.
+
+Not only that 4x of shared memory, 4x storage per SM, but also \emph{4x registers}.  More registers for the threads, more a thread can be doing something and not have to wait for another thread (or even to hop on to another thread if the thread itself doesn't have enough registers).  More throughput, by 4x.
+
+\begin{equation}
+\begin{gathered}
+  (64 + 2R)(64 + 2R) * 4 /   (32 + 2R)(32 + 2R) = \boxed{ 14.27 \text{ or } 14.0 }
+  \end{gathered}
+  \end{equation}
+
+
+There was confusion about Final - Question 8 in the Udacity Forums: \href{https://discussions.udacity.com/t/final-question-8/46261}{Final - Question 8}
+
+\subsubsection{Quiz: Final - Question 9}
+
+cf. \url{https://classroom.udacity.com/courses/cs344/lessons/2133758814/concepts/1389566540923}
+
+If I want to run the maximum number of threads possible that are all resident on an SM (streaming multiprocessor) at the same time, each thread must use no more than, \emph{how many}, registers?
+
+\begin{equation}
+\boxed{ 32  \text{ registers } }
+  \end{equation}
+
+
+
+
+
+This is obtained by looking at \url{http://en.wikipedia.org/wiki/CUDA} (this was given) and look for
+\begin{itemize}
+\item ``Maximum number of resident threads per multiprocessor'': 2048 for Compute ability (version) 3.5.
+\item 
+  \end{itemize}
+
+\href{https://discussions.udacity.com/t/final-exam-question-9-confusion/88637}{Final Exam Question 9 confusion}
+
+\url{https://discussions.udacity.com/t/final-exam-question-9-confusion/88637}
+
+
+\subsubsection{Quiz: Final - Question 11}
+
+Maximum number of blocks resident on the same SM, what is the maximum number of threads $/$ block that we can have?
+
+This is obtained by looking at \url{http://en.wikipedia.org/wiki/CUDA} (this was given) and look for
+\begin{itemize}
+\item ``Maximum number of resident blocks per multiprocessor'': 16 for Compute ability (version) 3.5.
+\item ``Maximum number of resident threads per multiprocessor'': 2048 for Compute ability (version) 3.5.
+  \end{itemize}
+
+The answer is
+\begin{equation}
+\begin{gathered}
+\boxed{ 2048 / 16 = 128 }
+  \end{gathered}
+  \end{equation}
+Since we take max. number of resident threads per SM, 2048, but the condition is using the max. number of resident blocks per SM, so, divide by 16.  
+
+\subsubsection{Quiz: Final - Question 12; Fast ``compact'' primitive}
+
+Consider the \emph{Fast `` compact'' primitive}.
+
+\begin{enumerate}
+\item sum up the no. of ``T'' flags
+\end{enumerate}
+e.g. warp of size 4 (only to make it easy to understand), (4 warps of 4 flags each), e.g.
+\[
+TFTF / FTFT / TTTT / tfff
+\]
+
+\begin{enumerate}
+\item \[
+2 / 2 / 4 / 1 
+  \]
+  \end{enumerate}
+
+Let warp size $W=2^n$; $n\in \mathbb{Z}^+$, e.g. $n=5$ for $W=32$.
+
+Given shared memory $s\in (\mathbb{Z}^+)^W$,
+\[
+\forall \, i \in \lbrace W/2, W/4 , \dots | i > 0 \rbrace
+\]
+For given \verb|ARRAY_SIZE = 32 = | $M_x$ so $M_x =W$ (thread block size is equal to warp size in this case).
+
+Keep in mind, even in a \verb|__device__| function, we've got \textbf{access} to
+\[
+\begin{gathered}
+  i_x \equiv \verb|threadIdx.x| \in \lbrace 0 , 1\dots, M_x - 1\rbrace
+\end{gathered}
+\]
+(and so on).
+
+$i_x < i$, i.e. $\forall \, i_x < i$ and $i_x \in \lbrace 0 , 1\dots M_x - 1\rbrace$
+
+\[
+s[i_x] = s[i_x] + s[i_x + i]
+\]
+e.g. $i=W/2$
+\[
+i_x \in \lbrace 0 ,1 \dots, \frac{W}{2} - 1\rbrace
+\]
+$i = W/4$
+\[
+i_x \in \lbrace 0,1 \dots \frac{W}{4} -1 \rbrace
+\]
+
+\[
+s[i_x] = s[i_x] + s[i_x+1] \Longrightarrow \begin{aligned}
+& s[0] = s[0] + s[\frac{W}{2} ] + s[0 + \frac{W}{4} ] \\ 
+  & \vdots \\
+  & s[\frac{W}{4} -1 ] = s[ \frac{W}{4}-1] + s[\frac{3W}{4} - 1] + s[\frac{W}{2} -1]
+  \end{aligned}
+\]
+So by induction, for $i=1$, $i_x=0$.
+\[
+s[0] = \sum_{j=0}^{W-1} s[j]
+\]
+which is the desired result (!!!).
+
+Code answer uploaded here: \href{https://github.com/ernestyalumni/cs344/blob/master/Final/Q12warpreduce_shared.cu}{Q12warpreduce shared.cu} or here \href{https://github.com/ernestyalumni/cs344/blob/master/Final/warpreduce/part_a/warpreduce.cu}{warpreduce.cu}
 
 
 
@@ -1898,6 +2189,63 @@ cf. C$++$ extensions for C according to Fitzpatrick \cite{Fitz}
   \end{lstlisting}
 \item complex number class
 \end{itemize}
+
+
+
+\section{Summary of Udacity cs344 concepts}
+
+\subsection{Histogram}
+
+Consider given input values (of observations).  \\
+For $n$ observations, \\
+For $i\in \lbrace 1,2, \dots n \rbrace \subset \mathbb{Z}^+$, $\equiv i \lbrace 0 , 1, \dots n-1 \rbrace \subset \mathbb{Z}^+$.
+
+Consider $x[i] \in B\subset \mathbb{K}$, so $x\in B^n \subset \mathbb{K}^n$.
+
+e.g. $\mathbb{K} = \mathbb{R}$, $B$ is a subset that we can make $K$ bins out of, i.e.
+\[
+B = \prod_{j=1}^K B_j \equiv \prod_{j=0}^{K-1}B_j
+\]
+
+e.g. $B$ is bounded interval of $\mathbb{R}$, i.e. $\begin{aligned} & \quad \\
+  & \max{ B} < \infty \\
+  & \min{ B } > -\infty \end{aligned}$
+
+Then the \emph{histogram} $H$ is mapping from bins to \emph{number} of observations, i.e.
+\begin{equation}
+  \begin{aligned}
+    & H:\lbrace 1 , 2, \dots K \rbrace \to \mathbb{N}^K \\ 
+    & H(j) \in \mathbb{N} = \lbrace 0,1, \dots \rbrace
+    \end{aligned}
+  \end{equation}
+s.t.
+\begin{equation}
+  \boxed{ n  = \sum_{j=1}^K H(j) }
+\end{equation}
+with $n$ being the total number of observations.
+
+In the implementation of $x:\lbrace 1 , 2, \dots n \rbrace \to B \subset \mathbb{K}$,
+
+this was simplified to
+\[
+x:\lbrace 1 , 2, \dots n \rbrace \to \lbrace 1,2, \dots K \rbrace \subset \mathbb{Z}
+\]
+meaning each observation value is \emph{itself} which bin the observation belongs to.
+
+Otherwise, a separate ``binning'' operation is needed:
+\begin{equation}
+  \begin{aligned}
+    & x: \lbrace 1 , 2, \dots n \rbrace \to & B \subset \mathbb{K} \to & \lbrace 1,2, \dots K \rbrace \\ 
+    & i \mapsto & x[i]  \mapsto & \text{ if } B_{j-1} \leq x[i] < B_j , \text{ then return $j$ }
+    \end{aligned}
+  \end{equation}
+
+\subsubsection{Histogram implementations; histogram references}
+
+\href{https://github.com/ernestyalumni/cs344/tree/master/Problem%20Sets/Problem%20Set%205/histogram}{ernestyalumni/cs344/Problem Sets/Problem Set 5/histogram/}
+
+  \url{https://github.com/ernestyalumni/cs344/tree/master/Problem%20Sets/Problem%20Set%205/histogram}
+
 
 
 \part{C++ and Computational Physics}
@@ -5412,6 +5760,13 @@ I used the 2002 edition since that was the only copy I had available.
 Michael Griebel, Thomas Dornsheifer, Tilman Neunhoeffer.  \textbf{Numerical Simulation in Fluid Dynamics: A Practical Introduction (Monographs on Mathematical Modeling and Computation)}.  SIAM: Society for Industrial and Applied Mathematics (December 1997).  ISBN-13: 978-0898713985  QA911.G718  1997
   
 See also \href{http://wissrech.ins.uni-bonn.de/research/software/}{Software of Research group of Prof. Dr. M. Griebel, Institute f\"{u}r Numerische Simulation} \url{http://wissrech.ins.uni-bonn.de/research/software/}
+
+\bibitem{NiSu2013}
+Kyle E. Niemeyer, Chih-Jen Sung.  \emph{Accelerating reactive-flow simulatio<ns using graphics processing units}.  51st AIAA Aerospace Sciences Meeting including the New Horizons Forum and Aerospace Exposition 07-10 January 2013, Grapevine, Texas. American Institute of Aeronautics and Astronautics.  AIAA 2013-0371
+
+\bibitem{MSA2009}
+  Carlos Henrique Marchi, Roberta Suero, Luciano Kiyoshi Araki.  \emph{The Lid-Driven Square Cavity Flow: Numerical Solution with a 1024 x 1024 Grid}.  \textbf{J. of the Braz. Soc. of Mich. Sci. \& Eng.}  \textbf{186}, Vol. XXXI, No. 3, July-September 2009.  ABCM
+
 
 \end{thebibliography}
 
