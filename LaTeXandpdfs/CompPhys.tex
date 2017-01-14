@@ -2545,6 +2545,117 @@ In \emph{C++}, this is still useful as a first, intuitive approach, but \\
 So $\&$ reference \emph{functor} can't act on rvalue's.
 
 
+\subsection{Functors (C++); C++ Functors; C++ class templates}
+For categories $\mathbf{A}, \mathbf{B}$, consider trying to understand, wrap your mind around C++, especiall C++11/14 style functors.  The key \emph{insight} is \emph{composability}: use the mathematical property of \textbf{composition}.  
+\begin{equation}
+  \begin{gathered}
+  \begin{tikzpicture}
+ \matrix (m) [matrix of math nodes, row sep=4em, column sep=8em, minimum width=3em]
+  {
+    \mathbf{A} & \mathbf{B}     \\
+    \text{Type} \circ \mathbf{A} &    \text{Type} \circ \mathbf{B} \\ 
+  };
+  \path[->]
+  (m-1-1) edge node [auto] {$F$} (m-1-2)
+  edge node [auto] { $\langle \text{Type} \rangle$  } (m-2-1)
+  (m-1-2) edge node [auto] { $\langle \text{Type} \rangle$  } (m-2-2)
+  (m-2-1) edge node [auto] { $\langle \text{Type} \rangle \circ F $ } (m-2-2)
+;  
+  \end{tikzpicture}   
+  \end{gathered}
+  \end{equation}
+
+This webpage from K Hong helped with understanding C++11/14 style functors: \href{http://www.bogotobogo.com/cplusplus/functors.php}{C++ Tutorial - Functors(Function Objects) - 2017}, cf. \url{http://www.bogotobogo.com/cplusplus/functors.php}
+
+I implemented all of that in the webpage here: \href{https://github.com/ernestyalumni/CompPhys/blob/master/Cpp/Cpp14/functors.cpp}{github functors.cpp }, \verb|ernestyalumni/CompPhys/Cpp/Cpp14/functors.cpp|
+
+
+I will try to write a dictionary between math, i.e. mathematical formulation, and the class templates, structs.
+
+I looked at pp. 213 of Conlon, pp. 513 of Rotman, and looked up keywords ``functional.''
+
+Consider the bilinear functional that results in a function, i.e. $\mathcal{C}^{\infty}(\mathbb{R})$.
+
+\[
+\mathbb{R} \times \mathbb{R} \to C^{\infty}(\mathbb{R})
+\]
+i.e.
+\begin{equation}
+\begin{aligned}
+  & \mathbb{R} \times \mathbb{R} & \to \text{Hom}_{\mathbb{R}}(\mathbb{R}, \mathbb{R})   \\
+  & (a,b) & \mapsto f(x) = ax + b
+\end{aligned}
+\end{equation}
+with
+\[
+\text{Hom}_{\mathbb{R}}(\mathbb{R}, \mathbb{R}) \ni \lbrace \mathbb{R} \xrightarrow{f} \mathbb{R} \rbrace
+\]
+Compare this directly to \verb|class Line| in \verb|functor.cpp|.  Note that this is \emph{class object working as a functor}:
+
+%\footnotesize{ 
+\begin{lstlisting}
+class Line {
+	double a;			// slope
+	double b; 			// y-intercept
+	
+	public:
+		Line(double slope = 1, double yintercept = 1) : 
+			a(slope), b(yintercept) { } 
+		double operator()(double x){
+			return a*x + b;
+		}};
+  \end{lstlisting}
+%}
+Now consider the use of C++ function object, but with non-type template, C++ templates:
+
+\begin{equation}
+\begin{aligned}
+  & \mathbb{R} & \to & \text{Hom}_{\mathbb{R}}( \mathbb{R}, \mathbb{R} ) \\ 
+  & x & \mapsto & f(y) = y + x 
+  \end{aligned}
+  \end{equation}
+But suppose $y\in \mathbb{R}^d$, e.g. $y_i \in \mathbb{R}$, $i=0,1,\dots d-1$.
+
+\begin{equation}
+\begin{aligned}
+  & \mathbb{R} & \to & \text{Hom}_{\mathbb{R}}( \mathbb{R}^d, \mathbb{R}^d ) \\ 
+  & x & \mapsto & f(y) = y + x  \text{ or } (f(y))_i = y_i + x \qquad \, \forall \, i = 0, 1, \dots d-1
+  \end{aligned}
+  \end{equation}
+
+So for the \emph{class template}, to generalize $\mathbb{R}$ to some choice of field $\mathbb{K}$, generalize $\mathbb{R}^d$ to R-module $R$.
+\begin{equation}
+\begin{aligned}
+  & \mathbb{K} & \to & \text{Hom}_{\mathbb{K}}( \mathbb{K}, \mathbb{K} ) \\ 
+  & x & \mapsto & (f(y))_i = y_i + x \qquad \, \forall \, i = 0, 1, \dots d-1
+  \end{aligned}
+  \end{equation}
+
+And so the strategy is to generalize type by the class template (declaration), define the $\text{Hom}$ from $M$ to $M$ by defining the $\text{Hom}$ from $\mathbb{K}$ to $\mathbb{K}$ for each element of $M$.  
+
+Compare this directly to the code for class Add in \verb|functor.cpp|:
+%\footnotesize{
+\begin{lstlisting}
+  template <typename T>
+class Add
+{
+	T x;
+	
+	public:
+		Add(T xx) : x(xx) { } 
+		void operator()(T& e) const { e += x; }
+};
+...
+
+
+std::for_each(v2.begin(), v2.end(), Add<int>(10));
+
+	std::for_each(v2.begin(), v2.end(), Add<int>(*v2.begin()) );
+        
+\end{lstlisting}
+%}
+Notice how the construction of the $\text{Hom}$ needs an input.  
+
 
 \section{Numerical Integration}
 
