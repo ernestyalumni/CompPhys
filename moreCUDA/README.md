@@ -27,6 +27,7 @@ In this `README.md`:
 - C++ Classes on the device, GPU
 - Compiling errors when using `__constant__` memory
 - Dirty CUDA C/C++ Troubleshooting
+- `thrust`, and *useful links* for *`thrust`*
 
 | codename        | Key code, code function, demonstrations | Description             |
 | --------------- | :-------------------------------------: | :---------------------- |
@@ -39,6 +40,9 @@ In this `README.md`:
 | `./samples02/tex3dcuArray.cu` | `tex3D` | texture float memory over 3-dimensional cuda Array |
 | `./samples02/simpletransform.cu` | `cudaTextureObject_t`, `cudaCreateChannelDesc` | code sample, in *VERBATIM*, (attempting) to apply some simple transformation kernel to a texture cf. [3.2.11.1.1. Texture Object API of CUDA Toolkit 8 Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#abstract) |
 | `./thruststuff/reduce_eg.cu` | `thrust::reduce`, `thrust::sequence`, `thrust::device_vector`, `thrust::host_vector` | Uses `reduce` to sum up all elements of a vector "directly" on the device GPU; uses `thrust::sequence` to make up some non-trivial initial values; I needed to test out `thrust`'s *reduce* algorithm | 
+| `main.cu`	   | C++ class templates, `template< >`  | `./thruststuff/ranges`, cf. [Separate C++ Template Headers (`*.h`) and Implementation files (`*.cpp`)](http://blog.ethanlim.net/2014/07/separate-c-template-headers-h-and.html), other than examples of ranges, this is an example of separating C++ class templates to the header file |
+
+
 
 | Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
 | ------- |
@@ -1144,4 +1148,9 @@ http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#nvcc-command-op
 
 I found that my CUDA C/C++ program was outputting nonsense even after using `__syncthreads()` correctly (e.g. github repository `Propulsion/CUDACFD/convect1dfinitediff/`).  What I did to troubleshoot this was to change the number of threads on a block to 1, then do make, and run it again, and it works.  Then I changed the number of threads for the number of threads on a block, $M_x,M_y,M_z$, to my desired amount.  
 
+## `thrust` and *useful links* for *`thrust`*
+
+[icuda hands-on introduction to CUDA programming](http://istar.cse.cuhk.edu.hk/icuda/) - very good hands-on introduction to CUDA programming, chock full of executable and thorough examples.  It's also well-formatted (the typography is even nice to look at).  I've put on github the examples I've typed up.  
+
+http://istar.cse.cuhk.edu.hk/icuda/
 
