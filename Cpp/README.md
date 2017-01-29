@@ -66,6 +66,19 @@ See Hjorth-Jensen's lectures for 2015.
 
 20160629 I continue this incomplete listing in the [README.md](https://github.com/ernestyalumni/CompPhys/blob/master/Cpp/tour/README.md) of the [tour subdirectory](https://github.com/ernestyalumni/CompPhys/tree/master/Cpp/tour) - go there for the entire list.  
 
+
+- `hdf5` - working with it between C, C++, Python 
+
+| codename        | directory      |  Description            |
+| :-------------- | :------------: | ----------------------- | 
+| `h5tutr_crtdat.cpp`    | ./hdf5/         |                        |
+
+
+
+
+...
+
+
 ### Compiling C++11
 This worked for me, as I had obtained a c++11 compiling error when I trued to use `for (char ch: act) { ... }`:
 
@@ -465,5 +478,5 @@ For $\int_0^3 1/(2+x^2) \, dx$,
 | 1000     | 0.799233      | 0.798937 | 0.799505    | 0.799233       |
 
 
-
+# `hdf5` - C, C++, Python, saving files, File I/O from Python hdf5 to C++
 
