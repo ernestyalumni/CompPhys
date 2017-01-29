@@ -1,6 +1,8 @@
-# Cpp - C++ examples for Computational Physics and Computational Fluid Dynamics (CFD)
+# Cpp - C++ code and examples for Computational Physics and Computational Fluid Dynamics (CFD), now some Deep Learning/Machine Learning as well
 
 ## Abstract
+
+This directory has C++ code examples that helps me (i.e. "developer tools") for the applications I'm interested in: Computational Physics, Computational Fluid Dynamics, and now, some Deep Learning/Machine Learning (which I hope to use for Computational Physics and CFD).  
 
 (20160713) I'm reading and going through 
 
@@ -479,4 +481,113 @@ For $\int_0^3 1/(2+x^2) \, dx$,
 
 
 # `hdf5` - C, C++, Python, saving files, File I/O from Python hdf5 to C++
+
+## Compilation tips for `hdf5`
+
+First I checked if hd5 was installed at all on Fedora Linux:   
+```     
+  dnf list hdf5*   
+```  
+
+I checked that   
+```
+	hdf5.x86_86    
+	hdf5-devel.x86_64
+```   	
+
+were installed.  (I'm on `x86_64`)
+
+Then I did
+```
+	h5c++ -show h5tutr_crtdat.cpp
+```   	
+to show what libraries to include.   
+`h5c++ -show h5tutr_crtdat.cpp -showconfig` has interesting, explicit data of the configuration and library flags used.   
+
+`h5c++` is a helper application. cf. [Problems building C++ getters #3](https://github.com/tbertinmahieux/MSongsDB/issues/3)
+
+**Bottom line, (short) answer**:
+```
+g++ -std=c++14 h5tutr_crtdat.cpp -o h5tutr_crtdat.exe -lhdf5_cpp -lhdf5   
+```   
+
+For `C` files, all this was needed:
+```
+gcc h5_crtdat.c -lhdf5 -o h5_crtdat.exe
+```
+
+
+*Notice how I placed those `-lx`, e.g. `-lhdf5` flags afterwards, after the file to be compiled.*  This is because of cf. [Strange linking error: DSO missing from command line](http://stackoverflow.com/questions/19901934/strange-linking-error-dso-missing-from-command-line) - "Explanation: the linking is dependent on the order of modules. Symbols are first requested, and then linked in from a library that has them. So you have to specify modules that use libraries first, and libraries after them. Like this:"  
+
+### HDF5 Libraries   
+   
+```   
+    libhdf5_hl_cpp.a    - HDF5 High Level C++ APIs    
+    libhdf5_cpp.a       - HDF5 C++ Library    
+    libhdf5hl_fortran.a - HDF5 High Level Fortran APIs    
+    libhdf5_fortran.a   - HDF5 Fortran Library    
+    libhdf5_hl.a        - HDF5 High Level C APIs    
+    libhdf5.a           - HDF5 C Library    
+```   
+
+### Error messages obtained from compilation, compiling, when I didn't include the correct library flags
+
+If you did
+```
+g++ -std=c++14 h5tutr_crtdat.cpp -o h5tutr_crtdat.exe
+```    
+or `g++ -std=c++14 h5tutr_crtdat.cpp -o h5tutr_crtdat.exe -lhdf5`.  
+
+```
+/tmp/ccsk3JGD.o: In function `main':
+h5tutr_crtdat.cpp:(.text+0xf): undefined reference to `H5::Exception::dontPrint()'
+h5tutr_crtdat.cpp:(.text+0x23): undefined reference to `H5check_version'
+h5tutr_crtdat.cpp:(.text+0x2d): undefined reference to `H5::FileAccPropList::DEFAULT'
+h5tutr_crtdat.cpp:(.text+0x32): undefined reference to `H5::FileCreatPropList::DEFAULT'
+h5tutr_crtdat.cpp:(.text+0x44): undefined reference to `H5::H5File::H5File(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unsigned int, H5::FileCreatPropList const&, H5::FileAccPropList const&)'
+h5tutr_crtdat.cpp:(.text+0x6e): undefined reference to `H5::DataSpace::DataSpace(int, unsigned long long const*, unsigned long long const*)'
+h5tutr_crtdat.cpp:(.text+0x84): undefined reference to `H5::DSetCreatPropList::DEFAULT'
+h5tutr_crtdat.cpp:(.text+0x8c): undefined reference to `H5::PredType::STD_I32BE'
+h5tutr_crtdat.cpp:(.text+0x99): undefined reference to `H5::CommonFG::createDataSet(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, H5::DataType const&, H5::DataSpace const&, H5::DSetCreatPropList const&) const'
+h5tutr_crtdat.cpp:(.text+0xa5): undefined reference to `H5::DataSet::~DataSet()'
+h5tutr_crtdat.cpp:(.text+0xb1): undefined reference to `H5::DataSpace::~DataSpace()'
+h5tutr_crtdat.cpp:(.text+0xbd): undefined reference to `H5::H5File::~H5File()'
+h5tutr_crtdat.cpp:(.text+0xdb): undefined reference to `H5::DataSpace::~DataSpace()'
+h5tutr_crtdat.cpp:(.text+0xef): undefined reference to `H5::H5File::~H5File()'
+h5tutr_crtdat.cpp:(.text+0x15a): undefined reference to `H5::Exception::printError(_IO_FILE*) const'
+h5tutr_crtdat.cpp:(.text+0x16e): undefined reference to `H5::FileIException::~FileIException()'
+h5tutr_crtdat.cpp:(.text+0x1b7): undefined reference to `H5::Exception::printError(_IO_FILE*) const'
+h5tutr_crtdat.cpp:(.text+0x1cb): undefined reference to `H5::DataSetIException::~DataSetIException()'
+h5tutr_crtdat.cpp:(.text+0x214): undefined reference to `H5::Exception::printError(_IO_FILE*) const'
+h5tutr_crtdat.cpp:(.text+0x228): undefined reference to `H5::DataSpaceIException::~DataSpaceIException()'
+h5tutr_crtdat.cpp:(.text+0x244): undefined reference to `H5::FileIException::~FileIException()'
+h5tutr_crtdat.cpp:(.text+0x266): undefined reference to `H5::DataSetIException::~DataSetIException()'
+h5tutr_crtdat.cpp:(.text+0x288): undefined reference to `H5::DataSpaceIException::~DataSpaceIException()'
+/tmp/ccsk3JGD.o: In function `H5::FileIException::FileIException(H5::FileIException const&)':
+h5tutr_crtdat.cpp:(.text._ZN2H514FileIExceptionC2ERKS0_[_ZN2H514FileIExceptionC5ERKS0_]+0x1f): undefined reference to `H5::Exception::Exception(H5::Exception const&)'
+h5tutr_crtdat.cpp:(.text._ZN2H514FileIExceptionC2ERKS0_[_ZN2H514FileIExceptionC5ERKS0_]+0x24): undefined reference to `vtable for H5::FileIException'
+/tmp/ccsk3JGD.o: In function `H5::DataSetIException::DataSetIException(H5::DataSetIException const&)':
+h5tutr_crtdat.cpp:(.text._ZN2H517DataSetIExceptionC2ERKS0_[_ZN2H517DataSetIExceptionC5ERKS0_]+0x1f): undefined reference to `H5::Exception::Exception(H5::Exception const&)'
+h5tutr_crtdat.cpp:(.text._ZN2H517DataSetIExceptionC2ERKS0_[_ZN2H517DataSetIExceptionC5ERKS0_]+0x24): undefined reference to `vtable for H5::DataSetIException'
+/tmp/ccsk3JGD.o: In function `H5::DataSpaceIException::DataSpaceIException(H5::DataSpaceIException const&)':
+h5tutr_crtdat.cpp:(.text._ZN2H519DataSpaceIExceptionC2ERKS0_[_ZN2H519DataSpaceIExceptionC5ERKS0_]+0x1f): undefined reference to `H5::Exception::Exception(H5::Exception const&)'
+h5tutr_crtdat.cpp:(.text._ZN2H519DataSpaceIExceptionC2ERKS0_[_ZN2H519DataSpaceIExceptionC5ERKS0_]+0x24): undefined reference to `vtable for H5::DataSpaceIException'
+/tmp/ccsk3JGD.o:(.gcc_except_table+0x3c): undefined reference to `typeinfo for H5::DataSpaceIException'
+/tmp/ccsk3JGD.o:(.gcc_except_table+0x40): undefined reference to `typeinfo for H5::DataSetIException'
+/tmp/ccsk3JGD.o:(.gcc_except_table+0x44): undefined reference to `typeinfo for H5::FileIException'    
+```
+
+So hdf5 library seems missing.
+
+For `g++ -std=c++14 h5tutr_crtdat.cpp -o h5tutr_crtdat.exe -lhdf5_cpp` (so we're excluding `-lhdf5`), then this is obtained:  
+```  
+/usr/bin/ld: /tmp/ccfrKbeZ.o: undefined reference to symbol 'H5check_version'
+/usr/lib64/libhdf5.so.10: error adding symbols: DSO missing from command line
+collect2: error: ld returned 1 exit status
+```
+
+Note that I've also tried adding flags `-lrt -lm -lrz -Wall -ldl -lz` but they didn't see to be necessary.
+
+
+
 
