@@ -71,9 +71,14 @@ See Hjorth-Jensen's lectures for 2015.
 
 - `hdf5` - working with it between C, C++, Python 
 
-| codename        | directory      |  Description            |
-| :-------------- | :------------: | ----------------------- | 
-| `h5tutr_crtdat.cpp`    | ./hdf5/         |                        |
+| codename        | directory      |  Description            | Compilation tip |
+| :-------------- | :------------: | ----------------------- | :-------------- |
+| `h5_crtdat.c` | `./hd5/` | Create a dataset, cf. [HDF5 Introductory Examples](https://support.hdfgroup.org/HDF5/examples/intro.html) | `gcc h5_crtdat.c -lhdf5 -o h5_crtdat.exe` |   
+| `h5tutr_crtdat.cpp`    | ./hdf5/         | Create a dataset, cf. [HDF5 Introductory Examples](https://support.hdfgroup.org/HDF5/examples/intro.html)  | `g++ -std=c++14 h5tutr_crtdat.cpp -o h5tutr_crtdat.exe -lhdf5_cpp` |   
+| `h5_rdwt.c` | `./hd5/` | Read and write to a dataset, cf. [HDF5 Introductory Examples](https://support.hdfgroup.org/HDF5/examples/intro.html)  | `gcc h5_rdwt.c -lhdf5 -o h5_rdwt.exe` |
+| `h5tutr_rdwt.cpp` | `./hd5/` | Read and write to a dataset, cf. [HDF5 Introductory Examples](https://support.hdfgroup.org/HDF5/examples/intro.html) | `g++ -std=c++14 h5tutr_rdwt.cpp -o h5tutr_rdwt.exe -lhdf5_cpp -lhdf5` |   
+
+
 
 
 
