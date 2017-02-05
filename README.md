@@ -131,3 +131,27 @@ Ultimately, I did this
 export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
 ```
 According to this page: [including usr/local/lib directory](http://www.linuxquestions.org/questions/linux-software-2/including-usr-local-lib-directory-272610/)
+
+On that note, here are some commands I keep on using over and over on Fedora 23 Workstation Linux:
+
+
+for THEANO, tensorflow:   
+```   
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+echo $LD_LIBRARY_PATH
+THEANO_FLAGS='mode=FAST_RUN,device=gpu,floatX=float32' python gpu_test.py   
+```   
+for CuDNN:    
+
+```   
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+THEANO_FLAGS='mode=FAST_RUN,device=gpu,floatX=float32' jupyter notebook    
+```
+
+and in general:
+```   
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib64
+
+echo _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED1Ev | c++filt
+
+```    
