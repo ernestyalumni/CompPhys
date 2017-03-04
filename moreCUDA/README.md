@@ -28,6 +28,7 @@ In this `README.md`:
 - Compiling errors when using `__constant__` memory
 - Dirty CUDA C/C++ Troubleshooting
 - `thrust`, and *useful links* for *`thrust`*
+- *CUB*
 
 | codename        | Key code, code function, demonstrations | Description             |
 | --------------- | :-------------------------------------: | :---------------------- |
@@ -41,7 +42,7 @@ In this `README.md`:
 | `./samples02/simpletransform.cu` | `cudaTextureObject_t`, `cudaCreateChannelDesc` | code sample, in *VERBATIM*, (attempting) to apply some simple transformation kernel to a texture cf. [3.2.11.1.1. Texture Object API of CUDA Toolkit 8 Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#abstract) |
 | `./thruststuff/reduce_eg.cu` | `thrust::reduce`, `thrust::sequence`, `thrust::device_vector`, `thrust::host_vector` | Uses `reduce` to sum up all elements of a vector "directly" on the device GPU; uses `thrust::sequence` to make up some non-trivial initial values; I needed to test out `thrust`'s *reduce* algorithm | 
 | `main.cu`	   | C++ class templates, `template< >`  | `./thruststuff/ranges`, cf. [Separate C++ Template Headers (`*.h`) and Implementation files (`*.cpp`)](http://blog.ethanlim.net/2014/07/separate-c-template-headers-h-and.html), other than examples of ranges, this is an example of separating C++ class templates to the header file |
-
+| `cuRAND_eg.cu` | `cuRAND`, `CUB`, `std::vector`, `std::vector::data` | example use of **`cuRAND`** | 
 
 
 | Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
@@ -1153,4 +1154,8 @@ I found that my CUDA C/C++ program was outputting nonsense even after using `__s
 [icuda hands-on introduction to CUDA programming](http://istar.cse.cuhk.edu.hk/icuda/) - very good hands-on introduction to CUDA programming, chock full of executable and thorough examples.  It's also well-formatted (the typography is even nice to look at).  I've put on github the examples I've typed up.  
 
 http://istar.cse.cuhk.edu.hk/icuda/
+
+# CUB
+
+> > "CUB, on the other hand, is a production-quality library whose sources are complicated by support for every version of CUDA architecture, and is validated by an extensive suite of regression tests."  - [(7) How is CUB different than Thrust and Modern GPU?](https://nvlabs.github.io/cub/index.html#sec4sec1)  
 
