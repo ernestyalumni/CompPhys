@@ -125,15 +125,21 @@ int main(int argc, char *argv[]) {
 	// boilerplate for interesting values to test out for reduce ///////
 	////////////////////////////////////////////////////////////////////
 	constexpr int L1 = 1024; // "TILE_SIZE"
+	constexpr int L2 = 2 * L1; // "TILE_SIZE"
 	
 	
 	// Allocate problem device arrays
     float 	*dev_f = nullptr;  // NULL, otherwise for nullptr, you're going to need the -std=c++11 flag for compilation
 	float   *dev_fmax = nullptr;
 	float   *dev_fsum = nullptr;
+
+	float   *dev_f2 = nullptr;
 	
 	/* Allocate n floats on device */
     CubDebugExit(dev_allocator.DeviceAllocate((void**)&dev_f, sizeof(float) * L1 ));
+
+    CubDebugExit(dev_allocator.DeviceAllocate((void**)&dev_f2, sizeof(float) * L2 ));
+
 
 	/* Allocate floats on device */
     CubDebugExit(dev_allocator.DeviceAllocate((void**)&dev_fmax, sizeof(float) ));
@@ -151,10 +157,14 @@ int main(int argc, char *argv[]) {
 	constexpr float stddev1 = 1.f; // set this MANUALLY
 	curandGenerateNormal(gen, dev_f, L1, mean1,stddev1); // mean, then stddev
 
+	curandGenerateLogNormal(gen, dev_f2, L2, mean1,stddev1); // mean, then stddev
+
 	// generate output array on host
 	std::vector<float> f_vec(L1,0.f);
 	float h_max = 0;
 	float h_sum = 0;
+
+	std::vector<float> f2_vec(L2,0.f);
 
 	////////////////////////////////////////////////////////////////////
 	// END of boilerplate for interesting values to test out for reduce 
@@ -165,6 +175,9 @@ int main(int argc, char *argv[]) {
 	constexpr int gridsize = 1; // EY : 20170304 for number of blocks on a grid, it seems like it's 1 for block reduce, which wasn't explicitly said so, but seemed implied in the CUB documentation
 	constexpr int M_x1 = L1;
 	constexpr int d1   = 1;
+
+	constexpr int M_x2 = L1;
+	constexpr int d2   = 2;
 	
 	///////////// END of BLOCK, GRID DIMENSIONS ////////////////////////
 	////////////////////////////////////////////////////////////////////
@@ -176,7 +189,6 @@ int main(int argc, char *argv[]) {
 	CubDebugExit( cudaDeviceSynchronize());
 
 	BlockSum1DKernel<M_x1,d1,cub::BLOCK_REDUCE_WARP_REDUCTIONS><<<gridsize,M_x1>>>(dev_f, dev_fsum);
-
 
 	/* Copy device memory to host */
 	CubDebugExit(cudaMemcpy(f_vec.data(), dev_f, sizeof(float) * L1 , cudaMemcpyDeviceToHost));
@@ -196,11 +208,38 @@ int main(int argc, char *argv[]) {
 	// Check for kernel errors and STDIO from the kernel, if any
 	CubDebugExit( cudaPeekAtLastError());
 	CubDebugExit( cudaDeviceSynchronize());
+
+	BlockMax1DKernel<M_x2,d2,cub::BLOCK_REDUCE_RAKING><<<gridsize,M_x2>>>(dev_f2, dev_fmax);
+
+	CubDebugExit(cudaMemcpy(&h_max, dev_fmax, sizeof(float) , cudaMemcpyDeviceToHost));
+	std::cout << "dev_fmax (after BlockReduce with BLOCK_REDUCE_RAKING) : " << h_max << std::endl;
+
+	// Check for kernel errors and STDIO from the kernel, if any
+	CubDebugExit( cudaPeekAtLastError());
+	CubDebugExit( cudaDeviceSynchronize());
+
+	BlockSum1DKernel<M_x1,d2,cub::BLOCK_REDUCE_RAKING><<<gridsize,M_x2>>>(dev_f2, dev_fsum);
+
+	CubDebugExit(cudaMemcpy(&h_sum, dev_fsum, sizeof(float) , cudaMemcpyDeviceToHost));
+	std::cout << "dev_fsum (after BlockReduce with BLOCK_REDUCE_RAKING) : " << h_sum << std::endl;
+
+
+	// sanity check
+	CubDebugExit(cudaMemcpy(f2_vec.data(), dev_f2, sizeof(float) * L2 , cudaMemcpyDeviceToHost));
+	std::cout << " max element of f2_vec : " << 
+		*(std::max_element( f2_vec.begin(), f2_vec.end() ) ) << std::endl;
+	
+	float f2_sum_result = std::accumulate( f2_vec.begin(), f2_vec.end(), 0.f);
+	std::cout << " summation on f2_vec : " << f2_sum_result << std::endl;
+
+
 	
 	/* Clean up */
     if (dev_f) CubDebugExit(dev_allocator.DeviceFree(dev_f));
     if (dev_fmax) CubDebugExit(dev_allocator.DeviceFree(dev_fmax));
     if (dev_fsum) CubDebugExit(dev_allocator.DeviceFree(dev_fsum));
+
+    if (dev_f2) CubDebugExit(dev_allocator.DeviceFree(dev_f2));
 
 		
 }
