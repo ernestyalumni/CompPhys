@@ -1820,17 +1820,115 @@ for the parallel radix sort implementation called \verb|radix_sort_cuda.cc|.
 Let $M_x \in \mathbb{Z}^+$ represent
 \begin{equation}
   M_x \leftrightarrow \verb|blockDim.x |
-  \end{equation}
+\end{equation}
 
-  \begin{equation}
-j_x \in \lbrace 0 , 1 , \dots M_x -1 \rbrace \leftrightarrow \verb| blockIdx.x |
-    \end{equation}
+\begin{equation}
+  j_x \in \lbrace 0 , 1 , \dots M_x -1 \rbrace \leftrightarrow \verb| blockIdx.x |
+\end{equation}
 
-  $\forall \, j_x \in \lbrace 0 , 1 \dots , M_x - 1\rbrace $, $j_x $ denote which thread block we are in.
+$\forall \, j_x \in \lbrace 0 , 1 \dots , M_x - 1\rbrace $, $j_x $ denote which thread block we are in.
 
-  $j_x$ also corresponds to the so-called coarse bin id.  
+$j_x$ also corresponds to the so-called coarse bin id.  
 
 
+\subsection{Lesson 6.1 - Parallel Computing Patterns Part A}
+
+\subsubsection{parallel All Pairs $N$-body}
+
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/116611037/concepts/1198442170923#}{Quiz: All Pairs $N$-Body}
+
+From Arnold, Kozlov, Neishtadt, and Khukhro (2006) \cite{AKNK2006}, given $N$-bodies $\lbrace 1,2 \dots N\rbrace \subset \mathbb{Z}^+$.
+\[
+(\mathbf{r}_1, M_1), (\mathbf{r}_2, M_2), \dots (\mathbf{r}_N, M_N) \qquad \, \mathbf{r}_i \in \mathbb{R}^d
+\]
+With the force acting upon the $i$th body (``destination'') due to the $j$th body (``source''), $\mathbf{F}_{ij}$,
+\begin{equation}
+  \mathbf{F}_{ij} = - \frac{\gamma M_i M_j}{ |\mathbf{r}_{ij} |^3 } \mathbf{r}_{ij} \qquad \, \text{ with } \mathbf{r}_{ij} := \mathbf{r}_j - \mathbf{r}_i
+\end{equation}
+$N(N-1)$ are the number of (unordered) pairs, for
+\begin{equation}
+\mathbf{F}_i = \sum_{i\neq j} \mathbf{F}_{ij}
+\end{equation}
+with $\mathbf{F}_i$ denoting the force acting upon $i$th body, $N-1$ computations
+\begin{equation}
+\mathbf{F}_i =\sum_{i\neq j} \frac{- \gamma M_i M_j }{ |\mathbf{r}_{ij} |^3 } \mathbf{r}_{ij} = -\gamma M_i \sum_{i\neq j} \frac{ M_j}{ |\mathbf{r}_{ij} |^3 } \mathbf{r}_{ij}
+\end{equation}
+
+Consider another pairwise computation:
+\begin{equation}
+  W(\lambda) = \sum_{i=1}^m \lambda_i - \frac{1}{2} \sum_{i,j=1}^m y^{(i)} y^{(j)} \lambda_i\lambda_j K(X^{(i)}, X^{(j)})
+\end{equation}
+Define, for (writing) convenience,$f_1(\lambda) = -\frac{1}{2} \sum_{i,j=1}^m y^{(i)} y^{(j)} \lambda_i\lambda_j K(X^{(i)}, X^{(j)})$.  
+
+
+
+
+
+
+
+
+
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/116611037/concepts/1198442170923#}{Quiz: How To Implement Dense $N$-Body as Simply As Possible}
+
+For a single body, say $I$th body $(\mathbf{r}_I, M_I)$, consider $\mathbf{F}_i =\sum_{i\neq j} \mathbf{F}_{ij} \qquad \, \forall \, i = 1, \dots N$.  \\
+$j=I$ once, $\forall \, i = 1, \dots N$ and $i\neq I$ ($I$th body as a ``source'') $N-1$ times.  \\
+$i=I$ once, in $\mathbf{F}_I=\sum_{i\neq j} \mathbf{F}_{Ij}$, we'll need $(\mathbf{r}_I, M_I)$, to calculate $\mathbf{F}_{Ij}$, $N-1$ times.
+
+If all $N^2$ force computations, go to global memory, the number of times we'd fetch each element, as a function of $N$ is $\boxed{ 2(N-1) }$.  
+
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/116611037/concepts/1198442190923#}{Quiz: Dividing $N$ by $N$ Matrix Into Tiles}  
+
+Consider $N\times N$ matrix $A$, $A\in \text{Mat}_{\mathbb{K}}(N_x,N_y)$.
+
+Consider dividing it by tiles, calculate each tile, a tile of $P_x \times P_y$.
+
+So there are $\frac{N_xN_y}{P_xP_y}$ tiles overall.
+
+For this particular problem, and in general, a problem involving pairwise \emph{combination} out of a given set, say $N$ bodies, consider $N^2$ possible pairs total.  Then this all $N$-body algorithm idea is to transform all these combinations $N^2$, into a matrix, and so $N_x=N_y=N$, $P_x=P_y=P$.
+
+\begin{equation}
+\begin{gathered}
+  \mathbf{F}_i = \sum_{i\neq j}^N \mathbf{F}_{ij} = \sum_{t=0}^{\frac{N}{P}-1} \sum_{ \substack{ j=0 \\ Pt+j\neq i  }  }^{P-1} \mathbf{F}_{i(Pt+j)} \equiv \sum_{t=0}^{\frac{N}{P}-1} \mathbf{F}_i^{(t)}
+  \end{gathered}
+\end{equation}
+$2P$ fetches per tile, instead of $2P^2$, if $\forall \, $ tile, store the $P$ elements into shared memory.
+
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/116611037/concepts/1168851160923}{Using on $P$ threads}
+
+Consider this computation:
+\begin{equation}
+  \mathbf{F}_i^{(t)} = \sum_{ \substack{ j=0 \\ pt+j\neq i } }^{P-1} \mathbf{F}_{i(Pt+j)} \qquad \, i=0\dots N-1, t=0,1,\dots \frac{N}{P}-1
+\end{equation}
+For
+\[
+i \Longleftrightarrow i_x + M_x j_x, \qquad \, \begin{aligned}
+  & i_x \equiv \verb|threadIdx.x| \in \lbrace 0 ,1 \dots M_x- 1 \rbrace \\
+  & j_x \equiv \verb|blockIdx.x| \in \lbrace 0 ,1 ,\dots N/M_x-1 \rbrace \\
+  & M_x = P \end{aligned}
+\]
+So $\forall \, (i_x,j_x)$, $(i_x,j_x)$ representing a single thread, this single thread will be responsible for computing
+\[
+\mathbf{F}_i^{(t)} =\sum_{j=0}^{P-1} \mathbf{F}_{i(Pt+j)}
+\]
+, as opposed to only computing $\mathbf{F}_{i(Pt+j)}$ only.  
+
+
+The pseudocode that Owens gives in \href{https://classroom.udacity.com/courses/cs344/lessons/116611037/concepts/1168851160923}{Using On P Threads, Lesson 6.1} is the following:
+
+\begin{lstlisting}
+  __device__ float3
+  tile_calculation(Params myParams, float3 force) {
+    int i;
+    extern __shared__ Params[] sourceParams;
+    for (i=0; i<blockDim.x; i++) {
+      force += bodyBodyInteraction(myParams, sourceParams[i]);
+    }
+    return force;
+  }
+  \end{lstlisting}
+
+
+  
 \subsection{Final for Udacity cs344}
 
 \subsubsection{Quiz: Final - Question 7}
@@ -5000,6 +5098,8 @@ and discretizing it to obtain
   \end{gathered}
 \]
 
+
+
 \section{Finite Difference}
 
 References/Links that I used:
@@ -5826,6 +5926,387 @@ u^x_{i,j_{\text{max}}+1} = 2\overline{u} - u^x_{i-1,j_{\text{max}}} \, ; \, \qqu
     \end{gathered}
   \end{equation}
 
+\part{Finite Element; Finite Element Method, Finite Element Analysis; Finite Element Exterior Calculus}
+
+cf. Lecture 11 ``Method of Weighted Residuals'',  Darmofal (2005) \cite{Darm2005}
+
+cf. Ch. 23 of ``Electrostatics via Finite Elements'' from Landau, P\'{a}ez, and Bordeianu (2015) \cite{LPB2015}.
+
+
+\begin{equation}
+  \phi_i(x) = \begin{cases} 0 & \text{ for } x < x_{i-1} \text{ or } x > x_{i+1} \\
+    \frac{x-x_{i-1} }{ h_{i-1}} & \text{ for } x_{i-1} \leq x \leq x_i \\
+    \frac{x_{i+1} - x}{h_i } & \text{ for } x_i \leq x\leq x_{i+1} \end{cases}
+  \end{equation}
+
+
+Consider
+\[
+\mathbf{*} \mathbf{d}\phi(x) \in \Omega^{d-1}(N) 
+\]
+e.g. $d=3$, $d-1=2$.
+
+Consider $\omega \in \Omega^p(N)$, in general, $f\in C^{\infty}(N)$, in general.
+
+\[
+\begin{gathered}
+  \int_{\Omega} d(f\omega) = \int_{\Omega} d(f\omega_{i_1 \dots i_p }dx^{i_1} \wedge \dots \wedge dx^{i_p} ) = \int_{\Omega} \frac{ \partial (f\omega_{i_1 \dots i_p } ) }{ \partial x^d} dx^j \wedge dx^{i_1} \wedge \dots \wedge dx^{i_p} = \int_{\Omega} (d\omega ) f + \int_{\Omega} (df) \wedge \omega = \\
+  = \int_{ \partial \Omega} f\omega
+  \end{gathered}
+\]
+$\text{dim} \Omega = p+1$.
+
+\begin{equation}
+  \Longrightarrow \int_{\Omega} f(d\omega) + \int_{\Omega} (df ) \wedge \omega = \int_{\partial \Omega} f \omega
+  \end{equation}
+
+So if $\Omega = - \mathbf{*} \mathbf{d}U$; $U\in C^{\infty}(N)$, $E = -dU \in \Omega^1(N) = \Gamma(T^*N)$, $f=\Phi$
+
+\[
+\begin{gathered}
+  -\int_{\Omega} (\mathbf{d}\mathbf{*}\mathbf{d})U(x)\Phi(x) = -\int_{\partial \Omega} (\mathbf{*} \mathbf{d}U) \Phi(x) + \int_{\Omega} \mathbf{d}\Phi \wedge \mathbf{*}\mathbf{d}U = \int_{\Omega} 4\pi \rho(x)\Phi\text{vol}^d
+\end{gathered}
+\]
+Writing out the components, which is true in full generality,
+\[
+\begin{aligned}
+  & \mathbf{d}U = \frac{ \partial U}{ \partial x^j} dx^j \\ 
+  & \mathbf{*}\mathbf{d}U = \frac{ \sqrt{g}}{ (d-1)!} \epsilon_{i_1 , i_2 \dots i_d} g^{ij} \frac{ \partial U}{ \partial x^j} dx^{i_2} \wedge \dots \wedge dx^{i_d} 
+  \end{aligned}
+\]
+Then, insightfully,
+\[
+\mathbf{d}\Phi \wedge \mathbf{*} \mathbf{d}U = \frac{ \partial \Phi }{ \partial x^{i_1} } g^{i_1 j} \frac{ \partial U}{ \partial x^j} \text{vol}^d \equiv \langle \text{grad} \Phi, \text{grad} U \rangle
+\]
+\begin{equation}
+  \Longrightarrow
+  \begin{gathered}
+-\int_{\partial \Omega} (\mathbf{*}\mathbf{d}U ) \Phi(x) + \int_{\Omega} \mathbf{d}\Phi \wedge \mathbf{*}\mathbf{d}U = - \int_{\partial \Omega} (\mathbf{*}\mathbf{d}U ) \Phi(x) + \int_{\Omega} \langle \text{grad}\Phi, \text{grad}U \rangle = \int_{\Omega} 4\pi \rho(x) \Phi \text{vol}^d
+    \end{gathered}
+  \end{equation}
+
+
+$\forall \, l = 0,1, \dots N-1$
+\[
+\int_{\Omega} 4\pi \rho(x) \phi_l(x) \text{vol}^d = \int_{x_{i-1}}^{ x_i} 4\pi \rho(x) \frac{ x- x_{i-1} }{h_{i-1} } dx + \int_{x_i}^{ x_{i+1}} 4\pi \rho(x) \frac{ x_{i+1} - x}{h_i} dx
+\]
+
+cf. Lecture 11, Method of Weighted Residuals, \verb|lect11.pdf|, Darmofal (2005) \cite{Darm2005}.
+
+From heat equation,
+\begin{equation}
+  \text{div}(k\text{grad}T) = -q 
+  \end{equation}
+or in components
+\[
+\frac{1}{\sqrt{g}} \frac{ \partial }{ \partial x^k} \left(\sqrt{g} k \frac{ \partial T}{ \partial x^l} g^{kl} \right) = -q
+\]
+
+In 1-dim.,
+\[
+\frac{ \partial }{ \partial x^k} \left( k \frac{ \partial T}{ \partial x^k} \right) = -q
+\]
+over $\Omega = \left[ \frac{-L}{2}, \frac{L}{2} \right]$.  
+
+e.g. Ex. 11.1 (Steady heat diffusion), \\
+Suppose $L=2$, \\
+thermal conductivity $k=1$, \\
+heat source $q(x) = 50e^x$.  \\
+$T(\pm 1) = 100$.
+
+Integrate twice:
+\[
+\begin{aligned}
+  kT'' & = -50 e^x \\ 
+T' & = \frac{-50 e^x}{k} + A_0 \\ 
+ T & = \frac{ -50 e^x}{k} + A_0x + B_0
+\end{aligned}
+\]
+\[
+\begin{gathered}
+\begin{aligned}
+  & \frac{-50 e}{k} + A_0 + B_0 = 100 \\ 
+  & \frac{-50 e^{-1}}{k} - A_0 + B_0 = 100 
+  \end{aligned} \\ 
+\begin{aligned}
+  & B_0 = 100 + \frac{50}{k} \cosh{1} \\ 
+  & A_0 = \frac{50}{k} \sinh{1}
+  \end{aligned}
+\end{gathered}
+\]
+\[
+T= \frac{-50 e^x }{k} + \frac{50}{k} \sinh{1} x + 100 + \frac{50}{k} \cosh{1}
+\]
+
+A common approach is to approximate the solution with a series of weighted functions.
+
+
+
+
+cf. 11.2. The Method of Weighted Residuals of Darmofal (2005) \cite{Darm2005}, Lecture 11, \verb|lect11.pdf|.
+
+Consider
+\[
+\int_{-1}^1 w(x) R(\overline{T},x)dx
+\]
+Choose $N$ weight functions $w_j(x)$ for $1\leq j \leq N$, \\
+and setting $N$ weighted residuals to $0$
+\begin{equation}
+R_j(\overline{T}) = \int_{-1}^1 w_j(x) R(\overline{T},x)dx \equiv \text{ weighted residual for $w_j$ }
+  \end{equation}
+
+determine appropriate weight functions, \\
+Galerkin method is to set weight functions euqal to functions used to approximate solution
+\[
+w_j(x) = \phi_j(x) \qquad \, (\text{Galerkin})
+\]
+e.g. 1-dim. heat diffusion:
+\[
+\begin{aligned}
+  & w_1(x) = (1-x)(1+x) \\ 
+  & w_2(x) = x(1-x)(1+x)
+\end{aligned}
+\]
+\[
+\begin{aligned}
+  & R_1(\overline{T}) = \int_{-1}^1 w_1(x)R(\overline{T},x) dx = \int_{-1}^1 (1-x)(1+x)(-2\alpha_1 - 6\alpha_2x + 50e^x)dx= \frac{-8}{3}\alpha_1 + 200e^{-1} = 0 \\
+  & R_2(\overline{T}) = \int_{-1}^1 w_2(x)R(\overline{T},x) dx = \int_{-1}^1 x(1-x)(1+x)(-2\alpha_1 - 6\alpha_2x + 50e^x)dx= \frac{-8}{3}\alpha_2 + 100e^{-1} -1200 e^{-1}= 0 
+\end{aligned}
+\]
+and so, I would say (EY : 20170204)
+\begin{equation}
+  R_j(\overline{T}) =0 \mapsto \alpha_j
+  \end{equation}
+
+
+cf. 12.3. 1-D Linear Elements and the Nodal Basis of Darmofal (2005) \cite{Darm2005}, Lecture 12, The Finite Element Method for One-Dimensional Diffusion \verb|lect12.pdf|.
+
+\subsubsection{nodal basis}
+
+$N$ elements, $N+1$ degrees of freedom.
+
+\[
+\begin{gathered}
+  \begin{aligned}
+    \widetilde{T}(x) = \sum_{i=1}^{N+1} a_i \phi_i(x) & \text{ or } \widetilde{T}(x) = \sum_{i=0}^N a_i \phi_i(x) \\ 
+ \text{ if } \widetilde{T}(x) = \sum_{i=1}^{N+1} \widetilde{T}(x_i) \phi_i(x) & \text{ or } \widetilde{T}(x) = \sum_{i=0}^N \widetilde{T}(x_i) \phi_i(x)
+\end{aligned}
+\end{gathered}
+\]
+
+iff
+\[
+\widetilde{T}(x_j) = \sum_{i=0}^N a_i\phi_i(x_j) = \sum_{i=0}^N a_i \delta_{ij} = a_j
+\]
+Now
+\[
+\begin{gathered}
+  \phi_i(x) = \begin{cases} 0 & \text{ for } x < x_{i-1} \\
+    \frac{x-x_{i-1} }{ \Delta x_{i-1} } & \text{ for } x_{i-1} < x < x_i \\
+    \frac{ x_{i+1} - x}{\Delta x_i} & \text{ for } x_i < x < x_{i+1} \\
+    0 & \text{ for } x > x_{i+1}
+    \end{cases}  
+  \end{gathered}
+\]
+But, if we only have ``nodal points'' or grid points, or given points on $\mathbb{R}$ to evaluate $\widetilde{T}$ of $\lbrace x_0, x_1, \dots x_N \rbrace$ (for $N+1$ points), then how can we define the following basis functions?
+\[
+\begin{gathered}
+\begin{gathered}
+  \phi_0(x) = \begin{cases} 
+    \frac{ x_{1} - x}{\Delta x_0} & \text{ for } x_0 < x < x_{1} \\
+    0 & \text{ for } x > x_{1}
+    \end{cases}  
+  \end{gathered} \\
+\begin{gathered}
+  \phi_1(x) = \begin{cases} 0 & \text{ for } x < x_{0} \\
+    \frac{x-x_{0} }{ \Delta x_{0} } & \text{ for } x_{0} < x < x_1 \\
+    \frac{ x_{2} - x}{\Delta x_1} & \text{ for } x_1 < x < x_{2} \\
+    0 & \text{ for } x > x_{2}
+    \end{cases}  
+  \end{gathered} \\
+\begin{gathered}
+  \phi_N(x) = \begin{cases} 0 & \text{ for } x < x_{N-1} \\
+    \frac{x-x_{N-1} }{ \Delta x_{N-1} } & \text{ for } x_{N-1} < x < x_N \\
+    \frac{ x_{N+1} - x}{\Delta x_N} & \text{ for } x_N < x < x_{N+1} \\
+    0 & \text{ for } x > x_{N+1}
+    \end{cases}  
+\end{gathered} \\
+\begin{gathered}
+  \phi_{N+1}(x) = \begin{cases} 0 & \text{ for } x < x_{N} \\
+    \frac{x-x_{N} }{ \Delta x_{N} } & \text{ for } x_{N} < x < x_{N+1} \\
+    \end{cases}  
+  \end{gathered}
+  \end{gathered}
+  \]
+  
+  Consider defining the residual $R= R(\widetilde{T},x)$ as
+  \[
+R(\widetilde{T},x):= \text{div}(k\text{grad}T) + q
+\]
+and consider multiplying it by so-called ``weights'', $\Phi$, which is set to be $\phi_j$'s.
+
+\[
+\begin{gathered}
+  \int_{\Omega} d*(kdT) \Phi = \int_{\Omega}-q\Phi \text{vol}^d \Longrightarrow \int_{\Omega}(d*(kdT) + q\text{vol}^d) \Phi = 0 \\ 
+  \Longrightarrow \int_{\partial \Omega} *(kdT) \Phi 0 \int_{\Omega} \langle \text{grad}\Phi, k \text{grad}T \rangle + \int_{\Omega} q\Phi \text{vol}^d
+  \end{gathered}
+\]
+
+If $\Phi= \phi_j(x)$, s.t. $\phi_j(x) =0$ on $\partial \Omega$,
+\[
+-\int_{\Omega} \langle \text{grad}\phi_j, k \text{grad} T\rangle + \int_{\mathcal{O}_j } q\phi_j\text{vol}^d = 0 
+\]
+e.g. $\mathcal{O}_j = [ x_{j-1}, x_{j+1}]$
+
+if
+\[
+\phi_j(x) = \begin{cases} 0 & \text{ for } x < x_{i-1} \\
+  \frac{ x- x_{i-1} }{ \Delta x_{i-1} } & \text{ for } x_{i-1} < x < x_i \\
+  \frac{ x_{i+1} - x}{ \Delta x_i } & \text{ for } x_i < x < x_{i+1} \\
+  0 & \text{ for } x > x_{i+1} \end{cases}
+\]
+
+\[
+\int_{x_{i-1}}^{x_i} \frac{k \text{grad} T}{\Delta x_{i-1}} \text{vol}^d - \int_{x_i}^{x_{i+1}} \frac{k\text{grad}T }{ \Delta x_i} \text{vol}^d + \int_{\mathcal{O}_j } q \phi_j\text{vol}^d = 0 
+\]
+Suppose $\widetilde{T}(x) = \sum_{i=1}^{N+1} a_i \phi_k(x)$,
+\[
+\begin{gathered}
+  \int_{x_{i-1}}^{x_i} \frac{k}{ \Delta x_{i-1}^2 } (a_i - a_{i-1} ) - \int_{x_i}^{x_{i+1} }\frac{k}{ \Delta x_i^2} (-a_i + a_{i+1} ) + \int_{\mathcal{O}_j} q \phi_j \text{vol}^d = 0 = \\
+  = \frac{a_i - a_{i-1}}{ \Delta x_{i-1}^2 } \int_{x_{i-1}}^{x_i} k  - \frac{a_{i+1} - a_i }{ \Delta x_i^2} \int_{x_i}^{x_{i+1} }k + \int_{\mathcal{O}_j} q\phi_j\text{vol}^d = 0 = k \frac{ a_i - a_{i-1}}{\Delta x_{i-1} } - k \frac{ a_{i+1} - a_i }{ \Delta x_i}  + \int_{\mathcal{O}_j} q\phi_j\text{vol}^d = 0
+\end{gathered}
+\]
+If $q= 50 e^x$, and consider that
+\[
+\int  50 e^x \phi_j \text{vol}^d = \frac{50}{ \Delta x_{i-1} } (xe^x- e^x - x_{i-1} e^x)
+\]
+
+\part{CUB}
+
+\section{CUB}
+
+\subsection{Striped arrangement}
+
+Recall our notation
+\[
+i_x \in \lbrace 0 , 1 , \dots M_x - 1 \rbrace \subset \mathbb{Z} \Longleftrightarrow \verb| threadIdx.x |
+\]
+with $M_x$ corresponding to \verb|blockDim.x|
+
+Consider
+\[
+\begin{aligned}
+  & F:\lbrace 0 ,1 ,\dots M_x - 1 \rbrace \subset \mathbb{Z} \to \mathbb{K}^d \\ 
+  & F(i_x) = (F^{(0)}(i_x), F^{(d)}(i_x) \dots F^{(d)}(i_x) )
+  \end{aligned}
+\]
+with $d\Longleftrightarrow$ items per thread, or \verb|ITEMS_PER_THREAD|.  
+
+\href{https://nvlabs.github.io/cub/index.html#sec4sec1}{5.3 Flexible data arrangement across threads, Striped arrangement} mentions a \emph{logical stride} $S_x \in \mathbb{Z}^+ \Longleftrightarrow $ \verb|BLOCK_THREADS|.
+
+It goes on to say (CUB documentation) ``thread $i$ owns items $(i), (i + \verb|block-threads|), \dots (i+\verb|block-threads| * (\verb|items-per-thread|-1))$.
+
+Denote this \verb|block-threads| $*$ \verb|items-per-thread|, stripped arrangement, as $S_xd$.
+
+What is this \verb|BLOCK_THREADS|?  The thread block size in threads, from template parameters for the \href{https://nvlabs.github.io/cub/group___util_io.html#ga5cc9db45ec9db3c6a1e7362086130313}{cub LoadDirectStriped} documentation.  It wasn't obvious to me at first, until reading the documentation on its template parameters.
+
+So
+\[
+S_x = M_x
+\]
+Is this enforced somehow?  What happens if $S_x > 1024$, the hardware limit on number of threads on a single block?
+
+So we are asked to consider
+\[
+\begin{gathered}
+i_x,M_x,d \mapsto \lbrace i_x, i_x + M_x, \dots i_x + M_x l^x,\dots i_x + M_x(d-1)\rbrace_{l^x = 0,1, \dots d-1}
+ \end{gathered}
+\]
+Consider the ``maximal'' case:
+\[
+i_x = M_x-1, M_x, d \mapsto \lbrace M_x - 1, 2M_x-1, \dots M_xd-1\rbrace
+\]
+So we have $M_xd$ total values to consider for this single (thread) block.
+
+In reality, what's really going on is the flatten functor, necessitated by just how C/C++ doesn't have multi-dimensional arrays.
+
+\begin{equation}
+\begin{gathered}
+  F:\lbrace 0 ,1,\dots M_x - 1 \rbrace \subset \mathbb{Z} \to \mathbb{K}^d \mapsto F:\lbrace 0,1\dots M_xd-1\rbrace \subset \mathbb{Z} \to \mathbb{K}^1 \\
+  F \in L(\lbrace0,1\dots M_x-1\rbrace \subset \mathbb{K}^d) \to L(\lbrace 0,1\dots M_xd-1\rbrace, \mathbb{K} )
+  \end{gathered}
+  \end{equation}
+with $M_x\leq 1024$ (hardware enforced)
+
+\section{Theano's scan}
+
+cf. \href{https://nbviewer.jupyter.org/github/lamblin/ccw_tutorial/blob/master/Scan_W2016/scan_tutorial.ipynb}{theano scan tutorial}
+
+\subsection{Example 3: Reusing outputs from the previous iterations}  
+
+For input $\begin{aligned} & X:\mathbb{Z}^+ \to R-\text{Module}  \\
+  & t\mapsto X(t) \end{aligned} $, e.g. $R$-Module such as $\mathbb{R}^d, V, \text{Mat}_{\mathbb{R}}(N_1,N_2), \tau_s^r(V)$, and a function $f$ that acts at each iteration, i.e. $\forall \, t=0,1,\dots T$, 
+\[
+\begin{aligned}
+  & f: R-\text{Module} \times R-\text{Module} \to R-\text{Module} \\ 
+  & (X_1,X_0) \mapsto X_1 + X_0 
+  \end{aligned}
+\], then we want to express
+\[
+f(X(t),X(t-1)) = X(t)+X(t-1) \qquad \, \forall \, t=0,1\dots T-1,
+\]
+
+In the end, we should get 
+\[
+X\in (R-\text{Module})^T \xrightarrow{ \text{ scan } } Y \in (R-\text{Module})^T
+\]
+$Y \equiv $ \verb|output|
+
+In summary, the dictionary between the mathematics and the Python theano code for scan seems to be the following:
+
+If $k=1$, $\forall \, t = 0,1,\dots T-1$,
+\begin{equation}
+  \begin{gathered}
+\begin{aligned}
+&     F:R-\text{Module}\times R-\text{Module} \to R-\text{Module}   \\ 
+& F(X(t),X(t-1)) \mapsto X(t) \end{aligned}  \Longleftrightarrow \text{Python function (object)  or  Python lambda expression } \mapsto \verb|scan(fn=  )| \\ 
+(X(0),X(1),\dots X(T-1)) \in (R-\text{Module})^T \Longleftrightarrow \verb|scan(sequences=  )| \\
+X(-1) \in R-\text{Module} \Longleftrightarrow \verb|scan(outputs_info=[   ] )|
+    \end{gathered}
+  \end{equation}
+
+
+
+\subsection{Example 4 : Reusing outputs from multiple past iterations}
+
+$\forall \, t = 0, 1, \dots T-1$, $T\Longleftrightarrow $ \verb|n_steps|$=T$,
+
+Consider
+\begin{equation}
+  \begin{aligned}
+    & F:(R-\text{Module})^k \to R-\text{Module} \\ 
+   & F(X(t-k),X(t-(k-1)),\dots X(t-1)) = X(t) \end{aligned} \Longleftrightarrow \verb|fn| \in \text{Python function (object) }
+  \end{equation}
+
+If $k=1$, we'll need to be given $X(0) \in R-\text{Module}$.  Perhaps consider $\forall \, t=-k,-(k-1), \dots -1,0,1\dots T-1$ (``in full'').
+
+For $k>1$, we'll need to be given (or declare) $\lbrace X(-k),X(-(k-1)),\dots X(-1)\rbrace$.
+
+So for $k=1$, $X(-1) \in R-\text{Module}$ needed $\Longleftrightarrow $ e.g. \verb|T.scalar()| if $R$-Module $=\mathbb{R}$.  \\
+\phantom{So } for $k>1$, $(X(-k),X(-(k-1)),\dots X(-1)) \in (R-\text{Module})^k \Longleftrightarrow $ e.g. \verb|T.vector()|, into \verb|''initial''| of a Python \verb|dict|, if $R$-Module $=\mathbb{R}$. \\
+Also, for $k>1$,
+\[
+(-k,-(k-1), \dots -1) \Longleftrightarrow \verb|taps| = [-k,-(k-1),\dots -1] (\text{a Python}\verb| list|)
+\]
+
+scan, essentially, does this:
+\begin{equation}
+\begin{gathered}
+  (X(-k),X(-(k-1)),\dots X(-1)) \mapsto (X(0),X(1)\dots X(T-1)) \\ 
+F(X(t-k), X(t-(k-1))\dots X(t-1)) = X(t), \qquad \, \forall \, t=0,1,\dots T-1
+  \end{gathered}
+\end{equation}
+given $F:(R-\text{Module})^k \to R-\text{Module}$, with $T=$\verb|n_steps|.  
 
 
 
@@ -5860,7 +6341,7 @@ Richard Fitzpatrick.  ``Computational Physics.''  \url{http://farside.ph.utexas.
 Jason Sanders, Edward Kandrot.  \textbf{CUDA by Example: An Introduction to General-Purpose GPU Programming} 1st Edition.  Addison-Wesley Professional; 1 edition (July 29, 2010).  ISBN-13: 978-0131387683
 
 \bibitem{Darm2005}
-  David Darmofal. *16.901 Computational Methods in Aerospace Engineering, Spring 2005.* (Massachusetts Institute of Technology: MIT OpenCourseWare), \url{http://ocw.mit.edu} (Accessed 12 Jun, 2016). \href{http://creativecommons.org/licenses/by-nc-sa/4.0/}{License: Creative Commons BY-NC-SA}
+  David Darmofal. ``16.901 Computational Methods in Aerospace Engineering, Spring 2005.'' (Massachusetts Institute of Technology: MIT OpenCourseWare), \url{http://ocw.mit.edu} (Accessed 12 Jun, 2016). \href{http://creativecommons.org/licenses/by-nc-sa/4.0/}{License: Creative Commons BY-NC-SA}
 
 \bibitem{FP2013}
 Joel H. Ferziger and Milovan Peric.  \textbf{Computational Methods for Fluid Dynamics}.  Springer; 3rd edition (October 4, 2013).  ISBN-13: 978-3540420743
@@ -5873,12 +6354,21 @@ Michael Griebel, Thomas Dornsheifer, Tilman Neunhoeffer.  \textbf{Numerical Simu
 See also \href{http://wissrech.ins.uni-bonn.de/research/software/}{Software of Research group of Prof. Dr. M. Griebel, Institute f\"{u}r Numerische Simulation} \url{http://wissrech.ins.uni-bonn.de/research/software/}
 
 \bibitem{NiSu2013}
-Kyle E. Niemeyer, Chih-Jen Sung.  \emph{Accelerating reactive-flow simulatio<ns using graphics processing units}.  51st AIAA Aerospace Sciences Meeting including the New Horizons Forum and Aerospace Exposition 07-10 January 2013, Grapevine, Texas. American Institute of Aeronautics and Astronautics.  AIAA 2013-0371
+Kyle E. Niemeyer, Chih-Jen Sung.  \emph{Accelerating reactive-flow simulations using graphics processing units}.  51st AIAA Aerospace Sciences Meeting including the New Horizons Forum and Aerospace Exposition 07-10 January 2013, Grapevine, Texas. American Institute of Aeronautics and Astronautics.  AIAA 2013-0371
 
 \bibitem{MSA2009}
   Carlos Henrique Marchi, Roberta Suero, Luciano Kiyoshi Araki.  \emph{The Lid-Driven Square Cavity Flow: Numerical Solution with a 1024 x 1024 Grid}.  \textbf{J. of the Braz. Soc. of Mich. Sci. \& Eng.}  \textbf{186}, Vol. XXXI, No. 3, July-September 2009.  ABCM
 
+\bibitem{LPB2015}
+Rubin H. Landau, Manuel J P\'{a}ez, Cristian C. Bordeianu.  \textbf{Computational Physics: Problem Solving with Python}.  3rd Edition.  Wiley-VCH; 3 edition (September 8, 2015).  ISBN-10: 3527413154  ISBN-13: 978-3527413157
 
+
+\bibitem{AKNK2006}
+Vladimir I. Arnold, Valery V. Kozlov, Anatoly I. Neishtadt, E. Khukhro.  \textbf{Mathematical Aspects of Classical and Celestial Mechanics (Encyclopaedia of Mathematical Sciences)} 3rd Edition.  Encyclopaedia of Mathematical Sciences (Book 3).  Springer; 3rd edition (November 14, 2006).  ISBN-13: 978-3540282464
+
+
+
+  
 \end{thebibliography}
 
 \end{document}
