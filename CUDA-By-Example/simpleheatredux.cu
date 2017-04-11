@@ -2,6 +2,9 @@
 /* 
 ** Chapter 8 Graphics Interoperability 
 ** 8.4 Heat Transfer with Graphics Interop
+* 
+* nvcc -lglut -lGL simpleheatredux.cu -o simpleheatredux.exe
+* 
 */
 
 #include <cmath> /* acos */
