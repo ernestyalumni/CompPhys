@@ -586,21 +586,31 @@ Copies data between host and device.
 ```  
 __host__ ​cudaError_t cudaMemcpy2DToArrayAsync ( cudaArray_t dst, size_t wOffset, size_t hOffset, const void* src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind, cudaStream_t stream = 0 )
 ```  
+
 Copies data between host and device. 
+
 ```  
 __host__ ​cudaError_t cudaMemcpy3D ( const cudaMemcpy3DParms* p )  
 ```  
+
 Copies data between 3D objects. 
+
 ```  
-__host__ ​ __device__ ​cudaError_t cudaMemcpy3DAsync ( const cudaMemcpy3DParms* p, cudaStream_t stream = 0 )
+__host__ ​ __device__ ​cudaError_t cudaMemcpy3DAsync ( const cudaMemcpy3DParms* p,
+	  	     		 		     cudaStream_t stream = 0 )
 ```  
+
 Copies data between 3D objects.   
-```
-__host__ ​cudaError_t cudaMemcpy3DPeer ( const cudaMemcpy3DPeerParms* p )
-    Copies memory between devices. 
 
 ```
-__host__ ​cudaError_t cudaMemcpy3DPeerAsync ( const cudaMemcpy3DPeerParms* p, cudaStream_t stream = 0 )
+__host__ ​cudaError_t cudaMemcpy3DPeer ( const cudaMemcpy3DPeerParms* p )
+```  
+
+Copies memory between devices. 
+
+```
+__host__ ​cudaError_t cudaMemcpy3DPeerAsync ( const cudaMemcpy3DPeerParms* p,
+	 	     			     cudaStream_t stream = 0 )
 
 ```  
     Copies memory between devices asynchronously. 
@@ -615,6 +625,7 @@ __host__ ​cudaError_t cudaMemcpyArrayToArray ( cudaArray_t dst,
 					      size_t count,
 					      cudaMemcpyKind kind = cudaMemcpyDeviceToDevice )
 ```  					      
+
 Copies data between host and device. 
 
 ```  
@@ -625,7 +636,9 @@ __host__ ​cudaError_t cudaMemcpyFromArray ( void* dst,
 					   size_t count,
 					   cudaMemcpyKind kind )
 ```   
+
 Copies data between host and device. 
+
 
 ```  
 __host__ ​cudaError_t cudaMemcpyToArray ( cudaArray_t dst,
@@ -635,6 +648,7 @@ __host__ ​cudaError_t cudaMemcpyToArray ( cudaArray_t dst,
 					 size_t count,
 					 cudaMemcpyKind kind )
 ```  					 
+
 Copies data between host and device. 
 
 ```
@@ -651,7 +665,8 @@ __host__ ​cudaError_t cudaMemcpyToArrayAsync ( cudaArray_t dst,
 From [`./samples02/simplelinear2dtex.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/simplelinear2dtex.cu) is an example of `cudaMemcpyToArray`:  
 
 ```  
-cudaMemcpyToArray(cuArray,0,0,(grid2d.rho).data(), sizeof(float)*grid2d.NFLAT(), cudaMemcpyHostToDevice)
+cudaMemcpyToArray(cuArray,0,0,(grid2d.rho).data(), sizeof(float)*grid2d.NFLAT(),
+							cudaMemcpyHostToDevice)
 ```  
 
 
