@@ -613,7 +613,7 @@ __host__ ​cudaError_t cudaMemcpy3DPeerAsync ( const cudaMemcpy3DPeerParms* p,
 	 	     			     cudaStream_t stream = 0 )
 
 ```  
-    Copies memory between devices asynchronously. 
+Copies memory between devices asynchronously. 
   
 ```  
 __host__ ​cudaError_t cudaMemcpyArrayToArray ( cudaArray_t dst,
@@ -624,6 +624,7 @@ __host__ ​cudaError_t cudaMemcpyArrayToArray ( cudaArray_t dst,
 					      size_t hOffsetSrc,
 					      size_t count,
 					      cudaMemcpyKind kind = cudaMemcpyDeviceToDevice )
+
 ```  					      
 
 Copies data between host and device. 
@@ -660,7 +661,8 @@ __host__ ​cudaError_t cudaMemcpyToArrayAsync ( cudaArray_t dst,
 					      cudaMemcpyKind kind,
 					      cudaStream_t stream = 0 )  
 ```   
-      Copies data between host and device. 
+
+Copies data between host and device. 
 
 From [`./samples02/simplelinear2dtex.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/samples02/simplelinear2dtex.cu) is an example of `cudaMemcpyToArray`:  
 
