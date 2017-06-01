@@ -16,6 +16,10 @@ Since being good at Computational Physics means being good at C/C++, and also C+
 - moreCUDA
 	* `moreCUDA` directory has more CUDA C/C++ examples - I'm finding that as the CUDA Toolbox (version 7.5 at the time of writing this) adds more and more features, and with C++11/C++14, stuff from 2012, 2013 and before (it's 2016 at this time) isn't up to date, or coded to take advantage of C++11/C++14.  I'll try to alleviate this by showing examples in the `moreCUDA` directory there.  
 
+- course_notes
+  * **go here** for the latest implementations/examples of CUDA C/C++ - I continue to implement the latest features and ideas for CUDA C/C++; CUDA is moving so rapidly, much code from before, only 3-4 years ago, is becoming obsolete, or at least, not taking advantage of new GPU architecture.   I do this by going over other courses online.  They include
+    - [HPC - Algorithms and Applications - Winter 16](https://www5.in.tum.de/wiki/index.php/HPC_-_Algorithms_and_Applications_-_Winter_16)
+
 ## C Resources
 
 Coursera's Heterogeneous Parallel Programming (taught by Wen-mei W. Hwu) suggested these links to brush up on [C programming](https://class.coursera.org/hetero-004/wiki/Introduction_to_C):
