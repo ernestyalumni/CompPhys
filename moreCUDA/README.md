@@ -29,6 +29,7 @@ In this `README.md`:
 - Dirty CUDA C/C++ Troubleshooting
 - `thrust`, and *useful links* for *`thrust`*
 - *CUB*
+- Examples of using *cuBLAS*, *cuSolver*
 
 | codename        | Key code, code function, demonstrations | Description             |
 | --------------- | :-------------------------------------: | :---------------------- |
@@ -42,7 +43,8 @@ In this `README.md`:
 | `./samples02/simpletransform.cu` | `cudaTextureObject_t`, `cudaCreateChannelDesc` | code sample, in *VERBATIM*, (attempting) to apply some simple transformation kernel to a texture cf. [3.2.11.1.1. Texture Object API of CUDA Toolkit 8 Documentation](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#abstract) |
 | `./thruststuff/reduce_eg.cu` | `thrust::reduce`, `thrust::sequence`, `thrust::device_vector`, `thrust::host_vector` | Uses `reduce` to sum up all elements of a vector "directly" on the device GPU; uses `thrust::sequence` to make up some non-trivial initial values; I needed to test out `thrust`'s *reduce* algorithm | 
 | `main.cu`	   | C++ class templates, `template< >`  | `./thruststuff/ranges`, cf. [Separate C++ Template Headers (`*.h`) and Implementation files (`*.cpp`)](http://blog.ethanlim.net/2014/07/separate-c-template-headers-h-and.html), other than examples of ranges, this is an example of separating C++ class templates to the header file |
-| `cuRAND_eg.cu` | `cuRAND`, `CUB`, `std::vector`, `std::vector::data` | example use of **`cuRAND`** | 
+| `cuRAND_eg.cu` | `cuRAND`, `CUB`, `std::vector`, `std::vector::data` | example use of **`cuRAND`** |
+| [`./CUBLAS/](https://github.com/ernestyalumni/CompPhys/tree/master/moreCUDA/CUBLAS) | `cuBLAS`, CUDA Unified Memory Management, `__managed__` | Examples of using `cuBLAS`, for linear algebra, including examples for using `cuBLAS` with CUDA Unified Memory Management | 
 
 
 | Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
