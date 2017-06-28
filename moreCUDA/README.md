@@ -45,6 +45,8 @@ In this `README.md`:
 | `main.cu`	   | C++ class templates, `template< >`  | `./thruststuff/ranges`, cf. [Separate C++ Template Headers (`*.h`) and Implementation files (`*.cpp`)](http://blog.ethanlim.net/2014/07/separate-c-template-headers-h-and.html), other than examples of ranges, this is an example of separating C++ class templates to the header file |
 | `cuRAND_eg.cu` | `cuRAND`, `CUB`, `std::vector`, `std::vector::data` | example use of **`cuRAND`** |
 | [`./CUBLAS/](https://github.com/ernestyalumni/CompPhys/tree/master/moreCUDA/CUBLAS) | `cuBLAS`, CUDA Unified Memory Management, `__managed__` | Examples of using `cuBLAS`, for linear algebra, including examples for using `cuBLAS` with CUDA Unified Memory Management | 
+||||
+| [`./CUSOLVER/SVD_vectors.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/CUSOLVER/SVD_vectors.cu) | Singular Value Decomposition, SVD, `cuSOLVER`  | simple example in C of Singular Value Decomposition, but with singular vectors, cf. [CUDA Toolkit Doc, E.1 SVD with singular vectors](http://docs.nvidia.com/cuda/cusolver/index.html#svd-example1)  |
 
 
 | Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
