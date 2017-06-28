@@ -192,6 +192,7 @@ int main(int argc, char* argv[]) {
 // free resources
 	if (cublasH) cublasDestroy(cublasH);
 	if (cusolverH) cusolverDnDestroy(cusolverH);
+	if (d_work) cudaFree(d_work);
 	
 	cudaDeviceReset();
 	return 0;
