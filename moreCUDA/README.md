@@ -519,17 +519,51 @@ and then, after saving to `.csv` files, plot them with Python's `matplotlib` and
 ## *Many* different `cudaMemcpy*`'s to try (I honestly don't know which one to use)
 cf. [4.9 Memory Management, CUDA Runtime API Documentation](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1g6728eb7dc25f332f50bdb16a19620d3d)
 
-There are *many* different `cudaMemcpy*`'s to try, from the CUDA Toolkit v8.0 Documentation.  I can't find any basic examples to illustrate each one, so I'll go one-by-one trying them.  
-```
+There are *many* different `cudaMemcpy*`'s to try, from the CUDA Toolkit v8.0 Documentation.  I can't find any basic examples to illustrate each one, so I'll go one-by-one trying them.
+
+[`cudaMemcpy2D`](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1g3a58270f6775efe56c65ac47843e7cee)
+
+```   
 __host__ ​cudaError_t cudaMemcpy2D ( void* dst,
 	 	     		    size_t dpitch,
 				    const void* src,
 				    size_t spitch,
 				    size_t width,
 				    size_t height,
-				    cudaMemcpyKind kind )
-```  
+				    cudaMemcpyKind kind  )
+```   
 Copies data between host and device. 
+
+**Parameters**
+| parameter |  Meaning |
+| --------- | :------------: | 
+| `dst`     | Destination memory address |
+| `dpitch`  | Pitch of destination memory |
+| `src`     | Source memory address      |
+| `spitch`  | Pitch of source memory     |
+| `width`   | Width of matrix transfer (columns in bytes) |
+| `height`  | Height of matrix transfer (rows) |
+| `kind`    | Type of transfer |
+
+**Description**   
+
+Copies a matrix (height rows of width bytes each) from memory area pointed to by `src` to the memory area pointed to by `dst`,
+where `kind` specifies the direction of the copy, and must be 1 of
+* `cudaMemcpyHostToHost`
+* `cudaMemcpyHostToDevice`
+* `cudaMemcpyDeviceToHost`
+* `cudaMemcpyDeviceToDevice`
+* `cudaMemcpyDefault`
+
+Passing MemcpyDefault is recommended, in which case the type of transfer is inferred from the pointer values.  However, `cudaMemcpyDefault` allowed only on systems supporting unified (virtual) addressing.  
+
+`dpitch` and `spitch` are widths in memory in bytes of 2-dim. arrays pointed to by `dst` and `src`, including any padding to the end of each row.  
+
+
+**Returns**
+- `cudaSuccess`  
+
+
 ```
 __host__ ​cudaError_t cudaMemcpy2DArrayToArray ( cudaArray_t dst,
 	 	     			      	size_t wOffsetDst,
