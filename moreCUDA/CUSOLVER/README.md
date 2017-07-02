@@ -26,7 +26,7 @@ So this is documentation for *4* different functions,
 - `cusolverDnZgesvd`   
 
 *First*, these are the the helper functions below that can calculate the sizes needed for pre-allocated buffer.   
-```
+
 
 ```   
 cusolverStatus_t
