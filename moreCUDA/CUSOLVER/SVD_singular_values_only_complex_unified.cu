@@ -148,7 +148,10 @@ int main(int argc, char* argv[]) {
 	printMatrix(N,1,S,lda,"S");
 	std::cout << " ====== " << std::endl; 	
 
-	
+	std::cout << " U values : " << std::setprecision(9) << U[0].x << " " << U[0].y << " " << U[1].x << " " << U[1].y << U[2].x << " " << U[2].y << std::endl;
+	std::cout << " VT values : " << std::setprecision(9) << VT[0].x << " " << VT[0].y << " " << VT[1].x << " " << VT[1].y << " " << VT[2].x << " " << VT[2].y << std::endl;
+
+
 	
 // free resources
 	if (cusolverH) cusolverDnDestroy(cusolverH);

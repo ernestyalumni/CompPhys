@@ -7,6 +7,7 @@
  * @author : Ernest Yeung	ernestyalumni@gmail.com
  * @date   : 20170628
  * @ref    :  cf. https://github.com/OrangeOwlSolutions/Linear-Algebra/wiki/SVD-of-a-real-matrix
+ * cf. https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-241j-dynamic-systems-and-control-spring-2011/readings/MIT6_241JS11_chap04.pdf
  * 
  * If you find this code useful, feel free to donate directly and easily at this direct PayPal link: 
  * 
@@ -37,6 +38,8 @@
 #include <iostream> 	// std::cout
 #include <iomanip> 		// std::setprecision 
 
+#include <stdio.h> // printf
+
 #include <math.h> 	// sqrt
 
 #include <assert.h> // assert
@@ -57,6 +60,14 @@ __device__ __managed__ double S[n]; 	// singular value
 __device__ __managed__ int *devInfo = nullptr; 
 __device__ __managed__ double *d_rwork = NULL; 
 
+// For more examples  
+__device__ __managed__ double A2[2*2]; 
+__device__ __managed__ double U2[2*2]; 
+__device__ __managed__ double VT2[2*2]; 
+__device__ __managed__ double S2[2]; 
+__device__ __managed__ int *devInfo2 = nullptr; 
+
+
 // for checking the error
 __device__ __managed__ double W[lda*n]; 	// W = S*VT
 
@@ -72,8 +83,8 @@ void printMatrix(int m, int n, const double *A, int lda, const char* name)
 	std::cout << name << std::endl;
 	for (int row =0; row <m; row++) {
 		for (int col =0 ; col <n ; col++) {
-			float Areg = A[row + col*lda]; 
-			std::cout << Areg << " " ; 
+			double Areg = A[row + col*lda]; 
+			std::cout << std::setprecision(9) << Areg << " " ; 
 		}
 		std::cout << std::endl;
 	}
@@ -113,7 +124,9 @@ int main(int argc, char* argv[]) {
 	*/
 
 // step 2: query working space of SVD	
-	cusolver_status = cusolverDnSgesvd_bufferSize( cusolverH, m, n, &lwork);
+//	cusolver_status = cusolverDnSgesvd_bufferSize( cusolverH, m, n, &lwork);
+	cusolver_status = cusolverDnDgesvd_bufferSize( cusolverH, m, n, &lwork);
+	
 	assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
 	std::cout << " \n lwork = " << lwork << std::endl << std::endl;
 	cudaMalloc((void**)&d_work, sizeof(double)*lwork);
@@ -189,10 +202,73 @@ int main(int argc, char* argv[]) {
 
 
 
+	/* ****************************************************************/
+	/* ***** More examples
+	 * cf. ref:
+	/* ****************************************************************/
+	// --- Setting the boilerplate, initialization values
+	std::cout << "\n Examples from elsewhere : " << std::endl; 
+	A2[0] = 100. ;
+	A2[1] = 100.2 ;
+	A2[2] = 100.;
+	A2[3] = 100.;
+	printMatrix(2,2,A2,2,"A2");
+	
+	// --- cuSOLVER input/output parameters/arrays
+	// working space, <type> array of size lwork
+	double *d_work2 = NULL;
+	// size of working array work
+	int lwork2 = 0;
+
+	
+	cusolverDnHandle_t cusolverH2 = NULL;
+// step 1: create cusolverDn/cublas handle, CUDA solver initialization
+	cusolver_status = cusolverDnCreate(&cusolverH2);
+
+
+	// step 2: query working space of SVD	
+	cusolver_status = cusolverDnDgesvd_bufferSize( cusolverH2, 2, 2, &lwork2);
+	cudaMalloc((void**)&d_work2, sizeof(double)*lwork2);
+
+
+	cudaDeviceSynchronize();
+	// step 4: compute SVD
+	cusolver_status = cusolverDnDgesvd(cusolverH2,'A','A', 2,2, A2, 2, 
+		S2,U2, 
+		2, // ldu
+		VT2, 
+		2, // ldvt
+		d_work2,lwork2, NULL, devInfo2);
+
+	cudaDeviceSynchronize();
+
+
+	std::cout << " S2 = (matlab base-1) : " << std::endl; 
+	printMatrix(2,1,S2,2,"S2");
+//	std::cout << S2[0] << " " << S2[1] << std::endl; 
+	printf(" %f %f \n", S2[0], S2[1] ); 
+
+	std::cout << " ====== " << std::endl; 
+	
+	
+	std::cout << " U2 = (matlab base-1) : " << std::endl; 
+	printMatrix(2,2,U2,2,"U2");
+	std::cout << " ====== " << std::endl; 
+	
+	std::cout << " VT2 = (matlab base-1) : " << std::endl; 
+	printMatrix(2,2,VT2,2,"VT2");
+	std::cout << " ====== " << std::endl; 
+
+
+
+
+
 // free resources
 	if (cublasH) cublasDestroy(cublasH);
 	if (cusolverH) cusolverDnDestroy(cusolverH);
+	if (cusolverH2) cusolverDnDestroy(cusolverH2);
 	if (d_work) cudaFree(d_work);
+	if (d_work2) cudaFree(d_work2);
 	
 	cudaDeviceReset();
 	return 0;
