@@ -13,9 +13,11 @@ to the CUDA programming model, Robert Hochberg](http://www.shodor.org/media/cont
     - [5KK73 GPU assignment website 2014/2015](http://www.es.ele.tue.nl/~mwijtvliet/5KK73/?page=mmcuda)
     - [Tiled Matrix Multiplication Kernel](http://www.umiacs.umd.edu/~ramani/cmsc828e_gpusci/Lecture5.pdf)
 - **Hillis/Steele (inclusive)** and **Blelloch (i.e. Prefix, exclusive) scan(s)** in subdirectory `scan`
-- Texture memory explanation and some examples in [`./samples02`](https://github.com/ernestyalumni/CompPhys/tree/master/moreCUDA/samples02)
+- Texture memory explanation and some examples in [`./samples02`](https://github.com/ernestyalumni/CompPhys/tree/master/moreCUDA/samples02)   
+- Examples of using *cuBLAS*, *cuSolver* in `./CUBLAS/`, `./CUSOLVER/` subdirectories, respectively  
 
 In this `README.md`:
+- `nvcc` - nVidia CUDA Compiler Driver   
 - `scan`, containing **Hillis/Steele (inclusive)** and **Blelloch (i.e. Prefix, exclusive) scan(s)**
 - `cudaMemcpy`
 - Pitched Pointer, 2d array, 3d array on the device
@@ -29,7 +31,7 @@ In this `README.md`:
 - Dirty CUDA C/C++ Troubleshooting
 - `thrust`, and *useful links* for *`thrust`*
 - *CUB*
-- Examples of using *cuBLAS*, *cuSolver*
+
 
 | codename        | Key code, code function, demonstrations | Description             |
 | --------------- | :-------------------------------------: | :---------------------- |
@@ -44,7 +46,7 @@ In this `README.md`:
 | `./thruststuff/reduce_eg.cu` | `thrust::reduce`, `thrust::sequence`, `thrust::device_vector`, `thrust::host_vector` | Uses `reduce` to sum up all elements of a vector "directly" on the device GPU; uses `thrust::sequence` to make up some non-trivial initial values; I needed to test out `thrust`'s *reduce* algorithm | 
 | `main.cu`	   | C++ class templates, `template< >`  | `./thruststuff/ranges`, cf. [Separate C++ Template Headers (`*.h`) and Implementation files (`*.cpp`)](http://blog.ethanlim.net/2014/07/separate-c-template-headers-h-and.html), other than examples of ranges, this is an example of separating C++ class templates to the header file |
 | `cuRAND_eg.cu` | `cuRAND`, `CUB`, `std::vector`, `std::vector::data` | example use of **`cuRAND`** |
-| [`./CUBLAS/](https://github.com/ernestyalumni/CompPhys/tree/master/moreCUDA/CUBLAS) | `cuBLAS`, CUDA Unified Memory Management, `__managed__` | Examples of using `cuBLAS`, for linear algebra, including examples for using `cuBLAS` with CUDA Unified Memory Management | 
+| [`./CUBLAS/`](https://github.com/ernestyalumni/CompPhys/tree/master/moreCUDA/CUBLAS) | `cuBLAS`, CUDA Unified Memory Management, `__managed__` | Examples of using `cuBLAS`, for linear algebra, including examples for using `cuBLAS` with CUDA Unified Memory Management | 
 ||||
 | [`./CUSOLVER/SVD_vectors.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/CUSOLVER/SVD_vectors.cu) | Singular Value Decomposition, SVD, `cuSOLVER`  | simple example in C of Singular Value Decomposition, but with singular vectors, cf. [CUDA Toolkit Doc, E.1 SVD with singular vectors](http://docs.nvidia.com/cuda/cusolver/index.html#svd-example1)  |
 
@@ -68,6 +70,42 @@ As you can see, for large float arrays, running parallel implementations in CUDA
 
 Note that I was learning about the Hillis/Steele and Blelloch (i.e. Prefix) scan(s) methods in conjunction with Udacity's cs344, <a href="https://classroom.udacity.com/courses/cs344/lessons/86719951/concepts/903740660923#">Lesson 3 - Fundamental GPU Algorithms (Reduce, Scan, Histogram), i.e. Unit 3.</a>.  I have a writeup of the notes I took related to these scans, formulating them mathematically, on my big <a href="https://github.com/ernestyalumni/CompPhys/blob/master/LaTeXandpdfs/CompPhys.pdf">CompPhys.pdf, Computational Physics notes</a>.    
 
+
+## `nvcc` - (nVidia CUDA Compiler Driver)
+
+cf. [2.4. Supported Phases](http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#supported-phases)
+
+| Phase | `nvcc` Option || Default Output File Name |
+| | Long Name | Short Name | |
+|:----- | :---- | :---- | :-----------------------: |
+|C/C++ compilation to object file | `--compile` | `-c` | Source file name with suffix replaced by `-o` on Linux and Mac OS X, or `obj` on Windows |
+
+cf. [3.2.1. Options for Specifying the Compilation Phase](http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#options-for-specifying-compilation-phase)   
+
+| Long Name | Short Name | Description |
+| :-------- | :--------- | :---------: |
+| `--device-c` | `-dc` | COmpile each `.c/.cc/.cpp/.cxx/.cu` input file into an object file that contains relocatable device code.  It is equivalent to `--relocatable-device-code=true --compile`.  
+
+cf. [3.2.2. File and Path Specifications](http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#file-and-path-specifications)
+
+| Long Name | Short Name | Description |
+| `--cudart {none|shared|static}` | `-cudart` | Specify the type of CUDA runtime library to be used: no CUDA runtime library, shared/dynamic CUDA runtime library, or static CUDA runtime library.
+
+Allowed values for this option: `none`, `shared`, `static`.   
+
+Default value: `static` |
+
+
+
+cf. [3.2.7. Options for Steering GPU Code Generation](http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#options-for-steering-gpu-code-generation)
+
+| Long Name | Short Name | Description |
+| :-------- | :--------- | :---------: |
+| `--relocatable-device-code` {`true|false`} | `-rdc` | Enable (disable) the generation of relocatable device code.  If disabled, executable device code is generated.  Relocatable device code must be linked before it can be executed.
+
+Allowed valued for this option: `true, false`.
+
+Default value: `false` |
 
 
 
