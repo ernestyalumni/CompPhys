@@ -83,15 +83,14 @@ cudaMalloc((void**)&dev_divresult, sizeof(float3));
 
 // do stuff on dev_divresult from a `__global__` function
 
-cudaMemcpy( divresult, dev_divresult, sizeof(float3), cudaMemcpyDeviceToHost) ;
-
+cudaMemcpy( divresult, dev_divresult, sizeof(float3), cudaMemcpyDeviceToHost) ;   
 ```  
 
 I obtain Segmentation Faults when trying to read out the result.  
 
 I **can** do this:
 
-```
+```   
 **float3 divresult**
 float3* dev_divresult;
 
@@ -99,13 +98,12 @@ cudaMalloc((void**)&dev_divresult, sizeof(float3));
 
 // do stuff on dev_divresult from a `__global__` function
 
-**cudaMemcpy( &divresult, dev_divresult, sizeof(float3), cudaMemcpyDeviceToHost) ;**
-
+**cudaMemcpy( &divresult, dev_divresult, sizeof(float3), cudaMemcpyDeviceToHost) ;**   
 ```  
 
 cf. [CUDA invalid argument when trying to copy struct to device's memory (cudaMemcpy)q](http://stackoverflow.com/questions/24460507/cuda-invalid-argument-when-trying-to-copy-struct-to-devices-memory-cudamemcpy)
 
-
+See also the section " *Many* different `cudaMemcpy*`'s to try (I honestly don't know which one to use)" down below for the API specifications.  
 
 ## Pitched Pointer, 2d array, 3d array on the device
 
@@ -535,6 +533,7 @@ __host__ ​cudaError_t cudaMemcpy2D ( void* dst,
 Copies data between host and device. 
 
 **Parameters**
+
 | parameter |  Meaning |
 | --------- | :------------: | 
 | `dst`     | Destination memory address |
@@ -616,11 +615,9 @@ __host__ ​cudaError_t cudaMemcpy2DToArray ( cudaArray_t dst,
 	 	     			   size_t wOffset, size_t hOffset,
 					   const void* src, size_t spitch,
 					   size_t width, size_t height,
-					   cudaMemcpyKind kind )
+					   cudaMemcpyKind kind )   
 ```  
-
 Copies data between host and device. 
-
 ```  
 __host__ ​cudaError_t cudaMemcpy2DToArrayAsync ( cudaArray_t dst, size_t wOffset, size_t hOffset, const void* src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind, cudaStream_t stream = 0 )
 ```  
@@ -788,23 +785,26 @@ __global__ void copyKernel(int width, int height)
 
 cf. [B.9.1. Surface Object API](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#surface-object-api-appendix)
 
-B.9.1.1. surf1Dread()
-
+B.9.1.1. `surf1Dread()`   
+```   
 template<class T>
 T surf1Dread(cudaSurfaceObject_t surfObj, int x,
-               boundaryMode = cudaBoundaryModeTrap);
+               boundaryMode = cudaBoundaryModeTrap);   
+```   
+reads the CUDA array specified by the one-dimensional surface object `surfObj` using coordinate `x`.   
 
-reads the CUDA array specified by the one-dimensional surface object surfObj using coordinate x.
-B.9.1.2. surf1Dwrite
+B.9.1.2. `surf1Dwrite`
 
-template<class T>
+```   
+template<class T>   
 void surf1Dwrite(T data,
                   cudaSurfaceObject_t surfObj,
                   int x,
-                  boundaryMode = cudaBoundaryModeTrap);
+                  boundaryMode = cudaBoundaryModeTrap);   
+```   
 
-writes value data to the CUDA array specified by the one-dimensional surface object surfObj at coordinate x.  
-[B.9.1.3. surf2Dread()](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#surf2dread-object)
+writes value data to the CUDA array specified by the one-dimensional surface object surfObj at coordinate x.   
+[B.9.1.3. `surf2Dread()`](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#surf2dread-object)
 ```  
 template<class T>
 T surf2Dread(cudaSurfaceObject_t surfObj,
