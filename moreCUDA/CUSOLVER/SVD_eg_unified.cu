@@ -29,8 +29,8 @@
  * 	 nvcc -c -I/usr/local/cuda/include svd_example.cpp
  * 	 g++ -fopenmp -o a.out svd_example.o -L/usr/local/cuda/lib64 -lcudart -lcublas -lcusolver
  * 
- * EY : 20170628 This also worked for me
- * nvcc -std=c++11 -arch='sm_52' -lcudart -lcublas -lcusolver SVD_vectors_unified.cu -o SVD_vectors_unified.exe
+ * EY : 20170628 This worked for the 1st example, but not the second.  
+ * nvcc -std=c++11 -arch='sm_52' -lcudart -lcublas -lcusolver SVD_eg_unified.cu -o SVD_eg_unified.exe
  * */
  
 #include <iostream> 	// std::cout
@@ -140,7 +140,6 @@ int main(int argc, char* argv[]) {
 	
 // step 2: query working space of SVD	
 	cusolver_status = cusolverDnDgesvd_bufferSize( cusolverH2, 3, 3, &lwork2);
-	cudaDeviceSynchronize();
 
 	cudaMalloc((void**)&d_work2, sizeof(double)*lwork2);
 
@@ -153,6 +152,8 @@ int main(int argc, char* argv[]) {
 		VT2, 
 		3, // ldvt
 		d_work2,lwork2, NULL, devInfo2);
+
+	cudaDeviceSynchronize();
 
 
 	printMatrix(3,3,U2,3,"U2");
