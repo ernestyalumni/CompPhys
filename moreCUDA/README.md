@@ -75,16 +75,16 @@ Note that I was learning about the Hillis/Steele and Blelloch (i.e. Prefix) scan
 
 cf. [2.4. Supported Phases](http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#supported-phases)
 
-| Phase | `nvcc` Option || Default Output File Name |
-| | Long Name | Short Name | |
-|:----- | :---- | :---- | :-----------------------: |
+| Phase | `nvcc` Option || Default Output File Name |   
+| | Long Name | Short Name | |   
+|:----- | :---- | :---- | :-----------------------: |   
 |C/C++ compilation to object file | `--compile` | `-c` | Source file name with suffix replaced by `-o` on Linux and Mac OS X, or `obj` on Windows |
 
 cf. [3.2.1. Options for Specifying the Compilation Phase](http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#options-for-specifying-compilation-phase)   
 
 | Long Name | Short Name | Description |
 | :-------- | :--------- | :---------: |
-| `--device-c` | `-dc` | COmpile each `.c/.cc/.cpp/.cxx/.cu` input file into an object file that contains relocatable device code.  It is equivalent to `--relocatable-device-code=true --compile`.  
+| `--device-c` | `-dc` | Compile each `.c/.cc/.cpp/.cxx/.cu` input file into an object file that contains relocatable device code.  It is equivalent to `--relocatable-device-code=true --compile`.  |
 
 cf. [3.2.2. File and Path Specifications](http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#file-and-path-specifications)
 
@@ -142,6 +142,66 @@ cudaMalloc((void**)&dev_divresult, sizeof(float3));
 cf. [CUDA invalid argument when trying to copy struct to device's memory (cudaMemcpy)q](http://stackoverflow.com/questions/24460507/cuda-invalid-argument-when-trying-to-copy-struct-to-devices-memory-cudamemcpy)
 
 See also the section " *Many* different `cudaMemcpy*`'s to try (I honestly don't know which one to use)" down below for the API specifications.  
+
+cf. [4.9. Memory Management](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#axzz4loHb5IQb)
+
+```
+__host__ cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, cudaMemcpyKind kind)
+```
+Copies data between host and device.
+
+cf. [4.9. Memory Management `cudaMemcpy`](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1gc263dbe6574220cc776b45438fc351e8)
+
+```
+__host__ cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, cudaMemcpyKind kind)
+```
+Copies data between host and device.
+
+**Parameters**   
+
+| | |
+| :---: | :---: |
+| `dst` | - Destination memory address |
+| `src` | - Source memory address |
+| `count` | - Size in bytes to copy |
+| `kind` | - Type of transfer |
+
+
+
+
+## `cudaMemset`, `cudaMemset2D`, `cudaMemset2DAsync`, `cudaMemset3D`, `cudaMemset3DAsync`, `cudaMemsetAsync`    
+
+cf. [`cudaMemset`](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#axzz4loHb5IQb)
+
+```
+__host__ cudaError_t cudaMemset(void* devPtr, int value, size_t count)
+```
+Initializes or sets device memory to a value   
+
+```
+__host__ cudaError_t cudaMemset2D(void* devPtr, size_t pitch, int value, size_t width, size_t height)
+```
+Initializes or sets device memory to a value
+
+### `cudaMemset`
+
+cf. [`cudaMemset`](http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1gf7338650f7683c51ee26aadc6973c63a)
+
+```
+__host__ cudaError_t cudaMemset(void* devPtr, int value, size_t count)
+```
+Initializes or sets device memory to a value   
+
+**Parameters**
+
+| | |
+| :===: | :===: |
+| `devPtr` | - Pointer to device memory |
+| `value`  | - Value to set for each byte of specified memory |
+| `count`  | - Size in bytes to set | 
+
+
+
 
 ## Pitched Pointer, 2d array, 3d array on the device
 
@@ -418,20 +478,18 @@ __host__ ​cudaError_t cudaMemcpyToArray ( cudaArray_t dst,
 Copies data between host and device.  
 
 *Parameters*
-`dst`  
-	- Destination memory address   
-`wOffset`  
-        - Destination starting X offset  
-    `hOffset`  
-        - Destination starting Y offset   
-    `src`    
-        - Source memory address   
-    `count`  
-        - Size in bytes to copy  
-    `kind`  
-        - Type of transfer  
 
-    *Returns*  
+| | |
+| :--- : | :---: |  
+|`dst`  | - Destination memory address    |
+| `wOffset`  |        - Destination starting X offset  |
+|    `hOffset`  |        - Destination starting Y offset   |  
+|    `src`    |          - Source memory address    |
+|    `count`  |          - Size in bytes to copy   |
+|    `kind`   |         - Type of transfer   |
+
+*Returns*  
+
 ```
     cudaSuccess,
     cudaErrorInvalidValue,
@@ -478,23 +536,25 @@ cf. [**`memset`**](http://www.cplusplus.com/reference/cstring/memset/),
 
 .
 function
-<cstring>
+`<cstring>`
 memset
 
+```
 void * memset ( void * ptr, int value, size_t num );
+```   
 
 Fill block of memory
 Sets the first num bytes of the block of memory pointed by ptr to the specified value (interpreted as an unsigned char).
 
 Parameters
 
-ptr
-    Pointer to the block of memory to fill.
-value
-    Value to be set. The value is passed as an int, but the function fills the block of memory using the unsigned char conversion of this value.
-num
-    Number of bytes to be set to the value.
-    size_t is an unsigned integral type.
+* `ptr`   
+  - Pointer to the block of memory to fill.   
+* `value`  
+  - Value to be set. The value is passed as an int, but the function fills the block of memory using the unsigned char conversion of this value.   
+* `num`   
+  - Number of bytes to be set to the value.
+    `size_t` is an unsigned integral type.
 e.g. [CUDA pro tip kepler texture objects](https://devblogs.nvidia.com/parallelforall/cuda-pro-tip-kepler-texture-objects-improve-performance-and-flexibility/)
 ```
 memset(&resDesc, 0, sizeof(resDesc));
@@ -509,19 +569,18 @@ Returns a channel descriptor using the specified format.
 
 
 *Parameters*  
-    `x`  
-        - X component  
-    `y`  
-        - Y component   
-    `z`  
-        - Z component   
-    `w`  
-        - W component    
-    `f`   
-        - Channel format   
+
+| | |
+| :---: | :---: |
+| `x`  |       - X component  |
+|    `y`  |        - Y component |   
+|    `z`  |        - Z component   |
+|    `w`  |        - W component     |
+|    `f`   |        - Channel format   |
 
 *Returns*  
-    Channel descriptor with format `f`   
+
+Channel descriptor with format `f`   
 
 *Description*  
     Returns a channel descriptor with format `f` and number of bits of each component `x, y, z`, and `w`. The `cudaChannelFormatDesc` is defined as:
