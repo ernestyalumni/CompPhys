@@ -145,11 +145,15 @@ Remark 1: **`gesvd` only supports `m>=n`.
 
 | parameter        | Memory  | In/out | Meaning |
 | ---------------- | :------------: | :---------------------- | :---------- |
-| `jobu`  | host   | input  | specifies options for computing all or part of the matrix `U`     
+| `jobu`           | host   | input  | specifies options for computing all or part of the matrix `U`     
   	    	     	      := `A`: all m columns of U are returned in array U    
 			      := `S`: the first min(m,n) columns of U (the left singular vectors are returned in the array U;   
 			      := `O`: the first min(m,n) columns of U (the left singular vectors) are overwritten on the array A;
-		      	      := `N`: no columns of U (no left singular vectors) are computed.    |
+		      	      := `N`: no columns of U (no left singular vectors) are computed.    |   
+
+
+| parameter        | Memory  | In/out | Meaning |
+| ---------------- | :------------: | :---------------------- | :---------- |
 | `m`     | host    | input  | number of rows of matrix `A` |   
 | `n`     | host    | input  | number of columns of matrix `A` |
 | `A`     | device  | in/out | <type> array of dim. `lda * n` with `lda` is not less than `max(1,m)`.  On exit, the contents of `A` are destroyed |  
