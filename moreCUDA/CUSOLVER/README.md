@@ -30,6 +30,14 @@ So this is documentation for *4* different functions,
 
 ```   
 cusolverStatus_t
+cusolverDnDgesvd_bufferSize(
+	cusolverDnHandle_t handle,
+	int m,   
+	int n,
+	int *lwork);
+
+
+cusolverStatus_t
 cusolverDnSgesvd_bufferSize(
 	cusolverDnHandle_t handle,
 	int m,   
@@ -130,18 +138,27 @@ i.e.
 
 where $\Sigma$ or S is a `mxn` matrix which is 0 except for its `min(m,n)` diagonal elements, `U` is a `mxm` unitary matrix, and `V` is a `nxn` unitary matrix.  
 
+Remark 1: **`gesvd` only supports `m>=n`.  
+
 
 **API of gesvd**   
 
 | parameter        | Memory  | In/out | Meaning |
 | ---------------- | :------------: | :---------------------- | :---------- |
 | `jobu`  | host   | input  | specifies options for computing all or part of the matrix `U`     
-  	    	     	      := 'A': all m columns of U are returned in array U    
-			      := 'S': the first min(m,n) columns of U (the left singular vectors are returned in the array U;   
-			      := 'O': the first min(m,n) columns of U (the left singular vectors) are overwritten on the array A;
-		      	      := 'N': no columns of U (no left singular vectors) are computed.  
-| `l`     | host   | input  | leading dim. of 2-dim. array used to store matrix A |
-| `S`     | device | output | real array of dimension `min(m,n)`.  The singular values of A, sorted so that `S(i) >= S(i+1)`.  |   
+  	    	     	      := `A`: all m columns of U are returned in array U    
+			      := `S`: the first min(m,n) columns of U (the left singular vectors are returned in the array U;   
+			      := `O`: the first min(m,n) columns of U (the left singular vectors) are overwritten on the array A;
+		      	      := `N`: no columns of U (no left singular vectors) are computed.    |
+| `m`     | host    | input  | number of rows of matrix `A` |   
+| `n`     | host    | input  | number of columns of matrix `A` |
+| `A`     | device  | in/out | <type> array of dim. `lda * n` with `lda` is not less than `max(1,m)`.  On exit, the contents of `A` are destroyed |  
+| `lda`     | host   | input  | leading dim. of 2-dim. array used to store matrix A |
+| `S`     | device | output | real array of dimension `min(m,n)`.  The singular values of A, sorted so that `S(i) >= S(i+1)`.  |
+| `U`     | device | output | <type> array of dim. `ldu * m` with `ldu` is not less than `max(1,m)`.  `U` contains the `mxm` unitary matrix `U`.  |
+| `ldu`   | host   | input  | leading dim. of 2-dim. array used to store matrix `U`. |
+| `VT`    | device | output | <type> array of dim. `ldvt * n` with `ldvt` is not less than `max(1,n)`.  `VT` contains the `nxn` unitary matrix V**T.  |
+| `ldvt`  | host | input | leading dim. of 2-dim. array used to store matrix `Vt`. |
 | `work`  | device | in/out | working space, <type> array of size `lwork`     |
 | `lwork` | host   | input  | size of `work`, returned by `gesvd_bufferSize`. |
 
@@ -165,6 +182,16 @@ cusolverStatus_t cusolverDnDgesvd(cusolverDnHandle_t handle,
 					int *devInfo);
 
 ```   
+##### Summary of `cusolverDn<t>gesvd()`
+
+- *Inputs*
+  * `(m,n)`, `m>=n` ('gesvd', 'cusolver' requirement), `lda=m` (usually)
+  * `A - mxn` Matrix, `m>=n` (`gesvd`, `cusolver` requirement)
+- *Outputs*
+  * `S - min(m,n)=n` real (float or double) array
+  * `U - mxm` matrix, `ldu=m` (usually)
+  * `VT - nxn` matrix, `ldvt=n` (usually)  
+
 
 ## Notes on compiling `cuSOLVER` scripts (with `nvcc`)
 
