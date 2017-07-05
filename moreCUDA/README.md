@@ -195,7 +195,7 @@ Initializes or sets device memory to a value
 **Parameters**
 
 | | |
-| :===: | :===: |
+| :---: | :---: |
 | `devPtr` | - Pointer to device memory |
 | `value`  | - Value to set for each byte of specified memory |
 | `count`  | - Size in bytes to set | 
