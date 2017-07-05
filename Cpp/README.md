@@ -1,8 +1,9 @@
-# Cpp - C++ code and examples for Computational Physics and Computational Fluid Dynamics (CFD), now some Deep Learning/Machine Learning as well
+# Cpp - C++ code and examples for Computational Physics and Computational Fluid Dynamics (CFD)
+
 
 ## Abstract
 
-This directory has C++ code examples that helps me (i.e. "developer tools") for the applications I'm interested in: Computational Physics, Computational Fluid Dynamics, and now, some Deep Learning/Machine Learning (which I hope to use for Computational Physics and CFD).  
+This directory has C++ code examples that helps me (i.e. "developer tools") for the applications I'm interested in: Computational Physics, Computational Fluid Dynamics.  
 
 (20160713) I'm reading and going through 
 
@@ -26,6 +27,9 @@ P.S. There are some non-trivial typos both in the code and lecture that made the
 Be aware that this Table of Contents maybe incomplete (one way around this is to search for key words with some kind of search function).  
 
 - Modularity
+- File I/O in C and C++
+- **stack** vs. **heap**
+- `hdf5` - C, C++, Python, saving files, File I/O from Python hdf5 to C++
 
 ## Listing of which program or script corresponds to which section, chapter, part for Hjorth-Jensen's material
 
@@ -353,6 +357,66 @@ i.e. you're going to have to include all the files in that command line for `g++
 This also answers 33.3 Why do I keep getting compile errors (type mismatch) when I try to use a member function as an interrupt service routine?
 
 So a member function of a class can't be used without an object (in my case, an "instantiation") of the class, so the function can't be an argument, or passed by value or passed by reference, to another (outside) function.
+
+## **stack** vs. **heap**  
+
+cf. [Segmentation fault on large array sizes](https://stackoverflow.com/questions/1847789/segmentation-fault-on-large-array-sizes)  
+
+```   
+int main()
+{
+   int c[1000000];
+   cout << "done\n";
+   return 0;
+}
+```  
+results in a stack overflow.  Array is too big to fit in a program's stack address space (for example).
+
+If you allocate the array on the *heap*, it should be fine, assuming the machine has enough memory.   
+```  
+int* array = new int[1000000];
+```
+
+But remember that this will require you to `delete[]` the array. A better solution would be to use `std::vector<int>` and resize it to 1000000 elements.
+
+"Thanks for the answer, but could you explain me why arrays are allocated on the stack and why not in the main program memory." – [Mayank](https://stackoverflow.com/users/224863/mayank) Dec 4 '09 at 15:51  
+
+"The given code allocates on the stack because it's specified as an array with a constant number of elements at compile time. Values are only put on the heap with `malloc, new,` etc." – [Seth Johnson](https://stackoverflow.com/users/118160/seth-johnson) Dec 4 '09 at 16:05 
+
+[Proper stack and heap usage in C++?](https://stackoverflow.com/questions/599308/proper-stack-and-heap-usage-in-c)
+
+ 221
+down vote
+accepted
+	
+
+No, the difference between stack and heap isn't performance. It's lifespan: any local variable inside a function (anything you do not malloc() or new) lives on the stack. It goes away when you return from the function. If you want something to live longer than the function that declared it, you must allocate it on the heap.
+
+```   
+class Thingy;
+
+Thingy* foo( ) 
+{
+  int a; // this int lives on the stack
+  Thingy B; // this thingy lives on the stack and will be deleted when we return from foo
+  Thingy *pointerToB = &B; // this points to an address on the stack
+  Thingy *pointerToC = new Thingy(); // this makes a Thingy on the heap.
+                                     // pointerToC contains its address.
+
+  // this is safe: C lives on the heap and outlives foo().
+  // Whoever you pass this to must remember to delete it!
+  return pointerToC;
+
+  // this is NOT SAFE: B lives on the stack and will be deleted when foo() returns. 
+  // whoever uses this returned pointer will probably cause a crash!
+  return pointerToB;
+}
+```  
+
+For a clearer understanding of what the stack is, come at it from the other end -- rather than try to understand what the stack does in terms of a high level language, look up "call stack" and "calling convention" and see what the machine really does when you call a function. Computer memory is just a series of addresses; "heap" and "stack" are inventions of the compiler.  [Crashworks](https://stackoverflow.com/users/53543/crashworks).
+
+
+
 
 
 ## Makefiles
