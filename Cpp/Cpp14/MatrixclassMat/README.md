@@ -7,8 +7,7 @@ To use the class template `Mat` found in `./Mat/Mat.h` (`Mat.h` is the header fi
 ```
 #include './Mat/Mat.h`
 ```
-   - Compile your file (call it `main_Mat.cpp` for this example) with the following line:
-   
+	- Compile your file (call it `main_Mat.cpp` for this example) with the following line:   
 ```
 g++ -std=c++11 main_Mat.cpp
 ```
@@ -16,7 +15,7 @@ g++ -std=c++11 main_Mat.cpp
 ```
 #include <Mat.h>
 ```
-   - Compile your file (call it `main_Mat.cpp` for this example) with the following line:
+	- Compile your file (call it `main_Mat.cpp` for this example) with the following line:
 ```
 g++ -std=c++11 main_Mat.cpp -lMat
 ```
