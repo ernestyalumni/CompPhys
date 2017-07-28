@@ -81,6 +81,16 @@ class Mat
 
 			} // END of constructor
 
+		/** 
+		 * @fn Mat = Mat(unsigned int first_dim, unsigned int second_dim, 
+		 * 					std::vector<Type> & Entries) 
+		 * @brief Constructor (Initializer) for the Mat class template; make Matrices with this
+		 * @param Type - class template parameter; keep this in mind to set the entries to be same type		
+		 * @param unsigned int first_dim - first size dimension of the matrix
+		 * @param unsigned int second_dim - second size dimension of the matrix
+		 * @param std::vector<Type> second_dim - entries of the matrix as a 1-dim. std::vector, assuming row-major ordering
+		 * 
+		 * */
 		Mat(unsigned int first_dim, unsigned int second_dim, 
 				std::vector<Type> & Entries) 
 			: Size_Dims_({first_dim,second_dim}), Entries_(Entries) {				

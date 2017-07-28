@@ -98,6 +98,6 @@ A.T();
 ```
 That's it!
 
-See the Developer's Manual, `Mat_dev_manual.pdf`, for an indepth look at the mathematics and a few notes for developers.
+See the Developer's Manual, `Mat_out.pdf`, for an indepth look at the mathematics and a few notes for developers.
 
 
