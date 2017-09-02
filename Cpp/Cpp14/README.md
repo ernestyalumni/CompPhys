@@ -41,5 +41,30 @@ Programs "so far" have used only static or stack memory.
 **heap** or **free store** - program has a pool of memory it can use and programs use the heap for objects they **dynamically allocate**, i.e. objects that program allocates at run time.  
     - program controls lifetime of dynamic objects; code must explicitly destroy such objects when they're no longer needed.  
 
-cf. 12.1. Dynamic Memory and Smart Pointers of Lippman, Lajoie, Moo (2012)
+cf. 12.1. Dynamic Memory and Smart Pointers of Lippman, Lajoie, Moo (2012)  
+
+#### `new` and `delete`; Problems with them  
+
+In C++, dynamic memory is managed by operators `new` and `delete`  
+- `new` allocates, and optionally initializes, object in dynamic memory, and returns pointer to that object  
+- `delete` takes a pointer to a dynamic object, destroy object, and free associated memory
+
+Problems: 
+- forget to free memory -> memory leak  
+- free memory when there are still pointers referring to that memory, in which case we have a pointer that refers to memory that's no longer valid.  
+
+To make dynamic memory easier (and safer),  
+in `memory` header,  
+- **`shared_ptr`** - allows multiple pointers to refer to the same object  
+- **`unique_ptr`** - which "owns" object to which it points 
+- **`weak_ptr`** - weak reference to object managed by `shared_ptr`
  
+#### `make_shared`  
+
+Safest way to allocate and use dynamic memory is to call library function named **`make_shared`** - `make_shared` allocates and initializes an object in dynamic memory and returns `shared_ptr` that points to that object  
+
+### How do I make a smart pointer, `shared_ptr` or `unique_ptr` to an array?  I want this array to be dynamically allocated.   
+
+cf. [`shared_ptr` to an array : should it be used?](https://stackoverflow.com/questions/13061979/shared-ptr-to-an-array-should-it-be-used) 
+
+See `sh_ptr.cpp`  
