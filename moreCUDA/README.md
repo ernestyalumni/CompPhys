@@ -49,6 +49,7 @@ In this `README.md`:
 | [`./CUBLAS/`](https://github.com/ernestyalumni/CompPhys/tree/master/moreCUDA/CUBLAS) | `cuBLAS`, CUDA Unified Memory Management, `__managed__` | Examples of using `cuBLAS`, for linear algebra, including examples for using `cuBLAS` with CUDA Unified Memory Management | 
 ||||
 | [`./CUSOLVER/SVD_vectors.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/CUSOLVER/SVD_vectors.cu) | Singular Value Decomposition, SVD, `cuSOLVER`  | simple example in C of Singular Value Decomposition, but with singular vectors, cf. [CUDA Toolkit Doc, E.1 SVD with singular vectors](http://docs.nvidia.com/cuda/cusolver/index.html#svd-example1)  |
+| `./smart_ptrs_arith.cu` | `std::shared_ptr`, `std::unique_ptr`, pointer arithmetic (on GPU), `cudaMemcpy`, `cudaMalloc` | Smart pointers (shared and unique ptrs) arithmetic, in C++11, along with its use with `cudaMalloc`, `cudaMemcpy`; importantly; 1 can `cudaMemcpy` to device array starting from any point on the array through pointer arithmetic |  
 
 
 | Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
@@ -923,8 +924,9 @@ void surf2Dwrite(T data,
                   boundaryMode = cudaBoundaryModeTrap);  
 ```  
 writes value data to the CUDA array specified by the two-dimensional surface object surfObj at coordinate x and y.  
-[B.9.1.5. surf3Dread()](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#surf3dread-object)
+cf.  [B.9.1.5. `surf3Dread()`](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#surf3dread-object)   
 
+```  
 template<class T>
 T surf3Dread(cudaSurfaceObject_t surfObj,
               int x, int y, int z,
@@ -934,19 +936,24 @@ void surf3Dread(T* data,
                  cudaSurfaceObject_t surfObj,
                  int x, int y, int z,
                  boundaryMode = cudaBoundaryModeTrap);
-
+```  
 reads the CUDA array specified by the three-dimensional surface object surfObj using coordinates x, y, and z.
-B.9.1.6. surf3Dwrite()
+   
+B.9.1.6. `surf3Dwrite()`   
 
+```  
 template<class T>
 void surf3Dwrite(T data,
                   cudaSurfaceObject_t surfObj,
                   int x, int y, int z,
-                  boundaryMode = cudaBoundaryModeTrap);
+                  boundaryMode = cudaBoundaryModeTrap);  
+```
 
 writes value data to the CUDA array specified by the three-dimensional object surfObj at coordinate x, y, and z.
-B.9.1.7. surf1DLayeredread()
 
+B.9.1.7. `surf1DLayeredread()`  
+
+```  
 template<class T>
 T surf1DLayeredread(
                  cudaSurfaceObject_t surfObj,
@@ -957,19 +964,25 @@ void surf1DLayeredread(T data,
                  cudaSurfaceObject_t surfObj,
                  int x, int layer,
                  boundaryMode = cudaBoundaryModeTrap);
+```  
 
 reads the CUDA array specified by the one-dimensional layered surface object surfObj using coordinate x and index layer.
-B.9.1.8. surf1DLayeredwrite()
 
+B.9.1.8. `surf1DLayeredwrite()`  
+
+```  
 template<class Type>
 void surf1DLayeredwrite(T data,
                  cudaSurfaceObject_t surfObj,
                  int x, int layer,
-                 boundaryMode = cudaBoundaryModeTrap);
+                 boundaryMode = cudaBoundaryModeTrap);   
+``` 
 
 writes value data to the CUDA array specified by the two-dimensional layered surface object surfObj at coordinate x and index layer.
-B.9.1.9. surf2DLayeredread()
 
+B.9.1.9. `surf2DLayeredread()`  
+
+```  
 template<class T>
 T surf2DLayeredread(
                  cudaSurfaceObject_t surfObj,
@@ -979,20 +992,23 @@ template<class T>
 void surf2DLayeredread(T data,
                          cudaSurfaceObject_t surfObj,
                          int x, int y, int layer,	
-                         boundaryMode = cudaBoundaryModeTrap);
-
+                         boundaryMode = cudaBoundaryModeTrap);   
+```  
 reads the CUDA array specified by the two-dimensional layered surface object surfObj using coordinate x and y, and index layer.
-B.9.1.10. surf2DLayeredwrite()
 
+B.9.1.10. `surf2DLayeredwrite()`
+
+```  
 template<class T>
 void surf2DLayeredwrite(T data,
                           cudaSurfaceObject_t surfObj,
                           int x, int y, int layer,
                           boundaryMode = cudaBoundaryModeTrap);
+```  
+writes value data to the CUDA array specified by the one-dimensional layered surface object surfObj at coordinate x and y, and index layer.   
 
-writes value data to the CUDA array specified by the one-dimensional layered surface object surfObj at coordinate x and y, and index layer.
-B.9.1.11. surfCubemapread()
-
+B.9.1.11. `surfCubemapread()`
+```  
 template<class T>
 T surfCubemapread(
                  cudaSurfaceObject_t surfObj,
@@ -1003,19 +1019,23 @@ void surfCubemapread(T data,
                  cudaSurfaceObject_t surfObj,
                  int x, int y, int face,
                  boundaryMode = cudaBoundaryModeTrap);
-
+```  
 reads the CUDA array specified by the cubemap surface object surfObj using coordinate x and y, and face index face.
-B.9.1.12. surfCubemapwrite()
 
+B.9.1.12. `surfCubemapwrite()`  
+
+```  
 template<class T>
 void surfCubemapwrite(T data,
                  cudaSurfaceObject_t surfObj,
                  int x, int y, int face,
                  boundaryMode = cudaBoundaryModeTrap);
-
+```  
 writes value data to the CUDA array specified by the cubemap object surfObj at coordinate x and y, and face index face.
-B.9.1.13. surfCubemapLayeredread()
 
+B.9.1.13. `surfCubemapLayeredread()` 
+
+```  
 template<class T>
 T surfCubemapLayeredread(
              cudaSurfaceObject_t surfObj,
@@ -1026,9 +1046,11 @@ void surfCubemapLayeredread(T data,
              cudaSurfaceObject_t surfObj,
              int x, int y, int layerFace,
              boundaryMode = cudaBoundaryModeTrap);
+```   
+reads the CUDA array specified by the cubemap layered surface object surfObj using coordinate x and y, and index layerFace.   
 
-reads the CUDA array specified by the cubemap layered surface object surfObj using coordinate x and y, and index layerFace.
-B.9.1.14. surfCubemapLayeredwrite()
+B.9.1.14. `surfCubemapLayeredwrite()`  
+
 ```  
 template<class T>
 void surfCubemapLayeredwrite(T data,
@@ -1331,3 +1353,35 @@ http://istar.cse.cuhk.edu.hk/icuda/
 
 > > "CUB, on the other hand, is a production-quality library whose sources are complicated by support for every version of CUDA architecture, and is validated by an extensive suite of regression tests."  - [(7) How is CUB different than Thrust and Modern GPU?](https://nvlabs.github.io/cub/index.html#sec4sec1)  
 
+# Smart Pointers, `std::shared_ptr`, `std::unique_ptr`, to device GPU arrays, and `cudaMalloc`, `cudaMemcpy`, with pointer arithmetic  
+
+See `./smart_ptrs_arith.cu`.  But these are the correct way to use smart pointers pointing to device GPU arrays:  
+
+Given the "boilerplate":
+```  
+     constexpr const size_t Lx = {1<<5};  // 2^5 = 32
+
+     // Allocate host arrays
+     std::vector<float> f_vec(Lx/2,1.f);
+     std::shared_ptr<float> sp(new float[Lx/2],std::default_delete<float[]>());
+```  
+
+Then for `std::shared_ptr`,  
+```  
+     auto deleter=[&](float* ptr){ cudaFree(ptr); };
+     std::shared_ptr<float> d_sh_in(new float[Lx], deleter);
+     cudaMalloc((void **) &d_sh_in, Lx * sizeof(float));
+
+     cudaMemcpy(d_sh_in.get(), f_vec.data(), Lx/2*sizeof(float),cudaMemcpyHostToDevice);
+     cudaMemcpy(d_sh_in.get()+Lx/2, sp.get(), Lx/2*sizeof(float),cudaMemcpyHostToDevice);
+```  
+
+and for `std::unique_ptr`, 
+```  
+     std::unique_ptr<float[], decltype(deleter)> d_u_in(new float[Lx], deleter);
+     cudaMalloc((void **) &d_u_in, Lx * sizeof(float));
+
+     cudaMemcpy(d_u_in.get(), sp.get(), Lx/2*sizeof(float),cudaMemcpyHostToDevice);
+     cudaMemcpy(d_u_in.get()+Lx/2, f_vec.data(), Lx/2*sizeof(float),cudaMemcpyHostToDevice);
+
+```  
