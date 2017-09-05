@@ -1,27 +1,46 @@
-# C++ examples related to Lippman, Lajoie, Moo's **C++ Primer**
+/**
+ * @file   : smart_ptr_arith.cpp
+ * @brief  : Smart pointer (shared and unique ptrs) arithmetic, in C++14  
+ * @author : Ernest Yeung	ernestyalumni@gmail.com
+ * @date   : 20170904
+ * @ref    : http://en.cppreference.com/w/cpp/memory/unique_ptr
+ *         : Stanley B. Lippman, Josee Lajoie, Barbara E. Moo.  C++ Primer, Fifth Edition.  Sec. 3.5, Ch. 12 
+ * If you find this code useful, feel free to donate directly and easily at this direct PayPal link: 
+ * 
+ * https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ernestsaveschristmas%2bpaypal%40gmail%2ecom&lc=US&item_name=ernestyalumni&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted 
+ * 
+ * which won't go through a 3rd. party such as indiegogo, kickstarter, patreon.  
+ * Otherwise, I receive emails and messages on how all my (free) material on 
+ * physics, math, and engineering have helped students with their studies, 
+ * and I know what it's like to not have money as a student, but love physics 
+ * (or math, sciences, etc.), so I am committed to keeping all my material 
+ * open-source and free, whether or not 
+ * sufficiently crowdfunded, under the open-source MIT license: 
+ * 	feel free to copy, edit, paste, make your own versions, share, use as you wish.  
+ *  Just don't be an asshole and not give credit where credit is due.  
+ * Peace out, never give up! -EY
+ * 
+ * */
+/* on g++ 5.3.1.
+ * g++ -std=c++14 smart_ptr_arith.cpp -o smart_ptr_arith.exe
+ * -std=c++14 flag needed for auto, etc.
+ * */
+#include <iostream> // std::cout 
+#include <memory>  // std::shared_ptr, std::unique_ptr std::make_unique (C++14)
 
-(20160713) I'm reading and going through  
 
-**C++ Primer** (5th Edition) 5th Edition, by Stanley B. Lippman, Josée Lajoie, Barbara E. Moo. Addison-Wesley Professional; 5 edition (August 16, 2012). ISBN-13: 978-0321714114   
+template<typename T>
+struct array_deleter
+{
+    void operator()(T const* p)
+    {
+        delete [] p;
+    }
+};
 
-which I'll refer to as Lippman, Lajoie, Moo (2012).  
-
-| codename        | Chapter | Section         | Directory  | Description            |
-| --------------- | :-----: | :-------------: | :--------- | :--------------------- |
-| `pointers.cpp`  | 2       | 2.3.2. Pointers | `./`       | Pointers               |
-| `ilconstexpr.cpp` | 2       | 2.4.4. `constexpr` and Constant Expressions   
-			      6.5.2. Inline and `constexpr` Functions | `./` | `constexpr` |
-| `vectors.cpp`    | 3 | *3.3. Library vector Type* | `../Cpp14/` | Everything about **vectors** for C++11/14, cf. Lippman, Lajoie, Moo, **C++ Primer** 5th ed.  |
-| `vectors_binarysearch.cpp` | 3 | *3.4. Introducing Iterators*, 3.4.2 |  `../Cpp14/` | **classic algorithm, binary search, using vectors** via C++11/14, cf. Lippman, Lajoie, Moo, **C++ Primer** 5th ed.  |  
-| `arrs.cpp` 	  | 3 	    | 3.5. Arrays 	 | `./` 	   | Arrays, pointers and arrays, pointer arithmetic on arrays, iterators, increment operators on arrays (and arrays as a pointer) 			|
-| `unique_ptr.cpp` | 12     | 12.1.5         | `../Cpp14/` | cf. http://en.cppreference.com/w/cpp/memory/unique_ptr ; `std::unique_ptr`, `std::make_unique` examples |  
-
-## Wrapping pointers to arrays with smart pointers, both `shared_ptr` and `unique_ptr` cases, with "custom" deleters/deconstructors  
-
-### `shared_ptr`  
-cf. https://stackoverflow.com/questions/13061979/shared-ptr-to-an-array-should-it-be-used
-```  
+int main(int argc, char* argv[]) {
     constexpr const size_t Lx = {1<<5};  // 2^5 = 32
+    std::cout << " Lx : " << Lx << std::endl;
 
     // shared_ptr
     //  Initialization
@@ -52,9 +71,8 @@ cf. https://stackoverflow.com/questions/13061979/shared-ptr-to-an-array-should-i
     for (int idx = 0 ; idx < Lx; idx++) {
         std::cout << " " << idx << " : " << spc.get()[idx] << ", ";
     }
-```  
-### `unique_ptr`  
-```  
+
+
     // unique_ptr, initialization
 
     auto uptr11 = std::unique_ptr<float[]>{ new float[Lx]};  // this will correctly call delete []
@@ -85,5 +103,7 @@ cf. https://stackoverflow.com/questions/13061979/shared-ptr-to-an-array-should-i
         std::cout << " " << idx << " : " << up.get()[idx] << ", ";
     }
 
-```  
 
+
+    return 0;
+}
