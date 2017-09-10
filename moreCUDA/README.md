@@ -50,6 +50,7 @@ In this `README.md`:
 ||||
 | [`./CUSOLVER/SVD_vectors.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/CUSOLVER/SVD_vectors.cu) | Singular Value Decomposition, SVD, `cuSOLVER`  | simple example in C of Singular Value Decomposition, but with singular vectors, cf. [CUDA Toolkit Doc, E.1 SVD with singular vectors](http://docs.nvidia.com/cuda/cusolver/index.html#svd-example1)  |
 | `./smart_ptrs_arith.cu` | `std::shared_ptr`, `std::unique_ptr`, pointer arithmetic (on GPU), `cudaMemcpy`, `cudaMalloc` | Smart pointers (shared and unique ptrs) arithmetic, in C++11, along with its use with `cudaMalloc`, `cudaMemcpy`; importantly; 1 can `cudaMemcpy` to device array starting from any point on the array through pointer arithmetic |  
+| `./cudaMallocHost_eg.cu`  | `cudaMallocHost` | Simple but fundamental sanity check for using `cudaMallocHost` |
 
 
 | Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
