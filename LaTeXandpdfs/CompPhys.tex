@@ -104,15 +104,25 @@
 Everything about Computational Physics, including Parallel computing/ Parallel programming.  
 \end{abstract}
 
-\part{Introduction}
+\part{Algorithms as needed}
 
-\section{Parallel Computing}
+\section{Divide and Conquer}
 
-\subsection{Udacity Intro to Parallel Programming : Lesson 1 - The GPU Programming Model}
+\href{https://people.eecs.berkeley.edu/~vazirani/algorithms/chap2.pdf}{Divide and Conquer}
+
+\url{https://classes.soe.ucsc.edu/cmps102/Fall01/solutions4.pdf}
+
+\url{http://www3.cs.stonybrook.edu/~skiena/373/hw/hw.pdf}
+
+\part{Parallel Computing}
+
+%\section{Parallel Computing}
+
+\section{Udacity Intro to Parallel Programming : Lesson 1 - The GPU Programming Model}
 
 Owens and Luebki pound fists at the end of this video.  $=))))$  \href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/658304810923}{Intro to the class}.
 
-\subsubsection{Running CUDA locally}
+\subsection{Running CUDA locally}
 Also, \href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/658304810923}{Intro to the class}, in Lesson 1 - The GPU Programming Model, has links to documentation for running CUDA locally; in particular, for Linux: \url{http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/index.html}.  That guide told me to go download the NVIDIA CUDA Toolkit, which is the \href{NVIDIA CUDA Developer Toolkit}{https://developer.nvidia.com/cuda-downloads}.  
 
 For \emph{Fedora}, I chose Installer Type \verb|runfile (local)|.  
@@ -122,12 +132,84 @@ Afterwards, installation of CUDA on Fedora 23 workstation had been nontrivial.  
 
 $P=VI = I^2R$ heating.
 
-\subsubsection{Definitions of Latency and throughput (or bandwidth)}
+\subsection{(faster) clock speed, instruction level parallelism per clock cycle - Digging Holes, make Computers Run Faster, Chickens or Oxen}
+
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/658883610923}{4. Digging Holes}, 
+Around minute 1:41; \emph{Methods for Building a faster processor} 
+\begin{itemize}
+\item \emph{Faster clock speed}.  Faster clock: let $T =$ time period for single computation $\equiv T(1)$.  
+
+Thus 
+\[
+f = \frac{1}{T} = \frac{1}{T(1)} \qquad \, (\text{frequency})
+\]  
+Smaller $T(1)$ increases power consumption.  
+\item \textbf{instruction level parallelism per clock cycle} $\sim$ more work per step.  
+\[
+v = \frac{d}{t}
+\]
+For $t=1$, how much work $d$ gets done in this "clock cycle?"
+\end{itemize}
+
+In summary (in other words), \\
+
+Using $vt=d$, consider faster \textbf{clock speed}; and so $T(1)$ smaller, and so $v(1) = \frac{d}{T(1)} = \frac{1}{ T(1)} = $ clock speed is "bigger" (faster).  \\
+
+This is at the expense of power consumption.  \\
+
+\textbf{instruction level parallelism per clock cycle} (more transistors).  Looking at $v=\frac{d}{t}$, \\
+
+let $t=T(1)$, time period for 1 "cycle", \\
+
+increase $d=d(1)$, work (instructions) done in 1 cycle.  $v=\frac{d}{T(1)}$, $d$ bigger, so $v$ "bigger" (faster) for fixed $T(1)$.  
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/659387650923}{5. Quiz: How to Make Computers Run Faster} 
+
+\textbf{threads} - "parallel pieces of work on the GPU"
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/670611900923}{6. Chickens or Oxen?}
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/668222780923}{8. Quiz: How are CPUs Getting Faster?}  We have more transistors available per computation (i.e. \emph{instruction level parallelism per clock cycle}).  
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/670462960923}{9. Why we Cannot keep increasing clock speed?} Heat, power!  Can't make processors faster and faster.  
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/668323280923}{10. What kind of Processors are we Building} Assuming the major design constraint is power, traditionally for CPUs, CPUs have complex control hardware, allowing for more flexibility and performance, but is expensive in terms of power.  GPUs have a simple control hardware, devoting more transistors to computation; its simple units are potentially more power efficient (operations/watt).  
+
+\subsection{Definitions of Latency and throughput (or bandwidth)}
 
 cf. 
-\href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/669874580923}{Building a Power Efficient Processor}
+\href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/669874580923}{12. Building a Power Efficient Processor}
 
-\href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/667559300923}{Latency vs Bandwidth}
+We can seek to \textbf{\emph{minimize} latency}.   \\
+
+For a set of instructions $:= $ process, or instructions, the time interval between instruction(s) initiation to completion, or amount of time to complete a task $T$ is latency
+\begin{definition}[latency]
+\textbf{latency} $ = T$
+\end{definition}
+
+\begin{definition}[throughput]
+throughput - tasks completed per unit time, 
+\begin{equation}
+= d/T 
+\end{equation}
+with $T$ fixed.  
+
+\textbf{EY : 20170601}: \textbf{ is throughput $=$ bandwidth (???) }
+\end{definition}
+
+\textbf{CPUs optimize for latency} $T(1)$ (minimize latency $T(1)$).   \\
+
+\textbf{GPUs optimize for throughput} $\frac{d}{T_1}$, $T_1$ fixed (some unit time).  (maximize throughput $\frac{d}{T_1}$, $T_1$ fixed).  
+
+bandwidth $:=$ bit rate of available or consumed information capacity (bits per second) $v=\frac{d}{t}$.  
+
+EY: 20170601 so throughput and bandwidth defined similarly, but \emph{are they the same notion?  Same thing???}
+
+
+
+
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/667559300923}{13. Quiz, Latency vs Bandwidth}
 
 latency $[\text{sec}]$.  From the title ``Latency vs. bandwidth'', I'm thinking that throughput $=$ bandwidth (???).  throughput $ = $ job$/$time (of job).  
 
@@ -136,6 +218,19 @@ total task $/v = $ latency.  throughput $=$ latency$/(\text{jobs per total task}
 
 
 Also, in \href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/669874580923}{Building a Power Efficient Processor}.  Owens recommends the article David Patterson, ``Latency...''
+
+\subsubsection{Core GPU Design Tenets}
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/671181620923}{14. Core GPU Design Tenets}
+
+\begin{enumerate}
+\item GPUs have lots of simple compute units, more compute power for simpler control complexity (tradeoff) 
+\item Explicitly parallel programming model
+\item optimize for throughput, not latency 
+\end{enumerate}
+
+
+
 
 cf. \href{https://classroom.udacity.com/courses/cs344/lessons/55120467/concepts/671181630923}{GPU from the Point of View of the Developer}
 
@@ -899,7 +994,13 @@ kernel we know (in the code) is tagged with \verb|__global__|
 
 \subsubsection{Coalesce global memory accesses}
 
-\href{https://classroom.udacity.com/courses/cs344/lessons/77202674/concepts/799933660923}{Coalesce Memory Access}
+\href{https://classroom.udacity.com/courses/cs344/lessons/77202674/concepts/799933660923}{31. Coalesce Memory Access, from Unit 2/Lesson 2 - GPU Hardware and Parallel Communication Patterns}
+
+Whenever a thread on the GPU reads or writes global memory, it always acceses a large chunk of memory at once.  
+
+Even if the thread needs to only access a smaller subset of that large chunk.  
+
+If other threads are making similar memory access, the GPU can exploit that and reuse that larger chunk.  
 
 We saw such access pattern is coalesced; GPU must efficient when threads read or write contiguous memory locations.  
 
@@ -1152,7 +1253,7 @@ $\forall \, i \in \lbrace i = i_x -r, i_x - r +M_x, i_x -r + 2M_x, \dots | i_x -
 \begin{gathered}
   \begin{aligned}
     & l_x := i + M_x j_x \in \mathbb{Z} \text{ with (enforcing) } 0 \leq l_x < L_x \\ 
-    & l_y := i + M_y j_y \in \mathbb{Z} \text{ with (enforcing) } 0 \leq l_y < L_y \\ 
+    & l_y := j + M_y j_y \in \mathbb{Z} \text{ with (enforcing) } 0 \leq l_y < L_y \\ 
     & s_{\text{in}}[i+r + (j+r)(M_x + 2r) ] = f^{(c)}(l_x + l_yL_x)
     \end{aligned}
 \end{gathered}
@@ -1732,7 +1833,89 @@ I will expound upon the excellent article from Mark Harris, ``Optimizing Paralle
 
 \subsection{Unit 4}
 
-\subsection{Unit 5}
+\subsection{Unit 5: Lesson 5 - Optimizing GPU Programs}
+
+\subsubsection{1. Quiz: Optimizing GPU Programs}  
+
+Quiz: principals of efficient GPU programming.  
+
+We want to 
+\begin{itemize}
+\item decrease time spent on memory operations ( we want to do more math; $\frac{\text{math}}{ \text{memory}}$
+\item coalesce global memory accesses
+\item avoid thread divergence
+\end{itemize}
+
+We don't want to necessarily 
+\begin{itemize}
+\item decrease arithmetic intensity
+\item do fewer memory operations per thread
+\item move all data to shared memory 
+\end{itemize}  
+
+Reasons; we want to \emph{maximize} arithmetic intensity!  
+
+\subsubsection{22. Quiz: Tiling}
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/109244577/concepts/1113439690923}{Tiling}
+
+For the kernel \verb|transpose_parallel_per_element_tiled(float in[], float out[])|, (cf. \href{https://github.com/ernestyalumni/cs344/blob/master/Lesson%20Code%20Snippets/Lesson%205%20Code%20Snippets/transpose.cu}{transpose cu}, 
+
+we desire
+\[
+B=A^T \text{ or } B_{ij} = A_{ji} \quad \, \forall \, i = 0,1,\dots L_x -1, \forall \, j = 0,1\dots L_y-1
+\]
+Consider $M_x=M_y=M$, with 
+\[
+\begin{aligned}
+& M_x \equiv \verb|blockDim.x| \\ 
+& M_y \equiv \verb|blockDim.y| 
+\end{aligned} \quad \, \begin{aligned}
+& i_x \equiv \verb|threadIdx.x| \\ 
+& i_y \equiv \verb|threadIdx.y| 
+\end{aligned} \quad \, \begin{aligned}
+& j_x \equiv \verb|blockIdx.x| \\ 
+& j_y \equiv \verb|blockIdx.y| 
+\end{aligned}
+\]
+and so
+\[
+\begin{aligned}
+	& i := i_x + j_x M_x \in \lbrace 0 ,1,\dots N_x M_x-1 \rbrace
+	& j := i_y + j_y M_y \in \lbrace 0 ,1,\dots N_y M_y-1 \rbrace
+\end{aligned}
+\]
+For the \emph{shared} indices, 
+\[
+\begin{aligned}
+	& i_{\text{sh}} = i_x \in \lbrace 0 ,1\dots M_x -1 \rbrace   \\
+	& j_{\text{sh}} = i_y \in \lbrace 0 ,1\dots M_y -1 \rbrace 
+\end{aligned}
+\]
+
+\[
+A_{\text{sh}} \in \mathbb{R}^{K^2} = \mathbb{R}^{K\times K} \in \verb|__shared__|
+\]
+Note that $\mathbb{R}^{K^2} = \mathbb{R}^{K\times K} \in \verb|__shared__|$ can be a 1-dim. (or 2-dim., multidimensional!) array in shared memory (!!!).  
+
+If $A\in \text{Mat}_{\mathbb{R}}(L_x,L_y)$, $B=A^T\in \text{Mat}_{\mathbb{R}}(L_y,L_x)$.  
+
+Globally, 
+\[
+B(j,i)=B(i_y+j_yM_y,i_x+j_xM_x)= A(i,j)=A(i_x+j_xM_x,i_y+j_yM_y)
+\]
+for 
+\[
+\begin{aligned}
+	& A_{\text{sh}} \in \mathbb{R}^{M_x M_y}   \\ 
+	& A_{\text{sh}}(j_{\text{sh}}, i_{\text{sh}}) = A_{ij} \\ 
+	& A_{\text{sh}}(i_{\text{sh}},j_{\text{sh}}) = A_(j_{\text{sh}} + j_x M_x, i_{\text{sh}} + j_y M_y) 
+\end{aligned}
+\]
+\[
+\Longrightarrow B(i_x + j_y M_y,i_y + j_xM_x) := A_{\text{sh}}(i_{\text{sh}}, j_{\text{sh}} ) = A(j_{\text{sh}} + j_xM_x, i_{\text{sh}} + j_y M_y )
+\]
+
 
 \subsubsection{Occupancy}
 
@@ -1762,9 +1945,24 @@ For Luebke's laptop, it's 49152 bytes, 2048, 1024 respectively, and 65536 total 
 
 \subsubsection{Thread Divergence}
 
-cf. \href{https://classroom.udacity.com/courses/cs344/lessons/109244577/concepts/1109210790923#}{Quiz: Swith Statements and Thread Divergence}
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/109244577/concepts/1109210790923#}{38. Quiz: Switch Statements and Thread Divergence, of Lesson 5 - Optimizing GPU Programs}
 
 Threads in warp is 32 (check hardware, usually this is the case for modern GPUs).  Only 32 threads in a warp, i.e. $2^5$.
+
+So for something like 
+\begin{lstlisting}
+switch (threadIdx.x % 64) { case 0 ... 63}
+kernel<<<1024,1>>>();
+\end{lstlisting}
+There are only 32 threads in a warp, and so only a maximum slowdown of "32" (corresponding to 32 threads, each starting and stopping sequentially, i.e. $0->1->2->3->...->30->31$, 1 after the other.  The other 32 threads in 64 threads will be assigned to another warp.  
+
+For 
+\begin{lstlisting}
+switch (threadIdx.y) { case 0 ... 31}
+kernel<<<64x16,1>>>();
+\end{lstlisting}
+or, i.e. \verb|kernel<<<(1,1),(64,16)>>>();|, a $64 \times 16$ thread block, i.e. $(M_x,M_y)=(64,16) = (2^6,2^4)$, CUDA launches thread warps along $x$ first, and then along $y$.  
+
 
 CUDA assigns thread IDs to warps:
 
@@ -1784,6 +1982,47 @@ Consider
 \]
 
 If $M_x/2^5 \in \mathbb{Z}^+$, i.e. $M_x/2^5\geq 1$, then threads in $x$-direction are in warps that branch (go to same case in if-else, or switch, case statement in kernel) to same case.
+
+
+\subsubsection{41. Quiz: thread Divergence in the Real World Part 1}
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/109244577/concepts/1109210850923}{Thread Divergence in the Real World Part 1}
+
+Example: Operating on a 1024 $\times 1024$ image, with special handling of pixels on the boundary (boundary condition), 
+
+The maximum branch divergence of any warp (32 threads) is 2-way.  
+
+That's because, if you consider a 1 pixel deep boundary condition at the (absolute) boundary of the grid, then for most 32-thread warps in the middle, there's no divergence.  At most a warp will include 1 boundary pixel, horizontally.  Warp that lies completely on a vertical boundary will call the boundary condition, all of those pixels.  So there's no divergence there either.  
+
+ \subsubsection{43. Thread Divergence in the Real World Part 3}
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/109244577/concepts/1100476720923}{Thread Divergence in the Real World Part 3} 
+\begin{itemize}
+\item Be aware of branch divergence
+\item "But don't freak out about it." -Luebke
+\end{itemize}
+
+Reducing branch divergence (general principles)
+\begin{itemize}
+\item Avoid branchy code 
+\begin{itemize}
+\item consider if adjacent threads will likely take different paths
+\end{itemize}
+\item Beware of large imbalance in thread workloads
+\end{itemize}
+
+\subsubsection{45. Host-GPU Interaction}
+cf. \href{https://classroom.udacity.com/courses/cs344/lessons/109244577/concepts/1109306840923}{Host-GPU Interaction} of Lesson 5- Optimizing GPU Programs
+
+\begin{itemize}
+\item 
+\item
+\end{itemize}
+
+\subsection{Streams}
+
+Stream is a sequence of operations that'll execute in order.  
+
+Type is 
+\verb|cudaStream_t|  
 
 \subsubsection{Problem Set 5}
 
@@ -1927,8 +2166,120 @@ The pseudocode that Owens gives in \href{https://classroom.udacity.com/courses/c
   }
   \end{lstlisting}
 
-
+\subsection{Lesson 7.1 Additional Parallel Computing}
   
+\subsubsection{4. Quiz: data Layout Transformation}
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/135649730/concepts/1378001110923}{1. Data layout transformation}
+
+Quiz: Global memory coalescing is important because:
+
+(modern) DRAM systesm transfer large chunks of data per transaction.  
+
+\subsubsection{Additional Data Transformation Methods}
+
+\subsubsection{6. Quiz: Burst Utilization}
+
+\href{https://classroom.udacity.com/courses/cs344/lessons/135649730/concepts/1375149760923}{Burst Utilization}
+
+As a reminder of what the difference between \textbf{Array of Structures} and \textbf{Structure of Arrays} are illustrated in these examples:
+
+\emph{Array of Structures}:
+\begin{lstlisting}
+struct foo {
+	float a;
+	float b;
+	float c;
+	float d;
+} A[8];
+\end{lstlisting}
+
+\emph{Structure of Arrays}
+\begin{lstlisting}
+struct foo { 
+	float a[8];
+	float b[8];
+	float c[8];
+	float d[8];
+} A;
+\end{lstlisting}
+
+Quiz: which layout will perform better on these codes?
+\begin{lstlisting}
+int i = threadIdx.x;
+A[i].a++;
+A[i].b += A[i].c * A[i].d;
+\end{lstlisting}
+
+and 
+
+\begin{lstlisting}
+int i = threadIdx.x;
+
+A.a[i]++;
+A.b[i] += A.c[i] + A.d[i];
+\end{lstlisting}
+
+\textbf{Array of Structures (AoS)}
+Example:
+\[
+\begin{gathered}
+	\lbrace 0 ,1,\dots M_x -1\rbrace \to \mathbb{R}^4 \\ 
+	i_x \mapsto (a_{i_x}, b_{i_x}, c_{i_x}, d_{i_x} ) \in \mathbb{R}^4 \equiv (\verb|float|)^4
+\end{gathered}
+\]
+In general, 
+\begin{equation}
+\begin{gathered}
+	\lbrace 0 ,1,\dots L-1 \rbrace \to \mathbb{K}^d \\ 
+i\in \mathbb{Z} \mapsto A(i) \in \mathbb{K}^d
+\end{gathered} \qquad \, (AoS)
+\end{equation}
+with field $\mathbb{K} = \mathbb{R},\mathbb{C}, \mathbb{Z}^+ \dots $ i.e. $\mathbb{K} \in \text{ \textbf{Type}} $ so that $\mathbb{K} = \verb|float, int |$.  
+
+So that 
+\[
+\begin{gathered}
+(\lbrace 0 ,1, \dots L-1 \rbrace \to \mathbb{K}^d) \to \mathbb{Z} \times \mathbb{K}^d \xrightarrow{ \text{ flatten } } \prod_{i=0}^{L-1} \mathbb{K}^d \\ 
+(i\mapsto A(i)) \mapsto (i,(A(i))^{\mu} )  \mapsto ((A(i))^1, (A(i))^2, \dots (A(i))^d)
+\end{gathered}
+\]
+\[
+(i, \mu) \mapsto \mu + id
+\]
+So for $t\equiv$ thread index  $=i$, \\
+$\mu + td$ address is "strided" by $d$.  
+
+\textbf{Structure of Arrays (SoA)}
+
+Example:
+\[
+\lbrace 0 ,1, \dots M_x-1\rbrace \times \lbrace 0 ,1, \dots M_x-1\rbrace \times \lbrace 0 ,1, \dots M_x-1\rbrace \times \lbrace 0 ,1, \dots M_x-1\rbrace = \lbrace 0 ,1, \dots M_x-1\rbrace^4
+\]
+In general
+\begin{equation}
+\prod_{\alpha = \lbrace a,b, \dots \rbrace} \lbrace 0 ,1, \dots L^{(\alpha)} -1 \rbrace \qquad \, (SoA)
+\end{equation}
+So that 
+\begin{equation}
+\begin{gathered}	
+\prod_{\alpha = \lbrace a,b, \dots \rbrace} \lbrace 0 ,1, \dots L^{(\alpha)} -1\rbrace \overset{ \text{flatten} }{ \to } \lbrace 0 ,1\dots \prod_{\alpha} L^{(\alpha)} \rbrace \\  
+i^{(\alpha)} \xrightarrow{ \text{ flatten } } \left( \sum_{\alpha' < \alpha } L^{(\alpha') } \right) + i^{(\alpha)}
+\end{gathered}
+\end{equation}
+
+So for $\forall \, i_x \equiv \verb|threadIdx.x |$, 
+or in general
+$\forall \, i \in \lbrace - ,1,\dots M_xN_x-1\rbrace = i_x+j_xM_x = $ \verb|threadIDx.x+blockDim.x * blockIdx.x|, 
+
+Want to consider, 
+\[
+\begin{gathered}
+	i^{(\alpha)} + \sum_{\alpha' < \alpha }L^{(\alpha')} \xrightarrow{f} i \\ 
+ f(i^{(\alpha)} + \sum_{\alpha' < \alpha} L^{(\alpha') } = i^{(\alpha)} + \sum_{\alpha' < \alpha} L^{(\alpha')} = i 
+\end{gathered}
+\]
+
 \subsection{Final for Udacity cs344}
 
 \subsubsection{Quiz: Final - Question 7}
@@ -2344,6 +2695,196 @@ Otherwise, a separate ``binning'' operation is needed:
 
   \url{https://github.com/ernestyalumni/cs344/tree/master/Problem%20Sets/Problem%20Set%205/histogram}
 
+\part{Notes on \text{Professional CUDA C Programming}, Cheng, Grossman, McKercher}
+
+cf. Chen, Grossman, and McKercher (2014) \cite{CGM2014}
+
+
+
+\section{CUDA Execution Model}
+cf. Ch. 3.  CUDA Execution Model 
+
+When kernel grid is launched, thread blocks of that kernel grid are distributed among available SMs for execution.  Once scheduled on SM, threads of a thread block execute concurrently only on that assigned SM.  
+
+CUDA employs \emph{Single Instruction Multiple Thread (SIMT)} architecture to manage and execute threads in groups of 32 called \emph{warps}.  
+
+All threads in warp execute same instruction at the same time.  Each thread has its own instruction address counter and register state, and carries out the current instruction on its own data.  Each SM partitions the thread blocks assigned to it into 32-thread warps that it then schedules for execution on available hardware resources.  
+
+SIMT allows multiple threads in same warp to execute independently.  Even though all threads in a warps start together at the same program address, it's possible for individual threads to have different behavior.  
+
+
+\subsection{Understanding the Nature of Warp Execution; Warps and Thread Blocks}  
+
+Once a thread block is scheduled to an SM, threads in thread block are further partitioned into warps.  A warp consists of 32 consecutive threads and all threads in a warp are executed in SIMT, i.e. all threads execute same instruction, and each thread carries out operation on its own private data.  
+
+\subsubsection{Warp Divergence }
+
+For example, consider the following statement:  
+\begin{lstlisting}  
+if (cond) {
+    ...   
+} else {
+    ...
+}
+\end{lstlisting}
+
+Suppose for 16 threads in a warp executing this code, \verb|cond| is \verb|true|, but for other 16 \verb|cond| is \verb|false|.  Then half of the warp will need to execute the instructions in the \verb|if| block, and the other half will need to execute the instructions in the \verb|else| block.  Threads in the same warp executing different instructions is referred to as \textbf{warp divergence.} 
+
+If threads of a warp diverge, the warp serially executes each branch path, disabling threads that do not take that path.  
+
+e.g. All threads within a warp must take both branches of the \verb|if ... then| statement.  If condition is \verb|true| for a thread, it executes the \verb|if| clause; otherwise, the thread stalls while waiting for that execution to complete.  
+
+
+\section{Streams and Concurrency}  
+cf. Ch. 6 Streams and Concurrency of  Chen, Grossman, and McKercher (2014) \cite{CGM2014}
+\subsubsection{Introducing Streams and Events}
+\begin{itemize}
+\item Functions in the CUDA API with \emph{synchronous behavior} block the host thread until they complete.  
+\item Functions in the CUDA API with \emph{asynchronous behavior} return control to host immediately after being called.  
+\end{itemize}  
+
+\subsubsection{CUDA Streams}
+\begin{itemize}
+\item \emph{NULL stream}, default stream the kernel launches, implicitly declared, and data transfers use if you don't explicitly specify a stream.  
+\item \emph{non-null streams} explicitly created and managed; if you want to overlap different CUDA operations, you must use non-null streams.  
+\end{itemize}
+
+Consider 
+
+\begin{lstlisting}
+cudaMemcpy(...,cudaMemcpyHostToDevice);|
+kernel<<<grid,block>>>(...);
+cudaMemcpy(..., cudaMemcpyDeviceToHost);|
+\end{lstlisting}
+
+From device perspective, all 3 operations are issued to default stream, and executed in order they were issued.  Device has no awareness any other host operations performed.  
+
+From host perspective, each data transfer is synchronous and forces idle host time while waiting for them to complete.  The kernel launch is \emph{asynchronous}, so host application almost immediately resumes execution afterwards.  
+
+When performing an asynchronous data trasfer, you must use pinned (or non-pageable) host memory.  Pinned memory can be allocated using either \verb|cudaMallocHost| or \verb|cudaHostAlloc|:  
+
+\begin{lstlisting}
+cudaError_t cudaMallocHost(void **ptr, size_t size);
+cudaError_t cudaHostAlloc(void **pHost, size_t size,unsigned int flags);
+\end{lstlisting}
+
+
+
+
+
+\part{More Parallel Computing}
+
+\section{Matrix Multiplication, tiled, with shared memory}
+
+Consider matrix multiplication:  
+\[
+\begin{aligned}
+	& A \in \text{Mat}_{\mathbb{K}}(N_i^A, N_j^A)  \\ 
+	& B \in \text{Mat}_{\mathbb{K}}(N_i^B, N_j^B)  \\
+	& C \in \text{Mat}_{\mathbb{K}}(N_i^C, N_j^C)  
+\end{aligned}
+\]
+
+$AB=C$, 
+\[
+\begin{aligned}
+	& N_i^A = N_i^C \equiv N^A \\ 
+	& N_j^A = N_i^B \equiv N^B \\ 
+	& N_j^C = N_j^B \equiv N^C 
+\end{aligned}
+\]
+
+\[
+C_{ij} = A_{ik}B_{kj} = \sum_{k=1}^N A_{ik} B_{kj} \qquad \, \forall \, \begin{aligned} & \quad \\ 
+	& i=1,2,\dots N^A \\
+	& j = 1,2,\dots N^C \end{aligned}
+\]
+
+Consider, given \emph{block size} $M\in \mathbb{Z}^+$, 
+\[
+\begin{aligned}
+	& j_y = 0,1,\dots \frac{N^A}{M} - 1 \equiv \verb|blockIdx.y| =: j_I \\
+	& j_x = 0,1,\dots \frac{N^C}{M} -1 \equiv \verb|blockIdx.x| =: j_J 
+\end{aligned}
+\]
+Given $A \in \text{Mat}(N_i^A, N_j^A)$, given $(i,j) \in (\mathbb{Z}^+)^2$, 
+
+As C++ works also with pointers as C, "point" the first element of our $A_{\text{sub}} \in \text{Mat}_{\mathbb{K}}(M,M)$ submatrix that we want, to where we "start from" in the "source" matrix $A$, which is at $A_{iM,jM}$:
+\[
+\begin{gathered}
+	A_{\text{sub}}(0,0):=A(iM,jM) 
+\end{gathered}
+\]
+and so this means that i.e. we had supposed $\begin{aligned} & \quad \\
+& i=0,1,\dots \frac{N_i^A}{M} - 1 \\
+& j=0,1\dots \frac{N_j^A}{M}-1 \end{aligned}$.  
+
+So consider 
+\[
+\begin{aligned}
+	& i = i_y +j_IM = 0,1,\dots N^A -1 \\ 
+	& j = i_x + j_JM = 0,1,\dots N^C - 1 
+\end{aligned}
+\]
+and so the crucial step is seen as 
+\[
+\begin{gathered}
+	C_{ij} = \sum_{k=0}^{N^B-1} A_{ik} B_{kj} = \sum_{j_K=0}^{\frac{N^B}{M}-1} \sum_{k=0}^{M-1} A_{i(k+j_KM)}B_{(k+j_KM), j}
+\end{gathered}
+\]
+
+I originally implemented matrix multiplication based on the CUDA C Programming Guide here at \href{https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/matmultShare.cu}{github : ernestyalumni/CompPhys/moreCUDA/matmultShare.cu}
+
+Indeed, the idea from the CUDA C Programming Guide is essentially the above - I will reiterate again, since it was important in P\"oppl's presentation for TUM in HPC - Algorithms and Applications (cf. \href{http://www5.in.tum.de/lehre/vorlesungen/hpc/WS16/tutorial/cuda_p2.pdf}{Introduction to CUDA}): given
+\[
+\begin{aligned}
+	& A \in \text{Mat}_{\mathbb{R}}(N_i^A,N_j^A) \\ 
+	& B \in \text{Mat}_{\mathbb{R}}(N_i^B,N_j^B) \\
+	& C \in \text{Mat}_{\mathbb{R}}(N_i^C,N_j^C) 
+\end{aligned}
+\]
+Necessarily, for 
+\begin{equation}
+\begin{gathered}
+AB=C \\
+A_{ik}B_{kj} =C_{ij}  \qquad \, \begin{aligned} & \qquad \\ 
+	& \forall \, i = 1,2\dots N_i^A \\ 
+	& \forall \, j = 1,2,\dots N_j^B \end{aligned}
+\end{gathered}
+\end{equation}
+we have to have 
+\[
+\begin{gathered}
+N_i^C = N_i^A \\
+N_j^C = N_j^B \\
+N_j^A = N^B_i
+\end{gathered}
+\]
+We sought thread warp coalescing, in conjunction with the so-called "row-major ordering" (also known as "row-major", "order") in the $x$-direction of thread block.  Keep that in mind for the grid, block thread(s) assignment strategy.  
+
+\subsubsection{Grid, block thread(s) assignment strategy for Matrix multiplication} 
+
+Consider $N_j^B \times N_i^A$ calculations, i.e. $(j,i) \in \lbrace 0,1\dots N_j^B - 1\rbrace \times \lbrace 0 ,1\dots N_i^A -1\rbrace \subset (\mathbb{Z}^+)^2 $.  
+
+For (thread block) size $M\times M \equiv \verb|dim3 dimBlock(M,M)|$.  
+
+Then, the number of thread blocks along each dim. of the grid would be $\frac{N_j^B+M-1}{M} = \lfloor \frac{N_j^B}{M} \rfloor , \, \frac{N_i^A + M-1}{M} = \lfloor \frac{N_i^A}{M} \rfloor $  
+
+Nevertheless, the whole concept of tiling, tiling pattern with shared memory, is encapsulated in this equation:
+\begin{equation}
+\begin{gathered}
+	C_{ij} = \sum_{k=0}^{N^B-1} A_{ik} B_{kj} = \sum_{j_K=0}^{\frac{N^B}{M}-1} \sum_{k=0}^{M-1} A_{i(k+j_KM)}B_{(k+j_KM), j}
+\end{gathered}
+\end{equation}
+
+
+
+\section{Dense Linear Algebra}
+
+cf. \href{https://www5.in.tum.de/lehre/vorlesungen/hpc/WS16/tutorial/sparse_02.pdf}{Dense Linear Algebra, HPC - Algorithms and Applications, Alexander P\"oppl, TUM}
+
+
+Bader, P\"{o}ppl, and Khakhutskyy \cite{BaPK2016}
 
 
 \part{C++ and Computational Physics}
@@ -5420,6 +5961,231 @@ Free-slip condition often imposed along line or plane of symmetry in problem, th
   
   \end{enumerate}
 
+\subsection{Specific problems and related boundary conditions, boundary specifications}
+
+\subsubsection{Plate an an angle to the inflow}
+
+For 
+\[
+\begin{aligned}
+	& y_0 := a_0 L_y \\ 
+	& y_1 := a_1 L_y 
+\end{aligned}
+\]
+for $0\leq a_0 < a_1 \leq 1$, e.g. $a_0 = \frac{2}{5}$, $a_1 = \frac{3}{5}$.  
+
+Consider an inclined plate to be an obstacle
+\[
+\sum_{i=y_0+1}^{y_1-1} \sum_{j=i-1}^{i+1} \verb|FLAG|_{ij}
+\]
+Consider $y=Ax+b$, $y,x,A,b\in \mathbb{R}$, and consider
+\[
+\begin{aligned}
+	& y \geq Ax + b_0 \\
+	& y \leq Ax + b_1 
+\end{aligned}
+\]
+and so for the 2 points "at the bottom edge of this inclined plate", 
+\[
+\begin{aligned}
+	& (y_0 + 1, y_0 + 1-1) = (y_0 + 1, y_0) \\ 
+	& (y_1 - 1 , y_1 -1 -1 ) = (y_1 - 1, y_1 - 2) 
+\end{aligned}
+\]
+\[
+\begin{gathered}
+	y_0 = A(y_0 + 1) +b_ 0 \\ 
+y_1-2 = A(y_1 - 1) +b_0 \\
+y_1-2- y_0 = A(y_1-y_0) -2A \\ 
+A = \frac{y_1-y_0  - 2}{y_1-y_0-2 }  = 1 
+\end{gathered}
+\]
+$b_0 = -1$.  
+
+So $y \geq x -1$.  
+
+Likewise $y\leq x+1$ (plug in values).  
+
+So in parallel, consider $\forall \, i_x = \lbrace y_0 + 1 , y_0 + 2,\dots y_1 - 1 \rbrace$, access memory values at $j=i_x-1,i_x,i_x+1$.  
+
+Even though the "striding", or stride, for accessing $j=i_x-1, i_x, i_x+1$ is $(L_x+2)$, each of the threads for $\forall \, i_x = \lbrace y_0 +1, y_0 + 2, \dots y_1-1\rbrace$ will actually be concurrent.  
+
+\subsection{Shared memory tiling scheme applied to the staggered grid; i.e. shared memory tiling scheme for only the "inner cells", excluding halo of radius 1 boundary "cells"}
+
+I will first review the shared memory tiling scheme over the entire grid of absolute size $Lx\times Ly$.  
+
+
+
+
+For 
+\[
+\begin{aligned}
+	& k_x := i_x + j_x M_x \in \lbrace 0 ,1\dots N_x*M_x-1 \rbrace \\
+	& k_y := i_y + j_y M_y \in \lbrace 0 ,1\dots N_y*N_y-1 \rbrace
+\end{aligned}
+\]
+Let 
+\[
+\begin{aligned}
+	& S_x:= M_x + 2r \in \mathbb{Z}^+ \\ 
+	& S_y:= M_y + 2r \in \mathbb{Z}^+ \\ 
+\end{aligned}
+\]
+
+Then   \\
+
+$\forall \, i \in \lbrace i = i_x, i_x + M_x, \dots | i_x \leq i < S_x \rbrace $ \\ 
+\phantom{ $\forall \, $ \qquad \, } $\forall \, j \in \lbrace j = i_y , i_y + M_y \dots | i_y \leq j < S_y \rbrace$, \\
+\phantom{ $\forall \, $ \qquad \, \qquad \, } $\begin{aligned} & \quad \\
+	& l_x := i-r + M_x j_x \in \lbrace -r , -r+1 , \dots -r +M_x -1\rbrace + M_x j_x \\ 
+	& l_y := j-r + M_y j_y \in \lbrace -r , -r+1 , \dots -r +M_y -1\rbrace + M_y j_y \\ 
+\end{aligned}$ \\
+
+and then load input data into shared memory:
+
+\begin{equation}
+	s_{\text{in}}[i+jS_x] := f^{(c)}(l_x + l_y L_x) \text{ with } \begin{aligned} & \qquad \, \\ & 0 \leq i < S_x \\ 
+& 0 \leq j < S_y \end{aligned} \qquad \,  \begin{aligned} & \qquad \, \\ & 0 \leq l_x < L_x \\ 
+& 0 \leq l_y < L_y \end{aligned}
+\end{equation}
+If $k_x\geq L_x$ or $k_y \geq L_y$, then end or return (check condition).  
+
+The actual stencil calculation is performed as follows: \\
+$\forall \, \nu_y = 0,1,\dots W-1 $\\ 
+\phantom{$\forall \, $ \qquad \, } $k_y^{\text{st}} := s_y + \nu_y - r $ \\ 
+\phantom{$\forall \, $ \qquad \, } $\forall \, \nu_x := 0,1,\dots W-1 $ \\ 
+\phantom{$\forall \, $ \qquad \qquad \, \, } $k_x^{\text{st}} := s_x + \nu_x- r $
+
+\begin{equation}
+	g^{(c)}(k) = \sum_{\nu_y=0}^{W-1} \sum_{\nu_x=0}^{W-1} c_{\nu =\nu_x +W\nu_y} s_{\text{in}}[k_x^{\text{st}} + k_y^{\text{st}}S_x]
+\end{equation}
+with $c_{\nu = \nu_x+W\nu_y} \equiv c(\nu_x,\nu_y)$ and $k:= k_x + L_x*k_y$.
+
+  Now, we want to deal with applying the shared memory tiling scheme on a staggered grid, so threads aren't launched on the entire (staggered) grid, but only on inner cells.  
+
+Examine each step of the loading input data into shared memory procedure above: for $i_x \equiv \verb|threadIdx.x|$, $i_y \equiv \verb|threadIdx.y|$, 
+\[
+\begin{aligned}
+	& i_x = 0 ,1\dots M_x -1 \\ 
+	& i_y = 0,1 \dots M_y-1
+\end{aligned}
+\]
+and for the \verb|for| loops, 
+\[
+\begin{gathered}
+i\in \lbrace i_x,i_x+M_x,\dots | i_x\leq i < S_x := M_x +2r \rbrace \\
+i\in \lbrace 0,M_x\rbrace, \lbrace 1,M_x+1 \rbrace, \dots \lbrace 2r-1, M_x+2r-1\rbrace , \lbrace 2r \rbrace, \lbrace 2r +1 \rbrace, \dots \lbrace M_x -1  \rbrace, 
+\end{gathered}
+\]
+e.g. for $r=1$, 
+\[
+i\in \lbrace 0 , M_x \rbrace, \lbrace 1, M_x +1 \rbrace, \lbrace 2 \rbrace, \lbrace 3 \rbrace, \dots  \lbrace M_x-1 \rbrace, 
+\]
+and similarly, 
+\[
+\begin{gathered}
+j \in \lbrace i_y,i_y+M_y,\dots | i_y\leq j < S_y := M_y +2r \rbrace \\
+j\in \lbrace 0,M_y\rbrace, \lbrace 1,M_y+1 \rbrace, \dots \lbrace 2r-1, M_y+2r-1\rbrace , \lbrace 2r \rbrace, \lbrace 2r +1 \rbrace, \dots \lbrace M_y -1  \rbrace, 
+\end{gathered}
+\]
+
+Then, $l_x,l_y$ are defined:
+\begin{equation}
+\begin{gathered}
+	l_x:= i-r+M_xj_x \in \\
+	\lbrace -r+M_xj_x, -r+M_x(j_x+1) \rbrace , 	\lbrace 1-r+M_xj_x, 1-r+M_x(j_x+1) \rbrace , \dots \lbrace r-1+M_xj_x , r-1 + M_x(j_x +1)\rbrace \dots \\
+\dots  \lbrace r + M_xj_x \rbrace , 	\lbrace r+1+M_xj_x \rbrace , \dots 	\lbrace -1-r + M_x(j_x+1) \rbrace 
+\end{gathered}
+\end{equation}
+\begin{equation}
+\begin{gathered}
+	l_y:= j-r+M_yj_y \in \\
+	\lbrace -r+M_yj_y, -r+M_y(j_y+1) \rbrace , 	\lbrace 1-r+M_yj_y, 1-r+M_y(j_y+1) \rbrace , \dots \lbrace r-1+M_yj_y , r-1 + M_y(j_y +1)\rbrace \dots \\
+\dots  \lbrace r + M_yj_y \rbrace , 	\lbrace r+1+M_yj_y \rbrace , \dots 	\lbrace -1-r + M_y(j_y+1) \rbrace 
+\end{gathered}
+\end{equation}
+
+Now consider staggered grid:
+\[
+\begin{aligned}
+&	k_x \in \lbrace 0 ,1\dots N_xM_x-1\rbrace \text{ but where } L_x < N_x M_x \leq L_x+M_x-1 \\ 
+&	k_y \in \lbrace 0 ,1\dots N_yM_y-1\rbrace \text{ but where } L_y < N_y M_y \leq L_y+M_y-1 
+\end{aligned}
+\]
+but the "absolute" indices we want to loop over, for $\|verb \| \in \mathbb{Z}^{(l_x+2)\times (L_y+2)}$ are only \verb|FLAG|'s "inner cells".  
+\[
+\begin{aligned}
+	& i := 1,2\dots L_x \\ 
+	& j := 1,2\dots L_y 
+\end{aligned}
+\]
+Note the 1-to-1 correspondence: 
+\[
+\begin{aligned}
+	& i = k_x +1 \\ 
+	& j= k_y +1
+\end{aligned}
+\]
+
+To me, at least, I'm bewildered with how to proceed, as this is a difficult problem, so I will begin to check corner cases and easy, simple cases.  
+
+Let $r=1$.  
+
+Let $j_x=j_y=0$.  
+
+Then for 
+\[
+\begin{aligned}
+	& i\in \lbrace 0 , M_x \rbrace, \lbrace 1, M_x +1 \rbrace, \lbrace 2 \rbrace, \lbrace 3 \rbrace, \dots  \lbrace M_x-1 \rbrace \\
+& j\in \lbrace 0 , M_y \rbrace, \lbrace 1, M_y +1 \rbrace, \lbrace 2 \rbrace, \lbrace 3 \rbrace, \dots  \lbrace M_y-1 \rbrace 
+\end{aligned}
+\]
+and so consider 
+\[
+\begin{aligned}
+& l_x = i+1-r +M_xj_x = i+M_xj_x \\ 
+& l_y = j+1-r +M_yj_y = j+M_yj_y 
+\end{aligned}
+\]
+Clearly,for $j_x=j_y=0$, the correct cells are loaded from input $f(l_x+(L_x+2)l_y) \xleftarrow{ \text{flatten}} f(l_x,l_y)$ (note the "special", i.e. particular "striding" or stride of $L_x+2$ for a staggered grid).  
+
+For $J_x=1$, $j_y=0$, 
+\[
+l_x=i+M_x \in \lbrace M_x,2M_x\rbrace , \lbrace M_x+1,2M_x +1\rbrace , \lbrace 2+M_x\rbrace, \lbrace 3+M_x\rbrace , \dots \lbrace 2M_x-1\rbrace
+\]
+which accesses $l_x=M_x$, which lies within the "radius" for "halo" cells of the "next" thread block over.  By induction, we set 
+\[
+\begin{aligned}
+	& l_x := i+M_xj_x \\ 
+	& l_y := j + M_yj_y 
+\end{aligned}
+\]
+which correctly loads the input array.  
+
+Next, we have to do the actual stencil computation.  
+
+For "filterwidth" $W=2r+1$, consider $\begin{aligned} & \quad \\
+	& \nu_x=0,1\dots W-1 \\
+& \nu_y = 0,1\dots W-1 \end{aligned}$.  For $r=1$, $\nu_x, \nu_y = 0,1,2$
+
+We want to consider when $\nu_x,\nu_y = \lbrace 0,2 \rbrace = \lbrace 0 ,W-1\rbrace$, $\forall \, s_x = i_x+r$, $s_y = i_y+r$.  So consider 
+\[
+\begin{aligned}
+	& s_{\text{in}}( s_x+0 - r, s_y + 1-r) , \quad \, & s_{\text{in}}( s_x+2 - r, s_y + 1-r)  \\
+	& s_{\text{in}}( s_x+1 - r, s_y + 0-r) , \quad \, &  s_{\text{in}}( s_x+1 - r, s_y + 2-r) 
+\end{aligned}
+\]
+and corresponding flags for 
+\[
+\begin{aligned}
+	& \verb|B_W| & \verb|B_0| \\
+	& \verb|B_S| & \verb|B_N| 
+\end{aligned}
+\]respectively (Ost is east in Deutsche, German, hence the "O").  
+
+
+
+
 cf. 2.2.2. Conservation of Momentum, Ch. 2 The Mathematical Description of Flows, Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}, pp. 16
 
 For incompressible fluids,
@@ -5895,6 +6661,70 @@ Compare this with the parallelized version:
 \end{itemize}
 \textbf{Algorithm 3}. Parallel version, pp. 115 of Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}
 
+\section{Solving Poisson equation's by the preconditioned conjugate gradient method}
+
+The Poisson equation comes into play when determining (solving for) the pressure $p$ in the incompressible Navier-Stokes equations for fluid flow.  Let us review how this comes about.  
+
+Recall the full incompressible Navier-Stokes equations, which comes from momentum conservation, and mass conservation, respectively:
+\begin{equation}\label{Eq:IncompNavSt}
+\begin{gathered}
+	\frac{ \partial \mathbf{u}}{ \partial t} + \ \frac{ \partial u^j \mathbf{u}}{ \partial x^j} + \text{grad}p = \frac{1}{\text{Re}} \Delta \mathbf{u} + \mathbf{g}^*  \\
+\text{div}\mathbf{u} = 0 
+\end{gathered}
+\end{equation}
+Using the incompressibility condition 
+\[
+\text{div}\mathbf{u} = 0
+\]
+then exchanging the partial derivative over time with divergence $\text{div}$ (we should be able to do this if there is a foliation over time $t\in \mathbb{R}$, i.e. "time-slices" of (spatial) Riemannian manifold $N$):
+\begin{equation}
+	\text{div}\frac{\partial \mathbf{u} }{ \partial t} = \frac{ \partial }{ \partial t} \text{div} \mathbf{u} = 0 
+\end{equation}
+and so applying the divergence $\text{div}$ to Eq. \ref{Eq:IncompNavSt}, we obtain
+\begin{equation}\label{Eq:IncompNavStdiv}
+\text{div}\text{grad}p = \Delta p = \text{div} \left( \frac{ - \partial (u^j \mathbf{u} ) }{ \partial x^j} + \frac{1}{\text{Re}} \Delta \mathbf{u} + \mathbf{g}^* \right)
+\end{equation}
+
+Now, considering the right-hand side (RHS) of Eq. \ref{Eq:IncompNavStdiv}, we effectively add $0$ via the incompressible condition $\text{div}\mathbf{u}=0$:
+\[
+\begin{gathered}
+	\text{div} \left( \frac{ - \partial (u^j \mathbf{u} ) }{ \partial x^j} + \frac{1}{\text{Re}} \Delta \mathbf{u} + \mathbf{g}^* \right) = \text{div} \left( \frac{ - \partial (u^j \mathbf{u} ) }{ \partial x^j} + \frac{1}{\text{Re}} \Delta \mathbf{u} + \mathbf{g}^* \right) + \text{div} \frac{ \partial \mathbf{u}  }{ \partial t} = \text{div} \left( \frac{ - \partial (u^j \mathbf{u} ) }{ \partial x^j} + \frac{1}{\text{Re}} \Delta \mathbf{u} + \mathbf{g}^* + \frac{ \partial \mathbf{u} }{ \partial t} \right) = \\
+=: \text{div} \left( \frac{ \partial }{ \partial t} (F,G) \right) =\frac{ \partial }{ \partial t} \text{div}(F,G)
+\end{gathered}
+\]
+where we've defined $F,G \in C^{\infty}(\mathbb{R}\times N)$:
+\begin{equation}
+\begin{gathered}
+	\begin{aligned}
+	& F = F(t,x) \in C^{\infty}(\mathbb{R}\times N) \\ 
+	& G = G(t,x) \in C^{\infty}(\mathbb{R}\times N) 
+\end{aligned} \\	 \text{ where }  \\
+\begin{aligned}
+	&  \frac{- \partial (u^j \mathbf{u} ) }{ \partial x^j} + \frac{1}{\text{Re}} \Delta \mathbf{u} + \mathbf{g}^* + \frac{ \partial \mathbf{u} }{ \partial t} =: \frac{ \partial }{ \partial t}(F,G)
+\end{aligned}
+\end{gathered}
+\end{equation}
+to be components of this time-dependent vector field over $N$.  I've only defined 2 components $F,G$ for the 2-dimensional case, but easily, arbitrarily finite number of components can be defined.  
+
+This $F,G$ is the "continuous" version of the discretized $F,G$ in  Griebel, Dornseifer, and Neunhoeffer (1997) \cite{GDN1997}.  
+
+Thus, we see how the Poisson equation comes into play for incompressible Navier-Stokes equations, in order to solve for the pressure $p$:
+\begin{equation}
+\Delta p = \frac{ \partial }{ \partial t} \text{div}(F,G)
+\end{equation}
+Let's compare this equation with the general form of the Poisson equation, for $p,f\in C^{\infty}(N)$, for (Riemannian) manifold $N$ (e.g. $N=\mathbb{R}^2, \mathbb{R}^3$):
+\begin{equation}
+\text{div}\text{grad} p = \Delta p = f
+\end{equation}
+
+%Let's make a change of notation (simply because prevailing literature uses $u$ instead of $p$ to denote the scalar-valued function acted upon by the Laplacian $\Delta$) and let's drop the time-dependence (because we sought to consider the quantities of $p \equiv u$ and $f$ at a specific point in time $t$, and not their changes in time, we can do this).  
+Let's drop the time-dependence (because we sought to consider the quantities of $p$ and $f$ at a specific point in time $t$, and not their changes in time, we can do this) and focus upon solving the Poisson equation..  
+
+For $p\in C^{\infty}(N)$, consider how the (second order) central (finite) difference discretization of the Laplacian leads to a so-called "sparse" matrix.  
+
+M. Ament, G. Knittel, D. Weiskopf, W. Straßer.  \emph{A Parallel Preconditioned Conjugate Gradient Solver for the Poisson Problem on a Multi-GPU Platform}  (2010)
+\url{http://www.vis.uni-stuttgart.de/~amentmo/docs/ament-pcgip-PDP-2010.pdf}
+
 
 
  
@@ -6181,7 +7011,7 @@ If $q= 50 e^x$, and consider that
 \int  50 e^x \phi_j \text{vol}^d = \frac{50}{ \Delta x_{i-1} } (xe^x- e^x - x_{i-1} e^x)
 \]
 
-\part{CUB}
+\part{CUB, NCCL}
 
 \section{CUB}
 
@@ -6237,6 +7067,8 @@ In reality, what's really going on is the flatten functor, necessitated by just 
   \end{gathered}
   \end{equation}
 with $M_x\leq 1024$ (hardware enforced)
+
+\section{NCCL - Optimized primitives for collective multi-GPU communication}
 
 \section{Theano's scan}
 
@@ -6324,6 +7156,11 @@ John Owens.  David Luebki.  \emph{Intro to Parallel Programming}.  \emph{CS344}.
   
 \url{http://arxiv.org/abs/1312.1445} Also, \url{https://github.com/udacity/cs344}  
 
+\bibitem{CGM2014}
+John Cheng, Max Grossman, Ty McKercher.  \textbf{Professional CUDA C Programming}.  1st Edition.  Wrox; 1 edition (September 9, 2014).  ISBN-13: 978-1118739327
+
+
+
 \bibitem{CS229}
 CS229 Stanford University.  \url{http://cs229.stanford.edu/materials.html}
 
@@ -6333,6 +7170,9 @@ Richard Fitzpatrick.  ``Computational Physics.''  \url{http://farside.ph.utexas.
 
 \bibitem{Hjor2015}
  M. Hjorth-Jensen, \textbf{Computational Physics}, University of Oslo (2015) \url{http://www.mn.uio.no/fysikk/english/people/aca/mhjensen/}
+
+\bibitem{BaPK2016}
+Prof. Dr. Michael Bader (\emph{Lecturer});  Alexander Pöppl, Valeriy Khakhutskyy.  (\emph{Tutorials}).  HPC - Algorithms and Applications - Winter 16.  Winter 16/17.  \textbf{TUM}.  \url{https://www5.in.tum.de/wiki/index.php/HPC_-_Algorithms_and_Applications_-_Winter_16}  
 
 \bibitem{Stro2013}
  Bjarne Stroustrup.  \textbf{A Tour of C++} (C++ In-Depth Series). Addison-Wesley Professional.   2013. 
