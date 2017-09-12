@@ -10,7 +10,9 @@
 
 \documentclass[10pt]{amsart}
 \pdfoutput=1
-\usepackage{mathtools,amssymb,lipsum,caption}
+%\usepackage{mathtools,amssymb,lipsum,caption}
+\usepackage{mathtools,amssymb,caption}
+
 
 \usepackage{graphicx}
 \usepackage{hyperref}
@@ -2343,6 +2345,198 @@ Otherwise, a separate ``binning'' operation is needed:
 \href{https://github.com/ernestyalumni/cs344/tree/master/Problem%20Sets/Problem%20Set%205/histogram}{ernestyalumni/cs344/Problem Sets/Problem Set 5/histogram/}
 
   \url{https://github.com/ernestyalumni/cs344/tree/master/Problem%20Sets/Problem%20Set%205/histogram}
+
+
+
+
+\part{Notes on \text{Professional CUDA C Programming}, Cheng, Grossman, McKercher}
+cf. Cheng, Grossman, and McKercher (2014) \cite{CGM2014}
+\section{CUDA Execution Model}
+cf. Ch. 3.  CUDA Execution Model 
+
+When kernel grid is launched, thread blocks of that kernel grid are distributed among available SMs for execution.  Once scheduled on SM, threads of a thread block execute concurrently only on that assigned SM.  
+
+CUDA employs \emph{Single Instruction Multiple Thread (SIMT)} architecture to manage and execute threads in groups of 32 called \emph{warps}.  
+
+All threads in warp execute same instruction at the same time.  Each thread has its own instruction address counter and register state, and carries out the current instruction on its own data.  Each SM partitions the thread blocks assigned to it into 32-thread warps that it then schedules for execution on available hardware resources.  
+
+SIMT allows multiple threads in same warp to execute independently.  Even though all threads in a warps start together at the same program address, it's possible for individual threads to have different behavior.  
+
+
+\subsubsection{GPU Core Versus CPU Core}  
+
+\begin{itemize}
+	\item CPU core, relatively heavy-weight, is designed for very complex control logic, optimizing latency $T$, namely $T(1)$, with $n_{\text{ops}}=1$.  
+	\item GPU core, relatively light-weight, optimized for data-parallel tasks with simpler control logic, optimizing for throughput   
+\end{itemize}
+cf. pp. 8 of Cheng, Grossman, and McKercher (2014) \cite{CGM2014}
+
+\emph{GPU capability}, described by 
+\begin{itemize}
+	\item number of CUDA cores  
+	\item Memory size
+\end{itemize}
+
+\emph{GPU performance}, describe by 
+\begin{itemize}
+	\item \emph{Peak computational performance} $:=$ how many single-precision or double-precision floating point calculations that can be processed per second.  (gflops (billion floating-point operations per second) or tflops (trillion floating-point calculations per second)).  
+	\begin{itemize}
+		\item EY : 20170911 Peak computational performance $=$ (compute) throughput (???)
+	\end{itemize}
+	\item \textbf{Memory bandwidth} $:=$ ratio at which data can be read from or stored to memory; gigabytes per second, GB/s
+\end{itemize}
+cf. pp. 8 of Cheng, Grossman, and McKercher (2014) \cite{CGM2014}
+
+CUDA kernels have no support for \emph{static} variables.  
+
+
+
+cf. pp. 38 of Cheng, Grossman, and McKercher (2014) \cite{CGM2014}
+
+
+
+\subsection{Understanding the Nature of Warp Execution; Warps and Thread Blocks}  
+
+Once a thread block is scheduled to an SM, threads in thread block are further partitioned into warps.  A warp consists of 32 consecutive threads and all threads in a warp are executed in SIMT, i.e. all threads execute same instruction, and each thread carries out operation on its own private data.  
+
+\subsubsection{Warp Divergence }
+For example, consider the following statement:  
+\begin{lstlisting}  
+if (cond) {
+...   
+} else {
+...
+}
+\end{lstlisting}
+
+Suppose for 16 threads in a warp executing this code, \verb|cond| is \verb|true|, but for other 16 \verb|cond| is \verb|false|.  Then half of the warp will need to execute the instructions in the \verb|if| block, and the other half will need to execute the instructions in the \verb|else| block.  Threads in the same warp executing different instructions is referred to as \textbf{warp divergence.} 
+
+If threads of a warp diverge, the warp serially executes each branch path, disabling threads that do not take that path.  
+
+e.g. All threads within a warp must take both branches of the \verb|if ... then| statement.  If condition is \verb|true| for a thread, it executes the \verb|if| clause; otherwise, the thread stalls while waiting for that execution to complete.  
+
+
+
+
+\section{Streams and Concurrency}  
+cf. Ch. 6 Streams and Concurrency of  Chen, Grossman, and McKercher (2014) \cite{CGM2014}
+\subsubsection{Introducing Streams and Events}
+\begin{itemize}
+	\item Functions in the CUDA API with \emph{synchronous behavior} block the host thread until they complete.  
+	\item Functions in the CUDA API with \emph{asynchronous behavior} return control to host immediately after being called.  
+\end{itemize}  
+\subsubsection{CUDA Streams}
+\begin{itemize}
+	\item \emph{NULL stream}, default stream the kernel launches, implicitly declared, and data transfers use if you don't explicitly specify a stream.  
+	\item \emph{non-null streams} explicitly created and managed; if you want to overlap different CUDA operations, you must use non-null streams.  
+\end{itemize}
+Consider 
+\begin{lstlisting}
+cudaMemcpy(...,cudaMemcpyHostToDevice);|
+kernel<<<grid,block>>>(...);
+cudaMemcpy(..., cudaMemcpyDeviceToHost);|
+\end{lstlisting}
+From device perspective, all 3 operations are issued to default stream, and executed in order they were issued.  Device has no awareness any other host operations performed.  
+From host perspective, each data transfer is synchronous and forces idle host time while waiting for them to complete.  The kernel launch is \emph{asynchronous}, so host application almost immediately resumes execution afterwards.  
+When performing an asynchronous data trasfer, you must use pinned (or non-pageable) host memory.  Pinned memory can be allocated using either \verb|cudaMallocHost| or \verb|cudaHostAlloc|:  
+\begin{lstlisting}
+cudaError_t cudaMallocHost(void **ptr, size_t size);
+cudaError_t cudaHostAlloc(void **pHost, size_t size,unsigned int flags);
+\end{lstlisting}
+\part{More Parallel Computing}
+\section{Matrix Multiplication, tiled, with shared memory}
+Consider matrix multiplication:  
+\[
+\begin{aligned}
+& A \in \text{Mat}_{\mathbb{K}}(N_i^A, N_j^A)  \\ 
+& B \in \text{Mat}_{\mathbb{K}}(N_i^B, N_j^B)  \\
+& C \in \text{Mat}_{\mathbb{K}}(N_i^C, N_j^C)  
+\end{aligned}
+\]
+$AB=C$, 
+\[
+\begin{aligned}
+& N_i^A = N_i^C \equiv N^A \\ 
+& N_j^A = N_i^B \equiv N^B \\ 
+& N_j^C = N_j^B \equiv N^C 
+\end{aligned}
+\]
+\[
+C_{ij} = A_{ik}B_{kj} = \sum_{k=1}^N A_{ik} B_{kj} \qquad \, \forall \, \begin{aligned} & \quad \\ 
+& i=1,2,\dots N^A \\
+& j = 1,2,\dots N^C \end{aligned}
+\]
+Consider, given \emph{block size} $M\in \mathbb{Z}^+$, 
+\[
+\begin{aligned}
+& j_y = 0,1,\dots \frac{N^A}{M} - 1 \equiv \verb|blockIdx.y| =: j_I \\
+& j_x = 0,1,\dots \frac{N^C}{M} -1 \equiv \verb|blockIdx.x| =: j_J 
+\end{aligned}
+\]
+Given $A \in \text{Mat}(N_i^A, N_j^A)$, given $(i,j) \in (\mathbb{Z}^+)^2$, 
+As C++ works also with pointers as C, "point" the first element of our $A_{\text{sub}} \in \text{Mat}_{\mathbb{K}}(M,M)$ submatrix that we want, to where we "start from" in the "source" matrix $A$, which is at $A_{iM,jM}$:
+\[
+\begin{gathered}
+A_{\text{sub}}(0,0):=A(iM,jM) 
+\end{gathered}
+\]
+and so this means that i.e. we had supposed $\begin{aligned} & \quad \\
+& i=0,1,\dots \frac{N_i^A}{M} - 1 \\
+& j=0,1\dots \frac{N_j^A}{M}-1 \end{aligned}$.  
+So consider 
+\[
+\begin{aligned}
+& i = i_y +j_IM = 0,1,\dots N^A -1 \\ 
+& j = i_x + j_JM = 0,1,\dots N^C - 1 
+\end{aligned}
+\]
+and so the crucial step is seen as 
+\[
+\begin{gathered}
+C_{ij} = \sum_{k=0}^{N^B-1} A_{ik} B_{kj} = \sum_{j_K=0}^{\frac{N^B}{M}-1} \sum_{k=0}^{M-1} A_{i(k+j_KM)}B_{(k+j_KM), j}
+\end{gathered}
+\]
+I originally implemented matrix multiplication based on the CUDA C Programming Guide here at \href{https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/matmultShare.cu}{github : ernestyalumni/CompPhys/moreCUDA/matmultShare.cu}
+Indeed, the idea from the CUDA C Programming Guide is essentially the above - I will reiterate again, since it was important in P\"oppl's presentation for TUM in HPC - Algorithms and Applications (cf. \href{http://www5.in.tum.de/lehre/vorlesungen/hpc/WS16/tutorial/cuda_p2.pdf}{Introduction to CUDA}): given
+\[
+\begin{aligned}
+& A \in \text{Mat}_{\mathbb{R}}(N_i^A,N_j^A) \\ 
+& B \in \text{Mat}_{\mathbb{R}}(N_i^B,N_j^B) \\
+& C \in \text{Mat}_{\mathbb{R}}(N_i^C,N_j^C) 
+\end{aligned}
+\]
+Necessarily, for 
+\begin{equation}
+\begin{gathered}
+AB=C \\
+A_{ik}B_{kj} =C_{ij}  \qquad \, \begin{aligned} & \qquad \\ 
+& \forall \, i = 1,2\dots N_i^A \\ 
+& \forall \, j = 1,2,\dots N_j^B \end{aligned}
+\end{gathered}
+\end{equation}
+we have to have 
+\[
+\begin{gathered}
+N_i^C = N_i^A \\
+N_j^C = N_j^B \\
+N_j^A = N^B_i
+\end{gathered}
+\]
+We sought thread warp coalescing, in conjunction with the so-called "row-major ordering" (also known as "row-major", "order") in the $x$-direction of thread block.  Keep that in mind for the grid, block thread(s) assignment strategy.  
+\subsubsection{Grid, block thread(s) assignment strategy for Matrix multiplication} 
+Consider $N_j^B \times N_i^A$ calculations, i.e. $(j,i) \in \lbrace 0,1\dots N_j^B - 1\rbrace \times \lbrace 0 ,1\dots N_i^A -1\rbrace \subset (\mathbb{Z}^+)^2 $.  
+For (thread block) size $M\times M \equiv \verb|dim3 dimBlock(M,M)|$.  
+Then, the number of thread blocks along each dim. of the grid would be $\frac{N_j^B+M-1}{M} = \lfloor \frac{N_j^B}{M} \rfloor , \, \frac{N_i^A + M-1}{M} = \lfloor \frac{N_i^A}{M} \rfloor $  
+Nevertheless, the whole concept of tiling, tiling pattern with shared memory, is encapsulated in this equation:
+\begin{equation}
+\begin{gathered}
+C_{ij} = \sum_{k=0}^{N^B-1} A_{ik} B_{kj} = \sum_{j_K=0}^{\frac{N^B}{M}-1} \sum_{k=0}^{M-1} A_{i(k+j_KM)}B_{(k+j_KM), j}
+\end{gathered}
+\end{equation}
+\section{Dense Linear Algebra}
+cf. \href{https://www5.in.tum.de/lehre/vorlesungen/hpc/WS16/tutorial/sparse_02.pdf}{Dense Linear Algebra, HPC - Algorithms and Applications, Alexander P\"oppl, TUM}
+Bader, P\"{o}ppl, and Khakhutskyy \cite{BaPK2016}
+
 
 
 
@@ -6323,6 +6517,11 @@ Jared Culbertson, Kirk Sturtz.  \emph{Bayesian machine learning via category the
 John Owens.  David Luebki.  \emph{Intro to Parallel Programming}.  \emph{CS344}.  \textbf{\href{https://www.udacity.com/}{Udacity}}  
   
 \url{http://arxiv.org/abs/1312.1445} Also, \url{https://github.com/udacity/cs344}  
+
+\bibitem{CGM2014}
+John Cheng, Max Grossman, Ty McKercher.  \textbf{Professional CUDA C Programming}.  1st Edition.  Wrox; 1 edition (September 9, 2014).  ISBN-13: 978-1118739327
+
+Also, see \url{https://github.com/deeperlearning/professional-cuda-c-programming}
 
 \bibitem{CS229}
 CS229 Stanford University.  \url{http://cs229.stanford.edu/materials.html}
