@@ -49,8 +49,17 @@ In this `README.md`:
 | [`./CUBLAS/`](https://github.com/ernestyalumni/CompPhys/tree/master/moreCUDA/CUBLAS) | `cuBLAS`, CUDA Unified Memory Management, `__managed__` | Examples of using `cuBLAS`, for linear algebra, including examples for using `cuBLAS` with CUDA Unified Memory Management | 
 ||||
 | [`./CUSOLVER/SVD_vectors.cu`](https://github.com/ernestyalumni/CompPhys/blob/master/moreCUDA/CUSOLVER/SVD_vectors.cu) | Singular Value Decomposition, SVD, `cuSOLVER`  | simple example in C of Singular Value Decomposition, but with singular vectors, cf. [CUDA Toolkit Doc, E.1 SVD with singular vectors](http://docs.nvidia.com/cuda/cusolver/index.html#svd-example1)  |
-| `./smart_ptrs_arith.cu` | `std::shared_ptr`, `std::unique_ptr`, pointer arithmetic (on GPU), `cudaMemcpy`, `cudaMalloc` | Smart pointers (shared and unique ptrs) arithmetic, in C++11, along with its use with `cudaMalloc`, `cudaMemcpy`; importantly; 1 can `cudaMemcpy` to device array starting from any point on the array through pointer arithmetic |  
-| `./cudaMallocHost_eg.cu`  | `cudaMallocHost` | Simple but fundamental sanity check for using `cudaMallocHost` |
+| **`./smart_ptrs_arith.cu`** | `std::shared_ptr`, `std::unique_ptr`, pointer arithmetic (on GPU), `cudaMemcpy`, `cudaMalloc` | Smart pointers (shared and unique ptrs) arithmetic, in C++11, along with its use with `cudaMalloc`, `cudaMemcpy`; importantly; 1 can `cudaMemcpy` to device array starting from any point on the array through pointer arithmetic; both for `shared_ptr`, `unique_ptr`, I show how to wrap, with C++11/14 smart pointers, in both ways, the device arrays (!!!) |  
+| `./cudaMallocHost_eg.cu`  | `cudaMallocHost` | Simple but fundamental sanity check for using `cudaMallocHost` |  
+| `./withoutunifiedmem.cu` | *without* unified memory | Simple program written without the benefit of unified memory, [J.1.1. Simplifying GPU Programming ](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-unified-memory-programming-hd) |  
+| `./unifiedmem.cu` | `cudaMallocManaged` | Simple program written with the benefit of unified memory, [J.1.1. Simplifying GPU Programming ](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-unified-memory-programming-hd) |  
+| `./unifiedmem_direct.cu` | `__device__`, `__managed__` | Simple program written without the benefit of unified memory, [J.1.1. Simplifying GPU Programming ](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-unified-memory-programming-hd) |  
+| `./cudaMallocManaged.cu` | `cudaMallocManaged`, `strncpy` | Simple example, showing use of `cudaMallocManaged`, [J.2.1.1. Explicit Allocation Using cudaMallocManaged](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-explicit-allocation) |  
+| `./managed.cu` | `__managed__` | `__managed__` annotation to file scope and global scope CUDA `__device__` variables; [J.2.1.2. Global-Scope Managed Variables Using `__managed__`](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-gpu-exclusive) |  
+| `./unifiedcoherency.cu` | `__device__`, `__managed__`, `concurrentManagedAccess` | Testing architectures (GPU hardware dependent) on whether it supports concurrent access to managed memory or not; [J.2.2.1. GPU Exclusive Access To Managed Memory](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-gpu-exclusive) |  
+
+
+
 
 
 | Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
