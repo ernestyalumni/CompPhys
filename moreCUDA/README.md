@@ -60,8 +60,6 @@ In this `README.md`:
 
 
 
-
-
 | Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
 | ------- |
 | cf. [Table 5. CUDA Runtime API](http://docs.nvidia.com/cuda/cuda-samples/index.html#runtime-cudaapi) |
