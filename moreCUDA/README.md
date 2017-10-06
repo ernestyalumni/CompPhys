@@ -105,7 +105,6 @@ Allowed values for this option: `none`, `shared`, `static`.
 Default value: `static` |
 
 
-
 cf. [3.2.7. Options for Steering GPU Code Generation](http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#options-for-steering-gpu-code-generation)
 
 | Long Name | Short Name | Description |
@@ -115,7 +114,6 @@ cf. [3.2.7. Options for Steering GPU Code Generation](http://docs.nvidia.com/cud
 Allowed valued for this option: `true, false`.
 
 Default value: `false` |
-
 
 
 ## `cudaMemcpy`
