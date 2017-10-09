@@ -1,6 +1,6 @@
 /**
- * @file   : smartCUBLAS_playground.cu
- * @brief  : Smart pointers (shared and unique ptrs) playground with CUBLAS, in C++14, 
+ * @file   : smartCUBLAS_check.cu
+ * @brief  : Smart pointers (shared and unique ptrs) check with CUBLAS, in C++14, 
  * @details : A playground to try out things in smart pointers with CUBLAS; 
  * 				especially abstracting our use of smart pointers with CUDA.  
  * 				Notice that std::make_unique DOES NOT have a custom deleter! (!!!)
@@ -40,27 +40,7 @@
 
 #include "smartptr/smartptr.h"
 
-// custom deleter as a function for cublasHandle 
-void del_cublasHandle_f(cublasHandle_t* ptr) { cublasDestroy(*ptr); };
 
-
-void Prod(const int m, const int n, const int k, 
-		const float a1,
-		std::unique_ptr<float[], deleterRR_struct>& A, 
-		std::unique_ptr<float[], deleterRR_struct>& B, 
-		const float bet,
-		std::unique_ptr<float[], deleterRR_struct>& C) {
-	
-	auto del_cublasHandle=[&](cublasHandle_t* ptr) { cublasDestroy(*ptr); };
-
-	std::unique_ptr<cublasHandle_t,decltype(del_cublasHandle)> handle_u(
-		new cublasHandle_t, del_cublasHandle);
-	cublasCreate(handle_u.get());
-			
-	cublasSgemm(*handle_u.get(),CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&a1,A.get(),m,B.get(),k,&bet,C.get(),m);
-		
-			
-}
 
 
 
@@ -137,10 +117,10 @@ int main(int argc, char* argv[]) {
 	
 	float a1=1.0f;
 	float bet=1.0f;
-	
-	cudaDeviceSynchronize();
-	cublasHandle_t handle;	// CUBLAS context
-	cublasCreate(&handle);	// initialize CUBLAS context
+
+//	cublasHandle_t handle;	// CUBLAS context
+//	cublasCreate(&handle);	// initialize CUBLAS context
+
 
 	// custom deleter as a lambda function for cublasHandle 
 	auto del_cublasHandle_lambda=[&](cublasHandle_t* ptr) { cublasDestroy(*ptr); };
@@ -155,39 +135,9 @@ int main(int argc, char* argv[]) {
 	std::shared_ptr<cublasHandle_t> handle_sh(new cublasHandle_t, del_cublasHandle_lambda);
 	cublasCreate(handle_sh.get());
 
-	std::shared_ptr<cublasHandle_t> handle_sh1(new cublasHandle_t, del_cublasHandle_f);
-	cublasCreate(handle_sh1.get());
-
-	std::shared_ptr<cublasHandle_t> handle_sh2(new cublasHandle_t, del_cublasHandle_struct());
-	cublasCreate(handle_sh2.get());
 
 	/*
 	 * END of shared_ptr for cublasHandle_t
-	 * */
-
-	/*
-	 * unique_ptr for cublasHandle_t
-	 * */
-	std::unique_ptr<cublasHandle_t,decltype(del_cublasHandle_lambda)> handle_u(
-		new cublasHandle_t, del_cublasHandle_lambda);
-	cublasCreate(handle_u.get());
-
-	std::unique_ptr<cublasHandle_t,void(*)(cublasHandle_t*)> handle_u1(
-		new cublasHandle_t, del_cublasHandle_f);
-	cublasCreate(handle_u1.get());
-
-	std::unique_ptr<cublasHandle_t,del_cublasHandle_struct> handle_u2(
-		new cublasHandle_t, del_cublasHandle_struct());
-	cublasCreate(handle_u2.get());
-	
-	// this WORKS; IGMORE->Segmentation fault missing custom deleter at initialization
-	std::unique_ptr<cublasHandle_t,del_cublasHandle_struct> handle_u3(
-		new cublasHandle_t);
-	cublasCreate(handle_u3.get());
-
-
-	/*
-	 * END of unique_ptr for cublasHandle_t
 	 * */
 
 
@@ -195,27 +145,11 @@ int main(int argc, char* argv[]) {
 //	cublasSgemm(handle,CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&a1,A.get(),m,B.get(),k,&bet,C.get(),m);
 
 	// this WORKS
-//	cublasSgemm(*handle_sh1.get(),CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&a1,A.get(),m,B.get(),k,&bet,C.get(),m);
-
-	// this WORKS
-//	cublasSgemm(*handle_sh2.get(),CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&a1,A.get(),m,B.get(),k,&bet,C.get(),m);
-
-	// this WORKS
-//	cublasSgemm(*handle_u.get(),CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&a1,A.get(),m,B.get(),k,&bet,C.get(),m);
-
-	// this WORKS
-//	cublasSgemm(*handle_u1.get(),CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&a1,A.get(),m,B.get(),k,&bet,C.get(),m);
-
-	// this WORKS
-//	cublasSgemm(*handle_u2.get(),CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&a1,A.get(),m,B.get(),k,&bet,C.get(),m);
-
-	// this WORKS: IGNORE->this doesn't work; Segmentation fault missing custom deleter at initialization
-//	cublasSgemm(*handle_u3.get(),CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&a1,A.get(),m,B.get(),k,&bet,C.get(),m);
-
-	Prod(m,n,k,a1,A,B,bet,C);
+	cublasSgemm(*handle_sh.get(),CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&a1,A.get(),m,B.get(),k,&bet,C.get(),m);
 
 
-	
+
+
 	std::vector<float> host_c(m*n);
 	cublasGetMatrix(m,n,sizeof(float), C.get(),m,host_c.data(),m); // cp C -> host_c 
 	
@@ -226,9 +160,11 @@ int main(int argc, char* argv[]) {
 		}
 		std::cout << std::endl;
 	}	
-	
-	
+
+
 	// Clean up
-	cublasDestroy(handle);	// destroy CUBLAS context
-//	cudaDeviceReset();	// causes Segmentation Fault! (!!!) maybe it's because smart pointers aren't done yet!
+//	cublasDestroy(handle);	// destroy CUBLAS context
+//	cudaDeviceReset();  // this for some reason causes Segmentation Fault! (!!!)
+	return EXIT_SUCCESS;
 }
+
