@@ -88,9 +88,10 @@ void RRModule::load_from_d_X(std::vector<float>& h_out) {
 
 /*
 std::unique_ptr<float[], deleterRR> RRModule::get() {
-	return this->X;
-}*/
-
+	auto ptr=std::move(this->X);
+	return ptr;
+}
+*/
 
 // destructor
 RRModule::~RRModule() {}
@@ -118,7 +119,9 @@ void RRModule_sh::load_from_uniq(std::unique_ptr<float[],deleterRR> & ptr_unique
 
 
 std::shared_ptr<float> RRModule_sh::get() {
-	return this->X;
+//	return this->X;
+	auto ptr = std::move(X);
+	return ptr;
 }
 
 

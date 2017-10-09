@@ -85,7 +85,6 @@ class RRModule
 
 		
 		// member
-//		static std::unique_ptr<float[], deleterRR> X;
 		std::unique_ptr<float[], deleterRR> X;
 
 		
@@ -98,7 +97,6 @@ class RRModule
 		
 		void load_from_d_X(std::vector<float>& );
 
-//		std::unique_ptr<float[], deleterRR> get();
 		
 		// destructor
 		~RRModule();			
