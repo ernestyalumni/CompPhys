@@ -43,7 +43,7 @@
 // custom deleter as a function for cublasHandle 
 void del_cublasHandle_f(cublasHandle_t* ptr) { cublasDestroy(*ptr); };
 
-
+/*
 void Prod(const int m, const int n, const int k, 
 		const float a1,
 		std::unique_ptr<float[], deleterRR_struct>& A, 
@@ -61,23 +61,7 @@ void Prod(const int m, const int n, const int k,
 		
 			
 }
-
-void Prod_sh(const int m, const int n, const int k, 
-		const float a1, std::shared_ptr<float>& A, std::shared_ptr<float>& B, 
-		const float bet, std::shared_ptr<float>& C) {
-	
-	auto del_cublasHandle=[&](cublasHandle_t* ptr) { cublasDestroy(*ptr); };
-
-	std::shared_ptr<cublasHandle_t> handle_sh(
-		new cublasHandle_t, del_cublasHandle);
-	cublasCreate(handle_sh.get());
-			
-	cublasSgemm(*handle_sh.get(),CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&a1,A.get(),m,B.get(),k,&bet,C.get(),m);
-					
-}
-
-
-
+*/
 
 
 int main(int argc, char* argv[]) {
@@ -146,15 +130,6 @@ int main(int argc, char* argv[]) {
 	auto B = make_uniq_u(k*n);
 	auto C = make_uniq_u(m*n);
 
-	RRModule_sh A_sh(m*k);
-	RRModule_sh B_sh(k*n);
-	RRModule_sh C_sh(m*n);
-	
-	A_sh.load_from_hvec(a);
-	B_sh.load_from_hvec(b);
-	C_sh.load_from_hvec(c);
-	
-
 	// let's try cudaMemcpy instead of cublasSetMatrix to see what happens
 	cudaMemcpy(A.get(), a.data(), sizeof(float)*m*k,cudaMemcpyHostToDevice);
 	cudaMemcpy(B.get(), b.data(), sizeof(float)*k*n,cudaMemcpyHostToDevice);
@@ -193,7 +168,7 @@ int main(int argc, char* argv[]) {
 	/*
 	 * unique_ptr for cublasHandle_t
 	 * */
-	std::unique_ptr<cublasHandle_t,decltype(del_cublasHandle_lambda)> handle_u(
+/*	std::unique_ptr<cublasHandle_t,decltype(del_cublasHandle_lambda)> handle_u(
 		new cublasHandle_t, del_cublasHandle_lambda);
 	cublasCreate(handle_u.get());
 
@@ -209,7 +184,7 @@ int main(int argc, char* argv[]) {
 	std::unique_ptr<cublasHandle_t,del_cublasHandle_struct> handle_u3(
 		new cublasHandle_t);
 	cublasCreate(handle_u3.get());
-
+*/
 
 	/*
 	 * END of unique_ptr for cublasHandle_t
@@ -217,7 +192,7 @@ int main(int argc, char* argv[]) {
 
 
 	// this WORKS
-//	cublasSgemm(handle,CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&a1,A.get(),m,B.get(),k,&bet,C.get(),m);
+	cublasSgemm(handle,CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&a1,A.get(),m,B.get(),k,&bet,C.get(),m);
 
 	// this WORKS
 //	cublasSgemm(*handle_sh1.get(),CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&a1,A.get(),m,B.get(),k,&bet,C.get(),m);
@@ -237,30 +212,11 @@ int main(int argc, char* argv[]) {
 	// this WORKS: IGNORE->this doesn't work; Segmentation fault missing custom deleter at initialization
 //	cublasSgemm(*handle_u3.get(),CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&a1,A.get(),m,B.get(),k,&bet,C.get(),m);
 
-	Prod(m,n,k,a1,A,B,bet,C);
+//	Prod(m,n,k,a1,A,B,bet,C);
 
-	auto AX_sh = std::move( A_sh.get() );
-	auto BX_sh = std::move( B_sh.get() );
-	auto CX_sh = std::move( C_sh.get() );
 
-	//Prod_sh(m,n,k,a1,A_sh.get(),B_sh.get(),bet,C_sh.get()); // doesn't work; 
-	// error: initial value of reference to non-const must be an lvalue
-	// this WORKS
-//	Prod_sh(m,n,k,a1,AX_sh,BX_sh,bet,CX_sh);
+	cudaDeviceSynchronize();
 
-	std::vector<float> host_c1(m*n);
-	cudaMemcpy(host_c1.data(), CX_sh.get(), m*n*sizeof(float), cudaMemcpyDeviceToHost);
-
-	std::cout << " c after Sgemm (for shared ptr) : " << std::endl; 
-	for (i=0;i<m;i++) {
-		for (j=0;j<n;j++){
-			std::cout << host_c1[i+j*m] << " "; 
-		}
-		std::cout << std::endl;
-	}	
-	std::cout << std::endl << std::endl;
-
-	
 	std::vector<float> host_c(m*n);
 	cublasGetMatrix(m,n,sizeof(float), C.get(),m,host_c.data(),m); // cp C -> host_c 
 	
@@ -275,5 +231,5 @@ int main(int argc, char* argv[]) {
 	
 	// Clean up
 	cublasDestroy(handle);	// destroy CUBLAS context
-//	cudaDeviceReset();	// causes Segmentation Fault! (!!!) maybe it's because smart pointers aren't done yet!
+	cudaDeviceReset();
 }
