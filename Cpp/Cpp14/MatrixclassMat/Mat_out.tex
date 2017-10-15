@@ -1,0 +1,247 @@
+% file: Mat_out.tex
+%
+% github        : ernestyalumni
+% gmail         : ernestyalumni 
+% linkedin      : ernestyalumni 
+% wordpress.com : ernestyalumni
+%
+% This code is open-source, governed by the Creative Common license.  Use of this code is governed by the Caltech Honor Code: ``No member of the Caltech community shall take unfair advantage of any other member of the Caltech community.'' 
+
+\documentclass[10pt]{amsart}
+\pdfoutput=1
+\usepackage{mathtools,amssymb,caption}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage[table]{xcolor}
+\usepackage{pdfpages}
+\usepackage{tikz}
+\usetikzlibrary{matrix,arrows}
+
+\usepackage{breqn} % for dmath
+
+
+%\usepackage{cancel} % for Feynman slash notation
+
+\hypersetup{colorlinks=true,citecolor=[rgb]{0,0.4,0}}
+
+
+%\oddsidemargin=15pt
+%\evensidemargin=5pt
+%\hoffset-45pt
+%\voffset-55pt
+%\topmargin=-4pt
+%\headsep=5pt
+%\textwidth=1120pt
+%\textheight=595pt
+%\paperwidth=1200pt
+%\paperheight=700pt
+%\footskip=40pt
+
+
+
+
+
+
+
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+%\newtheorem*{main}{Main Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+\newenvironment{claim}[1]{\par\noindent\underline{Claim:}\space#1}{}
+\newenvironment{claimproof}[1]{\par\noindent\underline{Proof:}\space#1}{\hfill $\blacksquare$}
+
+%This defines a new command \questionhead which takes one argument and
+%prints out Question #. with some space.
+\newcommand{\questionhead}[1]
+  {\bigskip\bigskip
+   \noindent{\small\bf Question #1.}
+   \bigskip}
+
+\newcommand{\problemhead}[1]
+  {
+   \noindent{\small\bf Problem #1.}
+   }
+
+\newcommand{\exercisehead}[1]
+  { \smallskip
+   \noindent{\small\bf Exercise #1.}
+  }
+
+\newcommand{\solutionhead}[1]
+  {
+   \noindent{\small\bf Solution #1.}
+   }
+
+
+  \title[Matrices as a Tensor Product and the \emph{Mat} C++ class template]{Matrices as a Tensor Product and the \emph{Mat} C++ class template}
+
+\author{Ernest Yeung \href{mailto:ernestyalumni@gmail.com}{ernestyalumni@gmail.com}}
+\date{27 juillet 2017}
+\keywords{C++, C++11, Matrices, Tensor Products, dual basis, basis, numerical computation}
+
+\begin{document}
+
+\definecolor{darkgreen}{rgb}{0,0.4,0}
+\lstset{language=Python,
+ frame=bottomline,
+ basicstyle=\scriptsize,
+ identifierstyle=\color{blue},
+ keywordstyle=\bfseries,
+ commentstyle=\color{darkgreen},
+ stringstyle=\color{red},
+ }
+%\lstlistoflistings
+
+\maketitle
+
+\tableofcontents
+
+%\begin{multicols*}{2}
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+\begin{abstract}
+\section{Executive Summary}
+
+I implement matrices, with a focus on implementing matrix multiplication and the taking the transpose for the matrices, in C++11.  In designing the class templates for the matrices, I begin with the mathematical formulation of the space of all matrices of matrix size dimensions $M\times N$, $\textbf{Mat}_{\mathbb{K}}(M,N)$, with $\mathbb{K}$ being the underlying field (e.g. $\mathbb{K}=\mathbb{R},\mathbb{Z}$), as a \emph{tensor product} of vector spaces,  $\bigotimes_{j=1}^P \mathbb{K}^M$ and equivalently as a tensor product of \emph{dual} vector spaces $\bigotimes_{i=1}^M \mathbb{K}^P$.  By doing so, we can implement matrix multiplication and the transpose using new C++11 features in the library header `algorithm`, and efficiently read contiguous memory addresses along each of the \verb|std::vector|s, representing rows or columns of a matrix.  
+\end{abstract}
+
+\section{Mathematical formulation: matrices as tensor products of vectors (or \emph{dual} vectors)}
+
+Denote the set of all matrices of \emph{matrix size dimensions} (i.e. number of rows $\times $ number of columns) $(M,P)$ or i.e. $M\times N$, with the underlying field $\mathbb{K}$, to be $\text{Mat}_{\mathbb{K}}(M,P)$.  
+
+Consider two matrices $A \in \text{Mat}_{\mathbb{K}}(M,P)$, $B \in \text{Mat}_{\mathbb{K}}(P,N)$.  We can multiply them together since they share equal "inner size dimensions." 
+
+Let's consider the entries of matrix $A$ (even if only to set notation), $A_{ij}$, \, $\forall \, i = 1,2, \dots M$, $j=1,2,\dots P$.  Consider the "rows" of the matrix, and the "columns" of the matrix $A$.  For the $i$th row of $A$, denote it as $A_{i*}$, so that 
+\begin{equation}\label{Eq:RowForm}
+	A_{i*} = (A_{i1},A_{i2}, \dots A_{iP}) \qquad \, \forall \, i = 1,2, \dots M	
+\end{equation}
+For the $j$th column of $A$, denote it as $A_{*j}$, so that 
+\begin{equation}\label{Eq:ColumnForm}
+	A_{*j} = (A_{1j},A_{2j}, \dots A_{jM}) \qquad \, \forall \, j = 1,2, \dots P 
+\end{equation}
+
+Let's treat the "row vector", $A_{i*}$ as being an element of the dual vector space to $\mathbb{K}^P$, $(\mathbb{K}^P)^*$.  Notice that matrix $A$ has $M$ of these "rows."  Then $\forall \, A \in \text{Mat}_{\mathbb{K}}(M,P)$, $A \in \bigotimes_{i=1}^M (\mathbb{K}^P)^*$.  In fact, we already described the isomorphism between these two spaces.  So 
+\begin{equation}
+\bigotimes_{i=1}^M (\mathbb{K}^P)^* \cong \text{Mat}_{\mathbb{K}}(M,P)
+\end{equation}
+
+Let's treat the "column vector", $A_{*j}$ as being an element of the vector space $\mathbb{K}^M$.  Notice that matrix $A$ has $P$ of these "columns."  Then $\forall \, A \in \text{Mat}_{\mathbb{K}}(M,P)$, $A \in \bigotimes_{j=1}^P (\mathbb{K}^M)^*$.  In fact, we already described the isomorphism between these two spaces.  So 
+\begin{equation}
+\bigotimes_{j=1}^P (\mathbb{K}^M) \cong \text{Mat}_{\mathbb{K}}(M,P)
+\end{equation}
+
+\subsection{Matrix Multiplication}
+
+Again, given matrices $A \in \text{Mat}_{\mathbb{K}}(M,P)$, $B \in \text{Mat}_{\mathbb{K}}(P,N)$, we multiply them together to obtain $C \in \text{Mat}_{\mathbb{K}}(M,N)$: 
+\begin{equation}
+\begin{gathered}
+C = AB  \\
+C_{ij} = \sum_{k=1}^P A_{ik}B_{kj} \equiv A_{ik}B_{kj} \quad \, \forall \, i=1,2,\dots M, \, \forall \, j = 1,2, \dots N 
+\end{gathered}
+\end{equation}
+where at the end, we use Einstein's summation notation of implicit summation of any repeated indices.  
+
+Keeping in mind that "row vector" and "column vector" (dual vector and vector) forms from Eq. \ref{Eq:RowForm}, Eq. \ref{Eq:ColumnForm}, respectively, let's try to rewrite the matrix multiplication $C=AB$: 
+\begin{equation}\label{Eq:MatrixMultiplybyRows}
+\begin{gathered}
+C_{ij} = A_{ik}B_{kj} = A_{ik} (B^T)_{jk} = A_{i*} \cdot (B^T)_{j*} \qquad \, \forall \, i = 1, \dots M, \, \forall \, j = 1, \dots N
+\end{gathered}
+\end{equation}
+Thus, if we can get all the rows of $A$, and get all the columns of $B$, we can simply take the inner product of each row with each column (all possible row, column pairs), and we'll have obtained $C$!  
+
+\subsubsection{The case for thinking of Matrix Multiplication as the inner product of a dual vector with a vector from a computational optimization point of view}  
+
+Consider a "naive" implementation of matrix multiplication, which, regardless of your choice of programming language, mathematically is essentially the following:  
+\begin{equation}
+\begin{gathered}
+\forall \, i = 1,2, \dots M, \\
+\phantom{\qquad \, }\forall \, j = 1,2, \dots N , \\ 
+\phantom{\qquad \qquad \, } \forall \, k = 1,2,\dots P , \\ 
+\text{sum} += A_{ik}B_{kj} , \quad \, i.e. \quad \sum_{k=1}^P A_{ik}B_{kj}
+\end{gathered}
+\end{equation}
+A (very) cursory look at the read requirements in this matrix multiplication operation would tell us that the read, memory requirements are of order $O(M*P^2*N)$ (imagine multiply a row from $A$ with a "fixed" column from $B$.  That same "fixed" column from $B$ will have to be multiplied by the other $M-1$ rows, but we've read this particular column from $B$ already $M-1$ redundantly).  Nevertheless, it is polynomial in time.  
+
+Also, notice that if we assume \emph{row-major ordering} for how the values of the matrix entries are inserted or stored, contiguously, in memory addresses, then in accessing the values for the columns of matrix $B$, we are not efficiently accessing those values wince we're "jumping" over $P$ memory addresses to grab the next adjacent entry in a column.  
+
+However, Eq. \ref{Eq:MatrixMultiplybyRows} gives us a prescription:  
+\begin{equation}\label{Eq:MatrixMultiplybyRows2}
+C_{ij} = A_{i*} \cdot (B^T)_{j*} \quad \, \forall \, i =1 \dots M, \, \forall \, j = 1\dots N
+\end{equation}
+If we can store the "columns" of $B$ as rows, $(B^T)_{j*}$, then we can access columns in a way that their respective memory addresses are contiguous.  Also, if we have an optimized routine for taking \emph{inner products} or, i.e., \emph{dot products}, we can employ that as well, according to Eq. \ref{Eq:MatrixMultiplybyRows2}.  Indeed, we have this in C++11 standard library \verb|<numeric>|, with \verb|std::inner_product|.  At this point, take a look at the code in \verb|Mat/Mat.h|, for the implementation of matrix multiplication given in the operator overloading of \verb|*| operator for class \verb|Mat|, 
+\[
+\verb|Mat<Type> operator*(const Mat<Type>& rhs)|
+\].  Each row from matrix $A$, $i$th row \verb|A_i| and each column from $B \equiv $ \verb|rhs|, \verb|col|, has its inner product computed by \verb|std::inner_product|.  
+
+\subsection{Transpose operation on matrices, as tensor products of vector spaces and dual vector spaces}
+
+Consider the mathematical formulation of the transpose operation:  
+\begin{equation}\label{Eq:Transpose}
+\begin{gathered}
+\text{Mat}_{\mathbb{K}}(M,P) \xrightarrow{ T } \text{Mat}_{\mathbb{K}}(P,M)  \\
+\bigotimes_{i=1}^P(\mathbb{K}^M) \xrightarrow{ T } \bigotimes_{j=1}^P (\mathbb{K}^M)^*  \\
+A = (A_{*1}, A_{*2}, \dots A_{*P}) \xmapsto{T} A^T = (A^T_{1*}, A^T_{2*}, \dots A^T_{M*})
+\end{gathered}
+\end{equation}
+Thus, it's clear from Eq. \ref{Eq:Transpose} that if we can simply store the "columns" or "column" vectors of matrix $A$ as "rows" or dual vectors, we can simply read off these "rows" or dual vectors as the new rows of a new matrix $A^T$, the transpose of $A$.  
+
+This is what was exactly implemented in \verb|Mat.h| in the class template method \verb|Mat<Type> T()|.  All we do is take the "columns" of a matrix, stored in private member variable \verb|Columns_| and assign them to the new matrix for the transpose, \verb|new_Rows|, and then initialize a new matrix with the class template \verb|Mat|, \verb|Atranspose|.    
+
+\section{Further isomorphisms between math and the code}
+
+Take a look at the \verb|private| member variables of the class template \verb|Mat| in \verb|Mat/Mat.h|.  They include 
+\begin{itemize}
+	\item \verb|std::array<unsigned int,2> Size_Dims_;|
+	\item \verb|std::vector<std::vector<Type>> Rows_| 
+	\item \verb|std::vector<std::vector<Type>> Columns_| 
+	\item \verb|std::vector<Type> Entries_| 		
+\end{itemize}
+These are isomorphic to the following: 
+\begin{itemize}
+	\item $(M,P)$ in $\text{Mat}_{\mathbb{K}}(M,P) \ni A$
+	\item $(A_{1*}, A_{2*}, \dots A_{i*} \dots A_{M*}) \in \bigotimes_{i=1}^M (\mathbb{K}^P)^*$
+	\item $(A^T_{1*}, A^T_{2*}, \dots A^T_{j*} \dots A^T_{P*}) \in \bigotimes_{j=1}^P (\mathbb{K}^M)^*$ 
+	\item $(A_{ij})=A \in \mathbb{K}^{M\cdot P}$ (there is an obvious isomorphism between matrices and a vector space, i.e. $\text{Mat}_{\mathbb{K}}(M,P) \cong \mathbb{K}^{M\cdot P}$.  		
+\end{itemize}, respectively.  
+
+Understanding these relations and the availability of these private member variables, one can implement further useful methods, including getting the values of the entries, getting a particular row (that's contiguously laid out sequentially on adjacent memory addresses), setting a specific row, and then going from \verb|Rows_| and turning it into a new \verb|Entries_|.  Also, addition for matrices (since matrices are non-commutative rings) and scalar multiplication could also be implemented in memory efficient (i.e. saving the number of reads into memory that is needed and the utilization of optimized algorithms in the standard library of C++11) with this understanding.  
+
+\section{Concluding Remarks}
+
+I explicitly show an isomorphism between the mathematical formulation of matrices and the operations matrix multiplication and the taking of the transpose as a tensor product of dual vectors and equivalently tensor product of vectors, and the C++11 implementation of a class template \verb|Mat|.  I point out that by doing so, we've discovered a more read-memory efficient and more optimized way of doing matrix multiplication, taking the transpose, and accessing the values of the entries of the matrix, than a "naive" implementation.  I was also able to utilize and showcase a number of novel, new features from C++11; \verb|std::vector| as a container and \verb|<numerics>|.  
+
+The developer using this code or the framework for it should be clearly able to add new methods and features to the class template, as long as he or she understands the underlying mathematics.  In fact, we should agree upon the mathematics first and then try as much as we could to have a 1-to-1 correspondence between the math and the code, in object-oriented programming (OOP) design.  I argue this because it should make the code maintainable and clear because we should all agree on the same thing with the math.  
+
+Also, with these more efficient memory-accessing, we have made matrix multiplication and the taking of the transpose for matrices not only faster, but more scalable.  
+
+
+
+%\begin{thebibliography}{9}
+
+  
+%\end{thebibliography}
+
+
+
+\end{document}
