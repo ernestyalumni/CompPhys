@@ -91,7 +91,7 @@ __device__ void minmax(float *x, float *res, int n, pf func)
 
 __global__ void minmax_kernel(float *x, float *res, int n, int findmin)
 {
-    minmax (x, res, n, func_d[findmin]);
+    minmax(x, res, n, func_d[findmin]);
 }
 
 
