@@ -179,6 +179,11 @@ int main() {
 //	std::cout << (*divresult).x << std::endl;
 	
 	
+	/* =============== device-specific parameters =============== */
+	
+	
+	
+	
 	HANDLE_ERROR( 
 		cudaFree( dev_divresult) );
 }

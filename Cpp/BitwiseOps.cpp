@@ -31,6 +31,8 @@
   * */
 #include <iostream>
 
+#include <vector>
+
 #include <stdio.h>
 
 int findOdd(int arr[], int n) {
@@ -147,6 +149,25 @@ int main(int argc, char* argv[]) {
 
 	for (int i=0; i<99; i++) { 
 		printf(" %d : %d ", i,i&WARPSIZE); }
+	
+	std::cout << std::endl;
+	std::cout << std::endl;
+	
+	for (int i=0; i<133; i++) { 
+		printf("%d ", i & (WARPSIZE-1)); }
+	
+
+	std::vector<bool> boolvec { true, false, true, true };
+	std::vector<float> fvec;
+
+	std::cout << std::endl << std::endl;  	
+	
+	for (auto ele : boolvec) {
+		std::cout << ele << " " ;
+		fvec.push_back( ((float) ele ) ); }
+	std::cout << std::endl << std::endl;  	
+	for (auto ele : fvec) {
+		std::cout << ele << " " ; }	
 	
 	
 	getchar();
