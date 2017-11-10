@@ -10,7 +10,9 @@
 
 \documentclass[10pt]{amsart}
 \pdfoutput=1
-\usepackage{mathtools,amssymb,lipsum,caption}
+%\usepackage{mathtools,amssymb,lipsum,caption}
+\usepackage{mathtools,amssymb,caption}
+
 
 \usepackage{graphicx}
 \usepackage{hyperref}
@@ -113,6 +115,281 @@ Everything about Computational Physics, including Parallel computing/ Parallel p
 \url{https://classes.soe.ucsc.edu/cmps102/Fall01/solutions4.pdf}
 
 \url{http://www3.cs.stonybrook.edu/~skiena/373/hw/hw.pdf}
+
+\part{Hardware; Memory, C, C++, CUDA C/C++}
+
+\href{https://stackoverflow.com/questions/14588767/where-in-memory-are-my-variables-stored-in-c}{stackoverflow: Where in memory are my variables stored in C?}
+
+\section{Pointers in C; Pointers in C categorified (interpreted in Category Theory) and its relation to actual, physical, computer memory and (memory) addresses ((address) bus; pointers, structs, arrays in C}
+
+From Shaw (2015) \cite{Shaw2015}, Exercise 15, 
+
+e.g. \verb|ages[i]|, You're indexing into array \verb|ages|, and you're using the number that's held in $i$ to do it:  
+\[
+\begin{aligned}
+& a : \mathbb{Z} \to \text{Type} \in \textbf{Type}  \\
+& a: i \mapsto a[i]
+\end{aligned} \text{ e.g. } 
+\begin{aligned}
+& a: \mathbb{Z} \to \mathbb{R} \text{ or } \mathbb{Z}  \\
+& a:i \mapsto a[i]
+\end{aligned}
+\]
+
+Index $i\in \mathbb{Z}$ is a location \emph{inside} \verb|ages| or $a$, which can also be called \emph{address}.  Thus, $a[i]$.  
+
+Indeed, from \href{http://en.cppreference.com/w/cpp/language/operator_member_access}{cppreference for Member access operators}, 
+
+Built-in \emph{subscript} operator provides access to an object pointed-to by pointer or array operand.  And so \verb|E1[E2]| is exactly identical to \verb|*(E1+E2)|.  
+
+
+To C, e.g. \verb|ages|, or $a$, is a location in computer's memory where, e.g., all these integers (of \verb|ages|) start, i.e. where $a$ starts.  
+
+\[
+\begin{aligned}
+& \textbf{Memory} , \qquad \, \text{Obj}{(\textbf{Memory})} \ni \text{ memory location.  Also, to specify CPU, } \\ 
+& \textbf{Memory}_{CPU} , \qquad \, \text{Obj}{(\textbf{Memory}_{CPU})} \ni \text{ computer memory location }
+\end{aligned}
+\]
+
+It's \emph{also} an address, and C compiler will replace e.g. \verb|ages| or array $a$, anywhere you type it, with address of very 1st integer (or 1st element) in, e.g. \verb|ages|, or array $a$.  
+
+\[
+\begin{gathered}
+	\begin{aligned}
+	\textbf{Arrays} & \xleftrightarrow{ \cong } \textbf{address}  \\
+	\text{Obj}{(\textbf{Arrays} )} & \xleftrightarrow{ \cong } \text{Obj}{(\textbf{address} )}  \\
+	a & \xleftrightarrow{ \cong } \verb|0x17|  \\
+	\end{aligned}
+\end{gathered}
+\]
+
+"But here's the trick": e.g. "\verb|ages| is an address inside the \emph{entire computer}." (Shaw (2015) \cite{Shaw2015}).  
+
+It's not like $i$ that's just an address inside \verb|ages|.  \verb|ages| array name is actually an address in the computer.     
+
+"This leads to a certain realization: C thinks your whole computer is 1 massive array of bytes."  
+
+"What C does is layer on top of this massive array of bytes the concept of types and sizes of those types." (Shaw (2015) \cite{Shaw2015}).  
+
+
+Let 
+\[
+\begin{gathered}
+\begin{aligned}
+& \textbf{Memory}_{CPU} := 1 \text{ massive array of bytes } \\
+& \text{Obj}{(\textbf{Memory}_{CPU})} 
+\end{aligned}  \qquad \, \qquad \, 
+\begin{aligned}
+	& \textbf{Type} \\
+	& \text{Obj}{(\textbf{Type})} \ni \verb|int|, \verb|char|, \verb|float| \\
+	& \text{Obj}{(\textbf{Type})}  \xrightarrow{\texttt{sizeof}} \mathbb{Z}^+  \\
+	& T \xmapsto{ \texttt{sizeof} } \verb|sizeof|(T) \\
+	& \verb|float| \xmapsto{ \texttt{sizeof}} \verb|sizeof|(\verb|float|)
+\end{aligned}
+\end{gathered}
+\]
+
+
+  How C is doing the following with your arrays:  
+
+\begin{itemize}
+	\item \emph{Create} a block of memory inside your computer:  
+	\[
+	\text{Obj}{(\textbf{Memory}_{CPU})} \supset \text{ Memory block }  
+	\]
+	Let $\text{Obj}{(\textbf{Memory}_{CPU})}$ be an ordered set.  Clearly, then memory can be indexed.  Let $b\in \mathbb{Z}^+$ be this index.  Then Memory block(0) $= \text{Obj}{(\textbf{Memory}_{CPU})}(b)$.  		
+	\item \emph{Pointing} the name \verb|ages|, or $a$, to beginning of that (memory) block.  
+	
+		Entertain, possibly, a category of pointers, $\textbf{Pointers} \equiv \textbf{ptrs}$.  
+\[
+\begin{gathered}
+	\textbf{ptrs} \\
+	\text{Obj}{(\textbf{ptrs})} \ni a, \text{ e.g. } \verb|ages|  
+\end{gathered}
+\]	
+\[
+	\begin{gathered}
+	a \mapsto \text{Memory block}(0) \\ 
+	\text{Obj}{(\textbf{ptrs})} \to \text{Obj}{(\textbf{Memory}_{CPU})}
+\end{gathered}
+\]
+	\item \emph{indexing} into the block, by taking the base address of \verb|ages|, or $a$ 
+\end{itemize}
+
+\[
+\begin{gathered}
+\begin{aligned}
+&	a \xmapsto{ \cong } \text{ base address $0x17$ } \\
+&	\text{Obj}{((T)\textbf{array})} \xrightarrow{ \cong } \text{Obj}{(\textbf{addresses})}  \\	
+&	a[i] \equiv a+i \xmapsto{ \cong } \text{ base address + i * } \verb|sizeof|(T)  \xmapsto{ * } a[i] \in T \text{ where $T$, e.g. $T = \mathbb{Z},\mathbb{R}$ } \\ 
+& \text{Obj}{((T)\textbf{array}} \xrightarrow{ \cong } \text{Obj}{(\textbf{addresses})} \to T  
+\end{aligned}
+\end{gathered}
+\]
+
+"A pointer is simply an address pointing somewhere inside computer's memory with a type specifier."  Shaw (2015) \cite{Shaw2015}
+
+
+C knows where pointers are pointing, data type they point at, size of those types, and how to get the data for you.  
+
+\subsubsection{Practical Pointer Usage}
+\begin{itemize}
+	\item Ask OS for memory block (chunk of memory) and use pointer to work with it.  This includes strings and \verb|structs|.  
+	\item Pass by reference - pass large memory blocks (like large structs) to functions with a pointer, so you don't have to pass the entire thing to the function.  
+	\item Take the address of a function, for dynamic callback. (function of functions)
+\end{itemize}
+
+"You should go with arrays whenever you can, and then only use pointers as performance optimization if you absolutely have to."  Shaw (2015) \cite{Shaw2015}
+
+\subsubsection{Pointers are not Arrays}  
+
+No matter what, pointers and arrays are not the same thing, even though C lets you work with them in many of the same ways.  
+
+From Eli Bendersky's website, \href{https://eli.thegreenplace.net/2009/10/21/are-pointers-and-arrays-equivalent-in-c}{Are pointers and arrays equivalent in C?}
+
+From Eli Bendersky's website, \href{https://eli.thegreenplace.net/2009/10/21/are-pointers-and-arrays-equivalent-in-c}{Are pointers and arrays equivalent in C?}
+
+He also emphasizes that 
+
+\subsubsection{Variable names in C are just labels}  
+
+"A variable in C is just a convenient, alphanumeric pseudonym of a memory location." (Bendersky, \cite{Bend}).  What a compiler does is, create label in some memory location, and then access this label instead of always hardcoding the memory value.   
+
+"Well, actually the address is not hard-coded in an absolute way because of loading and relocation issues, but for the sake of this discussion we don't have to get into these details." (Bendersky, \cite{Bend}) (EY : 20171109 so it's on the address bus?)
+
+Compiler assigns label \emph{at compile time}.  Thus, the great difference between arrays and pointers in C.  
+
+\subsubsection{Arrays passed to functions are converted to pointers}  
+
+cf. Bendersky, \cite{Bend}.  
+
+Arrays passed into functions are always converted into pointers.  The argument declaration \verb|char arr_place[]| in  
+
+\begin{lstlisting}
+void foo(char arr_arg[], char* ptr_arg)
+{
+char a = arr_arg[7];
+char b = ptr_arg[7];
+}
+\end{lstlisting} 
+
+is just syntactic sugar to stand for \verb|char* arr_place|.  
+
+From Kernighan and Ritchie (1988) \cite{KeRi1988}, pp. 99 of Sec. 5.3, Ch. 5 Pointers and Arrays,  
+
+\begin{quotation}
+	When an array name is passed to a function, what is passed is the location of the initial element.  Within the called function, this argument is a local variable, and so an array name parameter is a pointer, that is, a variable containing an address.  
+\end{quotation}
+
+Why?  
+
+The C compiler has no choice here, since, \\
+array name is a label the C compiler replaces \emph{at compile time}  with the address it represents (which for arrays is the address of the 1st element of the array).  
+
+But function isn't called at compile time; it's called \emph{at run time}.  \\
+At run time, (where) something should be placed on the stack to be considered as an argument.  
+
+Compiler cannot treat array references inside a function as labels and replace them with addresses, because it has no idea what actual array will be passed in at run time.  
+
+EY : 20171109 It can't anticipate the exact arguments that'll it be given \emph{at run-time}; at the very least, my guess is, it's given instructions.  
+
+Bendersky \cite{Bend} concludes by saying the difference between arrays and pointers does affect you.  One way is how arrays can't be manipulated the way pointers can.  Pointer arithmetic isn't allowed for arrays and assignment to an array of a pointer isn't allowed.  cf. van der Linden (1994) \cite{Vand1994}. Ch. 4, 9, 10.  
+
+Bendersky \cite{Bend} has this one difference example, "actually a common C gotcha":  
+
+"Suppose one file contains a global array:"  
+
+\begin{lstlisting}
+char my_Arr[256]  
+\end{lstlisting}
+
+Programmer wants to use it in another file, \emph{mistakingly} declares as  
+\begin{lstlisting}
+extern char* my_arr; 
+\end{lstlisting}
+
+When he tries to access some element of the array using this pointer, he'll most likely get a segmentation fault or a fatal exception (nomenclature is OS-dependent).  
+
+To understand why, Bendersky \cite{Bend} gave this hint:  look at the assembly listing  
+
+\begin{lstlisting}
+char a = array_place[7];
+
+0041137E  mov  al,byte ptr [_array_place+7 (417007h)]
+00411383  mov  byte ptr [a],al
+
+char b = ptr_place[7];
+
+00411386  mov  eax,dword ptr [_ptr_place (417064h)]
+0041138B  mov  cl,byte ptr [eax+7]
+0041138E  mov  byte ptr [b],cl
+\end{lstlisting}
+
+or my own, generated from \verb|gdb| on Fedora 25 Workstation Linux:
+
+\begin{lstlisting}
+0x00000000004004b1 <main+11>:	movzbl 0x200b8f(%rip),%eax        # 0x601047 <array_place+7>
+0x00000000004004b8 <main+18>:	mov    %al,-0x1(%rbp)
+
+0x00000000004004bb <main+21>:	mov    0x200be6(%rip),%rax        # 0x6010a8 <ptr_place>
+0x00000000004004c2 <main+28>:	movzbl 0x7(%rax),%eax
+0x00000000004004c6 <main+32>:	mov    %al,-0x2(%rbp)
+\end{lstlisting}
+
+"How will the element be accessed via the pointer?  What's going to happen if it's not actually a pointer but an array?"  Bendersky \cite{Bend}   
+
+EY : 20171106.  Instruction-level, the pointer has to     
+\begin{itemize}
+	\item \verb|mov    0x200be6(%rip),%rax| - 1st., copy value of the pointer (which holds an address), into \verb|%rax| register.  
+	\item \verb|movzbl 0x7(%rax),%eax| - off that address in register `%rax`, offset by 7 (or whatever the offset would be) and get value ther with \verb|%eax| register/instruction  
+	\item \verb|mov    %al,-0x2(%rbp)| - \verb|mov| contents \verb|-0x2(%rbp)|into register \verb|%al|
+\end{itemize}
+
+If it's not actually a pointer, but an array, the value is copied into the \verb|%rax| register is an actual \verb|char| (or \verb|float|, some type).  \emph{Not} an address that the registers may have been expecting!  
+
+
+\subsection{Structs in C}
+From Shaw (2015) \cite{Shaw2015}, Exercise 16, 
+
+\verb|struct| in C is a collection of other data types (variables) that are stored in 1 block of memory.  You can access each variable independently by name.  
+
+\begin{itemize}
+	\item The \verb|struct| you make, i.e.g \verb|struct Person| is now a \emph{compound data type}, meaning you can refer to \verb|struct Person| using the same kinds of expressions you would for other (data) types.
+	\item This lets you pass the whole \verb|struct| to other functions
+	\item You can access individual members of \verb|struct| by their names using \verb|x->y| if dealing with a ptr.  
+\end{itemize}  
+
+If you didn't have \verb|struct|, you'd have to figure out the size, packing, and location of memory of the contents.  In C, you'd let it handle the memory structure and structuring of these compound data types, \verb|struct|s.  (Shaw (2015) \cite{Shaw2015})
+
+
+
+\section{C, Stack and Heap Memory Management, Heap and Stack Memory Allocation}  
+
+cf. Ex. 17 of Shaw (2015) \cite{Shaw2015}
+
+Consider chunk of RAM called stack, another chunk of RAM called heap.  Difference between heap and stack depends on where you get the storage.  
+
+Heap is all the remaining memory on computer.  Access it with \verb|malloc| to get more.  \\
+Each time you call \verb|malloc|, the OS uses internal functions (EY : 20171110 address bus or overall system bus?) to register that piece of memory to you, then returns ptr to it.  
+
+When done, use \verb|free| to return it to OS so OS can use it for other programs.  Failing to do so will cause program to \emph{leak} memory.  (EY: 20171110, meaning this memory is unavailable to the OS?)
+
+Stack, on a special region of memory, stores temporary variables, which each function creates as locals to that function.  How stack works is that each argument to function is \emph{pushed} onto stack and then used inside the function.  Stack is really a stack data structure, LIFO (last in, first out).  This also happens with all local variables in \verb|main|, such as \verb|char action|, \verb|int id|.  The advantage of using stack is when function exits, \emph{C compiler} pops these variables off of stack to clean up.  
+
+Shaw's mantra: If you didn't get it from \verb|malloc|, or a function that got it from \verb|malloc|, then it's on the stack.  
+
+3 primary problems with stacks and heaps: 
+\begin{itemize}
+	\item If you get a memory block from \verb|malloc|, and have that ptr on the stack, then when function exits, ptr will get popped off and lost.  
+	\item If you put too much data on the stack (like large structs and arrays), then you can cause a \emph{stack overflow} and program will abort.  Use the heap with \verb|malloc|.  
+	\item If you take a ptr, to something on stack, and then pass or return it from your function, then the function receiving it will \emph{segmentation fault}, because actual data will get popped off and disappear.  You'll be pointing at dead space.  
+\end{itemize}
+cf. Ex. 17 of Shaw (2015) \cite{Shaw2015}
+
+
+
+
 
 \part{Parallel Computing}
 
@@ -2282,7 +2559,41 @@ Want to consider,
 
 \subsection{Final for Udacity cs344}
 
+\subsubsection{Quiz: Final - Question 1; programming exercise for stencil operation, from global memory , to shared memory, reducing global memory transfers}
+
+\url{https://classroom.udacity.com/courses/cs344/lessons/2133758814/concepts/1388615750923}
+
+\subsubsection{Quiz: Final - Question 3; strongly Compute-bound, 2x SMs}
+
+cf. \url{https://classroom.udacity.com/courses/cs344/lessons/2133758814/concepts/1385089510923}
+
+Performance as function of number of blocks (launched), curve C.  
+
+2x SMs, 2 times the performance.  
+
+strongly \textbf{Compute-bound} is proportional to SMs (cores)
+
+\subsubsection{Quiz: Final - Question 4, Compute-bound problem, but 2x Memory Bandwidth, no effect}
+
+\url{https://classroom.udacity.com/courses/cs344/lessons/2133758814/concepts/1389922470923}
+
+Compute-bound, but 2x Memory Bandwidth, no effect on performance.  
+
+\subsubsection{Quiz: Final - Question 5; Memory bandwidth-bound, less SM, no effect}
+
+\url{https://classroom.udacity.com/courses/cs344/lessons/2133758814/concepts/1387579670923}
+
+Memory bandwidth-bound, but 1/2 SMs, no effect on performance.  
+
+\subsubsection{Quiz: Final - Question 6; Memory bandwidth-bound}
+
+\url{https://classroom.udacity.com/courses/cs344/lessons/2133758814/concepts/1388556450923}
+
+Memory bandwidth; 2x SMs \emph{and} $1/2$ memory bandwidth, because of half of memory bandwidth, performance is $1/2$.  
+
 \subsubsection{Quiz: Final - Question 7}
+
+Setup: Blurring on 2-dim. image; each pixel is a 32 bit single-precision floating point number.  5x5 kernel.  25 multiplies, 24 adds to compute each pixel output.  
 
 cf. \url{https://classroom.udacity.com/courses/cs344/lessons/2133758814/concepts/1421890260923#}
 
@@ -2302,12 +2613,12 @@ $\forall \, k \in K$, a (single) pixel of greyscale image, $k\in \lbrace 0 , 1, 
 
 Consider the threads per block configuration (i.e. a single thread block).
 
-Let $M \equiv M_x M_y = 1024$ in both, either, case, i.e. totla number of threads per block is 1024.
+Let $M \equiv M_x M_y = 1024$ in both, either, case, i.e. total number of threads per block is 1024.
 
 Consider $\begin{aligned} & \quad \\
   & (M_x,M_y) = (1024, 1) \text{ vs. } \\ 
   & (M_x,M_y) = (32, 32) \text{ vs. } \end{aligned}$,  \\
-Correspoding to
+Corresponding to
 \[
 \verb|dim3| M_i(M_x,M_y)
 \]
@@ -2382,12 +2693,29 @@ If I want to run the maximum number of threads possible that are all resident on
 This is obtained by looking at \url{http://en.wikipedia.org/wiki/CUDA} (this was given) and look for
 \begin{itemize}
 \item ``Maximum number of resident threads per multiprocessor'': 2048 for Compute ability (version) 3.5.
-\item 
+\item "Number of 32-bit registers per multiprocessor".  For Compute capability 3.5, it's 64K.  For 5.0+ it's 64K (again).  
   \end{itemize}
+Then take number of 32-bit registers per multiprocessor $/$ maximum number of resident threads per multiprocessor $=$ number of registers to get that max. number of resident threads 
+\[
+64000/2048 \sim 32
+\]
 
 \href{https://discussions.udacity.com/t/final-exam-question-9-confusion/88637}{Final Exam Question 9 confusion}
 
 \url{https://discussions.udacity.com/t/final-exam-question-9-confusion/88637}
+
+
+\subsubsection{Quiz: Final - Question 10, bytes of shared memory per thread}
+
+\url{https://classroom.udacity.com/courses/cs344/lessons/2133758814/concepts/1388977230923}
+
+Note that we are asking for the number of bytes of shared memory per thread and not the number of bytes available to each thread.
+
+Given we want max. no. of threads that are all resident on an SM (streaming processor), what is the number of bytes of shared memory, per thread?  
+
+I took, cf. \url{https://en.wikipedia.org/wiki/CUDA}, 
+
+Maximum number of resident threads per multiprocessor $ = 2048 / $ Maximum amount of shared memory per multiprocessor $= 48 KB$ (for compute capability 3.5) $= $ and taking the inverse and multiplying by 1000, $23 \sim 24$.  For compute capability 5.3, 6.2, it's $64kb$.  
 
 
 \subsubsection{Quiz: Final - Question 11}
@@ -2641,6 +2969,8 @@ cf. C$++$ extensions for C according to Fitzpatrick \cite{Fitz}
 
 
 
+
+
 \section{Summary of Udacity cs344 concepts}
 
 \subsection{Histogram}
@@ -2695,84 +3025,198 @@ Otherwise, a separate ``binning'' operation is needed:
 
   \url{https://github.com/ernestyalumni/cs344/tree/master/Problem%20Sets/Problem%20Set%205/histogram}
 
-\part{Notes on \text{Professional CUDA C Programming}, Cheng, Grossman, McKercher}
-
-cf. Chen, Grossman, and McKercher (2014) \cite{CGM2014}
 
 
 
-\section{CUDA Execution Model}
-cf. Ch. 3.  CUDA Execution Model 
 
-When kernel grid is launched, thread blocks of that kernel grid are distributed among available SMs for execution.  Once scheduled on SM, threads of a thread block execute concurrently only on that assigned SM.  
-
-CUDA employs \emph{Single Instruction Multiple Thread (SIMT)} architecture to manage and execute threads in groups of 32 called \emph{warps}.  
-
-All threads in warp execute same instruction at the same time.  Each thread has its own instruction address counter and register state, and carries out the current instruction on its own data.  Each SM partitions the thread blocks assigned to it into 32-thread warps that it then schedules for execution on available hardware resources.  
-
-SIMT allows multiple threads in same warp to execute independently.  Even though all threads in a warps start together at the same program address, it's possible for individual threads to have different behavior.  
-
-
-\subsection{Understanding the Nature of Warp Execution; Warps and Thread Blocks}  
-
-Once a thread block is scheduled to an SM, threads in thread block are further partitioned into warps.  A warp consists of 32 consecutive threads and all threads in a warp are executed in SIMT, i.e. all threads execute same instruction, and each thread carries out operation on its own private data.  
-
-\subsubsection{Warp Divergence }
-
-For example, consider the following statement:  
-\begin{lstlisting}  
-if (cond) {
-    ...   
-} else {
-    ...
-}
-\end{lstlisting}
-
-Suppose for 16 threads in a warp executing this code, \verb|cond| is \verb|true|, but for other 16 \verb|cond| is \verb|false|.  Then half of the warp will need to execute the instructions in the \verb|if| block, and the other half will need to execute the instructions in the \verb|else| block.  Threads in the same warp executing different instructions is referred to as \textbf{warp divergence.} 
-
-If threads of a warp diverge, the warp serially executes each branch path, disabling threads that do not take that path.  
-
-e.g. All threads within a warp must take both branches of the \verb|if ... then| statement.  If condition is \verb|true| for a thread, it executes the \verb|if| clause; otherwise, the thread stalls while waiting for that execution to complete.  
-
-
-\section{Streams and Concurrency}  
-cf. Ch. 6 Streams and Concurrency of  Chen, Grossman, and McKercher (2014) \cite{CGM2014}
-\subsubsection{Introducing Streams and Events}
-\begin{itemize}
-\item Functions in the CUDA API with \emph{synchronous behavior} block the host thread until they complete.  
-\item Functions in the CUDA API with \emph{asynchronous behavior} return control to host immediately after being called.  
-\end{itemize}  
-
-\subsubsection{CUDA Streams}
-\begin{itemize}
-\item \emph{NULL stream}, default stream the kernel launches, implicitly declared, and data transfers use if you don't explicitly specify a stream.  
-\item \emph{non-null streams} explicitly created and managed; if you want to overlap different CUDA operations, you must use non-null streams.  
-\end{itemize}
-
-Consider 
-
-\begin{lstlisting}
-cudaMemcpy(...,cudaMemcpyHostToDevice);|
-kernel<<<grid,block>>>(...);
-cudaMemcpy(..., cudaMemcpyDeviceToHost);|
-\end{lstlisting}
-
-From device perspective, all 3 operations are issued to default stream, and executed in order they were issued.  Device has no awareness any other host operations performed.  
-
-From host perspective, each data transfer is synchronous and forces idle host time while waiting for them to complete.  The kernel launch is \emph{asynchronous}, so host application almost immediately resumes execution afterwards.  
-
-When performing an asynchronous data trasfer, you must use pinned (or non-pageable) host memory.  Pinned memory can be allocated using either \verb|cudaMallocHost| or \verb|cudaHostAlloc|:  
-
-\begin{lstlisting}
-cudaError_t cudaMallocHost(void **ptr, size_t size);
-cudaError_t cudaHostAlloc(void **pHost, size_t size,unsigned int flags);
-\end{lstlisting}
 
 
 
 
 
 \part{More Parallel Computing}
+
+\section{Latency, Bandwidth, Throughput}
+
+\textbf{Latency} $T$ ($\mu$ secs.) - time it takes for operation to start and compute.   
+
+\textbf{Bandwidth} - amount $v=d/t$
+
+I tried introducing this notation, following Bader, P\"{o}ppl, and Khakhutskyy \cite{BaPK2016}  
+: \[
+\begin{aligned}
+T(1) & \qquad \, T:\mathbb{Z}^+ \to \mathbb{R}^+ \\
+T(n_{\text{ops}}) & \qquad \, T: n_{\text{ops}} \mapsto T(n_{\text{ops}})
+\end{aligned}
+\]
+with $n_{\text{ops}} := $ number of operations.  
+
+$T(1)$ vs. $T(n_{\text{ops}})$  
+
+$T(1) = $ time to complete 1 operation $= $ latency.  \\
+$T(n_{\text{ops}}) = $ time of complete $n_{\text{ops}}$ operations. 
+
+\begin{equation}
+n_{\text{ops}} / T(n_{\text{ops}}) = U = \text{throughput}
+\end{equation}
+
+
+
+\section{CUDA Execution model; SIMD, SIMT}
+
+
+cf. Bader, P\"{o}ppl, and Khakhutskyy \cite{BaPK2016}  
+
+\textbf{SIMD} (Single Instruction Multiple Data) Registers: 
+\begin{itemize}
+	\item same operations executed on pairs/triples of 2,4,$\dots$ operands (ideally in 1 clock cycle)
+	\item vector instructions generated by compiler ("vectorization") or (guided by) programmer ("intinsics", e.g.)
+\end{itemize} 
+
+cf. Ch. 3.  CUDA Execution Model of Cheng, Grossman, and McKercher (2014) \cite{CGM2014}.  
+When kernel grid is launched, thread blocks of that kernel grid are distributed among available SMs for execution.  Once scheduled on SM, threads of a thread block execute concurrently only on that assigned SM.  
+
+CUDA employs \emph{Single Instruction Multiple Thread (SIMT)} architecture to manage and execute threads in groups of 32 called \emph{warps}.  
+
+1 instruction chain is imposed on multiple lightweight cores (via warp scheduler/dispatch unit)\cite{BaPK2016}.  
+
+All threads in warp execute same instruction at the same time.  Each thread has its own instruction address counter and register state, and carries out the current instruction on its own data.  Each SM partitions the thread blocks assigned to it into 32-thread warps that it then schedules for execution on available hardware resources.  
+
+SIMT allows multiple threads in same warp to execute independently.  Even though all threads in a warps start together at the same program address, it's possible for individual threads to have different behavior.  
+
+\section{Performance Evaluation; Speed-Up, Efficiency, Amdahl's law}
+cf. Bader, P\"{o}ppl, and Khakhutskyy \cite{BaPK2016}, \href{https://www5.in.tum.de/lehre/vorlesungen/hpc/WS16/fundamentals.pdf}{Fundamentals}
+\begin{definition}
+	Let
+	\begin{equation}
+	T(p):= \text{ runtime on $p$ processors }
+	\end{equation}
+	\textbf{speed-up} $S(p)$
+	\begin{equation}
+	S(p):= \frac{T(1)}{T(p)}
+	\end{equation}
+\end{definition}
+Typically, $1\leq S(p) \leq p$.  
+
+\subsection{Absolute vs. Relative Speed-Up (definitions)}
+
+\emph{Absolute speed-up} : best sequential algorithm for mono-processor (single processor) $T(1)$, compared to best parallel algorithm for multi-processor system.  
+
+\emph{relative speed-up} : Compare same (parallel) algorithm for mono-(single-) and multi processor system.  
+
+\subsection{(Parallel) Efficiency}
+
+\begin{definition}
+	Efficiency $E(p)$
+	\begin{equation}
+	E(p) = \frac{S(p)}{p}
+	\end{equation}
+\end{definition}
+Typically $0\leq E(p) \leq 1$.  
+
+$\exists \, $ absolute efficiency vs. relative efficiency.  
+
+\subsection{Amdahl's law}
+
+Assumptions: program consists of sequential part $s$, $0\leq s \leq 1$, which can't be parallelized (synchornization, data I/O, etc.).  
+
+\begin{itemize}
+	\item parallelizable part: $1-s$  
+	\item execution time for parallel program on $p$ processors
+\end{itemize}
+\begin{equation}
+T(p) \equiv s T(1) + (1-s) T(p) = sT(1) + (1-s) \left( \frac{T(1)}{p} \right) = T(1) = \left[ (s) \left( 1 - \frac{1}{p} \right) + \frac{1}{p} \right]
+\end{equation}
+To derive the relationship
+\begin{equation}
+T(p) = \frac{T(1)}{p}
+\end{equation}
+use the $vt=l$ relation:
+\[
+\begin{gathered}
+\sum_{i=1}^p v_1 T(p) = v_p T(p) = l = pv_1T(p) \Longrightarrow T(1) = pT(p) \text{ or } T(p) = \frac{T(1)}{p}
+\end{gathered}
+\]
+Moving onwards, assume perfect-speed-up on arbitrary number of processors.  
+
+Resulting speed-up $S(p)$ 
+\begin{equation}
+\begin{gathered}
+S(p) = \frac{T(1)}{T(p)} = \frac{1}{ s + \frac{1-s}{p} }   \\
+\lim_{p\to \infty} S(p) = \frac{1}{s} , \text{so } S(p) \leq \frac{1}{s}
+\end{gathered}
+\end{equation}
+
+\begin{theorem}[Amdahl's law]
+	Amdahl's law: speed-up is bounded by 
+	\begin{equation}
+\boxed{	S(p) \leq \frac{1}{s} }
+	\end{equation}
+\end{theorem}
+
+
+\subsection{Gustafson's law}  
+
+Assumptions: Amdahl: sequential-part stays for increased problem size vs.  
+
+Gustavson: assume that any sufficiently large problem can be efficiently parallelized.  
+
+Fixed-time concept:
+\begin{itemize}
+	\item parallel execution time normalized to $T(p)=1$
+	\item this contains a non-parallelizable part $\sigma$, $0\leq \sigma \leq 1$
+\end{itemize}
+
+Execution time on single-processor:
+\[
+T(1) = \sigma + p(1-\sigma)
+\]
+\[
+S(p) = \frac{T(1)}{T(p)} = \sigma + p(1-\sigma) = p-\sigma(p-1)
+\]
+
+Parallel efficiency $E(p)$
+\[
+E(p) = \frac{S(p)}{p} = \frac{ \sigma + p(1-\sigma) }{p} = \frac{\sigma}{p} + 1-\sigma \xmapsto{ p \to \infty} 1-\sigma
+\]
+
+More realistically, the larger problem sizes, if more processors are available, parallelizable parts typically increase.  
+
+\section{Compute-Bound vs. Memory-Bound Performance; Compute-Bound, Memory-Bound}
+cf. Bader, P\"{o}ppl, and Khakhutskyy \cite{BaPK2016}, \href{https://www5.in.tum.de/lehre/vorlesungen/hpc/WS16/fundamentals.pdf}{Fundamentals}
+
+
+Consider a memory-bandwidth intensive algorithm: 
+\begin{itemize}
+	\item you can do a lot more flops than can be read from memory
+\end{itemize}
+\begin{definition}[arithmetic intensity, operational intensity]
+	\textbf{operational intensity} (or \textbf{arithmetic intensity}) of a code: number of performed flops per accessed byte
+\end{definition}
+
+\subsection{Memory-Bound Performance:}
+\begin{itemize}
+	\item arithmetic intensity smaller than critical ratio
+	\item you could execute additional flops "for free"
+	\item speedup only possible by reducing memory accesses
+\end{itemize}
+
+
+
+\subsection{Compute-Bound Performance}
+\begin{itemize}
+	\item enough computational work to "hide" memory latency 
+	\item speedup only possibly by reducing operations
+\end{itemize}
+
+\subsection{Compute-Bound, Memory-Bound}
+
+From \href{https://stackoverflow.com/questions/868568/what-do-the-terms-cpu-bound-and-i-o-bound-mean}{stackoverflow, "What do the terms “CPU bound” and “I/O bound” mean?"}, compute bound seems to be \textbf{CPU Bound}, means rate at which process progresses is limited by speed of the CPU.  Task that performs calculations on a small set of numbers, for example, multiplying small matrices, is likely to be CPU bound.  
+
+\textbf{Memory bound} means rate at which a process progresses is limited by amount memory available and speed of that memory access.  A task that processes large amounts of in memory data, for example, multiplying large matrices, is likely to be Memory bound.  
+
+
+
 
 \section{Matrix Multiplication, tiled, with shared memory}
 
@@ -2885,6 +3329,114 @@ cf. \href{https://www5.in.tum.de/lehre/vorlesungen/hpc/WS16/tutorial/sparse_02.p
 
 
 Bader, P\"{o}ppl, and Khakhutskyy \cite{BaPK2016}
+
+
+
+\part{Notes on \text{Professional CUDA C Programming}, Cheng, Grossman, McKercher}
+
+cf. Chen, Grossman, and McKercher (2014) \cite{CGM2014}
+
+
+
+\section{CUDA Execution Model}
+cf. Ch. 3.  CUDA Execution Model 
+
+When kernel grid is launched, thread blocks of that kernel grid are distributed among available SMs for execution.  Once scheduled on SM, threads of a thread block execute concurrently only on that assigned SM.  
+
+CUDA employs \emph{Single Instruction Multiple Thread (SIMT)} architecture to manage and execute threads in groups of 32 called \emph{warps}.  
+
+All threads in warp execute same instruction at the same time.  Each thread has its own instruction address counter and register state, and carries out the current instruction on its own data.  Each SM partitions the thread blocks assigned to it into 32-thread warps that it then schedules for execution on available hardware resources.  
+
+SIMT allows multiple threads in same warp to execute independently.  Even though all threads in a warps start together at the same program address, it's possible for individual threads to have different behavior.  
+
+\subsubsection{GPU Core Versus CPU Core}  
+\begin{itemize}
+	\item CPU core, relatively heavy-weight, is designed for very complex control logic, optimizing latency $T$, namely $T(1)$, with $n_{\text{ops}}=1$.  
+	\item GPU core, relatively light-weight, optimized for data-parallel tasks with simpler control logic, optimizing for throughput   
+\end{itemize}
+cf. pp. 8 of Cheng, Grossman, and McKercher (2014) \cite{CGM2014}
+\emph{GPU capability}, described by 
+\begin{itemize}
+	\item number of CUDA cores  
+	\item Memory size
+\end{itemize}
+\emph{GPU performance}, describe by 
+\begin{itemize}
+	\item \emph{Peak computational performance} $:=$ how many single-precision or double-precision floating point calculations that can be processed per second.  (gflops (billion floating-point operations per second) or tflops (trillion floating-point calculations per second)).  
+	\begin{itemize}
+		\item EY : 20170911 Peak computational performance $=$ (compute) throughput (???)
+	\end{itemize}
+	\item \textbf{Memory bandwidth} $:=$ ratio at which data can be read from or stored to memory; gigabytes per second, GB/s
+\end{itemize}
+cf. pp. 8 of Cheng, Grossman, and McKercher (2014) \cite{CGM2014}
+CUDA kernels have no support for \emph{static} variables.  
+Then from \href{https://stackoverflow.com/questions/572547/what-does-static-mean}{What does “static” mean?, Stackoverflow}, 
+\begin{enumerate}
+	\item A static variable inside a function keeps its value between invocations. 
+	\item A static global variable or a function is "seen" only in the file it's declared in
+\end{enumerate}
+cf. pp. 38 of Cheng, Grossman, and McKercher (2014) \cite{CGM2014}
+
+
+\subsection{Understanding the Nature of Warp Execution; Warps and Thread Blocks}  
+
+Once a thread block is scheduled to an SM, threads in thread block are further partitioned into warps.  A warp consists of 32 consecutive threads and all threads in a warp are executed in SIMT, i.e. all threads execute same instruction, and each thread carries out operation on its own private data.  
+
+\subsubsection{Warp Divergence }
+
+For example, consider the following statement:  
+\begin{lstlisting}  
+if (cond) {
+...   
+} else {
+...
+}
+\end{lstlisting}
+
+Suppose for 16 threads in a warp executing this code, \verb|cond| is \verb|true|, but for other 16 \verb|cond| is \verb|false|.  Then half of the warp will need to execute the instructions in the \verb|if| block, and the other half will need to execute the instructions in the \verb|else| block.  Threads in the same warp executing different instructions is referred to as \textbf{warp divergence.} 
+
+If threads of a warp diverge, the warp serially executes each branch path, disabling threads that do not take that path.  
+
+e.g. All threads within a warp must take both branches of the \verb|if ... then| statement.  If condition is \verb|true| for a thread, it executes the \verb|if| clause; otherwise, the thread stalls while waiting for that execution to complete.  
+
+
+\section{Streams and Concurrency}  
+cf. Ch. 6 Streams and Concurrency of  Chen, Grossman, and McKercher (2014) \cite{CGM2014}
+\subsubsection{Introducing Streams and Events}
+\begin{itemize}
+	\item Functions in the CUDA API with \emph{synchronous behavior} block the host thread until they complete.  
+	\item Functions in the CUDA API with \emph{asynchronous behavior} return control to host immediately after being called.  
+\end{itemize}  
+
+\subsubsection{CUDA Streams}
+\begin{itemize}
+	\item \emph{NULL stream}, default stream the kernel launches, implicitly declared, and data transfers use if you don't explicitly specify a stream.  
+	\item \emph{non-null streams} explicitly created and managed; if you want to overlap different CUDA operations, you must use non-null streams.  
+\end{itemize}
+
+Consider 
+
+\begin{lstlisting}
+cudaMemcpy(...,cudaMemcpyHostToDevice);|
+kernel<<<grid,block>>>(...);
+cudaMemcpy(..., cudaMemcpyDeviceToHost);|
+\end{lstlisting}
+
+From device perspective, all 3 operations are issued to default stream, and executed in order they were issued.  Device has no awareness any other host operations performed.  
+
+From host perspective, each data transfer is synchronous and forces idle host time while waiting for them to complete.  The kernel launch is \emph{asynchronous}, so host application almost immediately resumes execution afterwards.  
+
+When performing an asynchronous data trasfer, you must use pinned (or non-pageable) host memory.  Pinned memory can be allocated using either \verb|cudaMallocHost| or \verb|cudaHostAlloc|:  
+
+\begin{lstlisting}
+cudaError_t cudaMallocHost(void **ptr, size_t size);
+cudaError_t cudaHostAlloc(void **pHost, size_t size,unsigned int flags);
+\end{lstlisting}
+
+
+
+
+
 
 
 \part{C++ and Computational Physics}
@@ -4954,6 +5506,75 @@ and so $k$ ranges from $0$ to $M_yM_yN_xM_x -1$.
   \]
 \end{itemize}
 
+\section{Row-Major ordering vs. Column Major ordering, as flatten}
+
+So-called row-major ordering and column major ordering should be formalized, to deal with continguous memory access in reading or writing to a matrix, or lack thereof.  
+
+Given 
+\[
+\begin{gathered}
+A \in \text{Mat}_{\mathbb{R}}(m,n) \\ 
+\begin{aligned}
+& A: \lbrace 1,2, \dots m \rbrace \times \lbrace 1,2, \dots n \rbrace \to \mathbb{R} \\
+& A: (i,j) \mapsto A(i,j) \in \mathbb{R} 
+\end{aligned} \\
+\text{ or } 
+\begin{aligned}
+& A: \lbrace 0,1, \dots m-1 \rbrace \times \lbrace 0,1, \dots n-1 \rbrace \to \mathbb{R} \\
+& A: (i,j) \mapsto A(i,j) \in \mathbb{R} 
+\end{aligned} 
+\end{gathered}
+\]
+
+Consider isomorphism "flatten":
+\begin{equation}
+\begin{aligned}
+\text{Mat}_{\mathbb{R}}(m,n)  & \xrightarrow{\text{flatten} } \mathbb{R}^{mn} \\
+\lbrace 1,2, \dots m \rbrace  & \times \lbrace 1,2, \dots n \rbrace \to \lbrace 1,2,\dots mn \rbrace \\
+\lbrace 0,1, \dots m-1 \rbrace  & \times \lbrace 0,1, \dots n-1 \rbrace \to \lbrace 0,1,\dots mn-1 \rbrace
+\end{aligned}
+\end{equation}
+
+There are 2 kinds of flatten:
+
+Row-major ordering is the one we're (psychologically) used to, if we read continguously from left to right, horizontally, along a row.  
+\begin{definition}[row-major ordering]
+\begin{equation}
+\begin{gathered}
+\begin{gathered}
+\lbrace 0,1, \dots m-1 \rbrace \times \lbrace 0,1, \dots n-1 \rbrace \to \lbrace 0,1,\dots mn-1 \rbrace  \\
+(i,j ) \mapsto in + j \\
+\lbrace 1,2, \dots m \rbrace \times \lbrace 1,2, \dots n \rbrace \to \lbrace 1,2,\dots mn \rbrace \\
+(i,j) \mapsto (i-1)n + j 
+\end{gathered}
+\qquad \  \begin{gathered}
+\lbrace 0,1,\dots mn-1 \rbrace \to \lbrace 0,1, \dots m-1 \rbrace \times \lbrace 0,1, \dots n-1 \rbrace \\
+k \mapsto (k/n, k \mod{n}) \\ 
+\lbrace 1,2,\dots mn \rbrace \to \lbrace 1,2, \dots m \rbrace \times \lbrace 1,2, \dots n \rbrace  \\
+k \mapsto ( \lceil k/n \rceil, k \mod{n})
+\end{gathered}
+\end{gathered}
+\end{equation}
+\end{definition}
+
+\begin{definition}[column-major ordering]
+\begin{equation}
+\begin{gathered}
+\begin{gathered}
+\lbrace 0,1, \dots m-1 \rbrace \times \lbrace 0,1, \dots n-1 \rbrace \to \lbrace 0,1,\dots mn-1 \rbrace  \\
+(i,j ) \mapsto i + jm \\
+\lbrace 1,2, \dots m \rbrace \times \lbrace 1,2, \dots n \rbrace \to \lbrace 1,2,\dots mn \rbrace \\
+(i,j) \mapsto i + (j-1)m 
+\end{gathered}
+\qquad \  \begin{gathered}
+\lbrace 0,1,\dots mn-1 \rbrace \to \lbrace 0,1, \dots m-1 \rbrace \times \lbrace 0,1, \dots n-1 \rbrace \\
+k \mapsto (k \mod{m}, k/m) \\ 
+\lbrace 1,2,\dots mn \rbrace \to \lbrace 1,2, \dots m \rbrace \times \lbrace 1,2, \dots n \rbrace  \\
+k \mapsto ( k \mod{m} , \lceil k/ m \rceil )
+\end{gathered}
+\end{gathered}
+\end{equation}
+\end{definition}
 
 
 \subsection{(CUDA) Constant Memory}
@@ -7145,6 +7766,19 @@ given $F:(R-\text{Module})^k \to R-\text{Module}$, with $T=$\verb|n_steps|.
 
 \end{multicols*}
 \begin{thebibliography}{9}
+
+\bibitem{Shaw2015}
+Zed A. Shaw.  \textbf{Learn C the Hard Way: Practical Exercises on the Computational Subjects You Keep Avoiding (Like C)} (Zed Shaw's Hard Way Series) 1st Edition.  Addison-Wesley Professional; 1 edition (September 14, 2015) ISBN-13: 978-0321884923.  
+
+\bibitem{Bend}
+Eli Bendersky.   \href{https://eli.thegreenplace.net/2009/10/21/are-pointers-and-arrays-equivalent-in-c}{Are pointers and arrays equivalent in C?}
+
+\bibitem{KeRi1988}
+Brian W. Kernighan, Dennis M. Ritchie.  \textbf{C Programming Language}, 2nd Ed. 1988.   
+
+\bibitem{Vand1994}
+Peter van der Linden.  \textbf{Expert C Programming: Deep C Secrets} 1st Edition.  Prentice Hall; 1st edition (June 24, 1994)  ISBN-13: 978-0131774292
+
 \bibitem{HTF2009}
 Trevor Hastie, Robert Tibshirani, Jerome Friedman.   \textbf{The Elements of Statistical Learning: Data Mining, Inference, and Prediction}, Second Edition (Springer Series in Statistics) 2nd ed. 2009. Corr. 7th printing 2013 Edition.  ISBN-13: 978-0387848570.  \url{https://web.stanford.edu/~hastie/local.ftp/Springer/OLD/ESLII_print4.pdf}
 
