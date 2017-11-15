@@ -552,6 +552,35 @@ The operating system (OS) is running the program (its instructions).  Only from 
 
 For \href{https://en.wikipedia.org/wiki/Virtual_memory}{virtual memory}, the memory addresses are mapped by program called \emph{virtual addresses} into \emph{physical addresses} and the OS manages virtual addresses space, hardcare in the CPU called memory management unit (\emph{MMU}) translates virtual addresses to physical addresses, and kernel manages memory hierarchy (eliminating possible overlays).  In this case, it's the \emph{hardware} that detects an attempt to refer to a non-existent segment, or location outside the bounds of a segment, or to refer to location not allowed by permissions for that segment (e.g. write on read-only memory).   
 
+\subsubsection{Dereferencing a ptr to a NULL ptr (in C) at OS, hardware level}
+
+
+The problem, whether it's for dereferencing a pointer that is a null pointer, or uninitialized pointer, appears to (see the \verb|./Cmemory/| subfolder) be at this instruction at the register level:  
+
+\begin{lstlisting}
+x000000000040056c <+38>:	movzbl (%rax),%eax
+
+// or 
+
+0x00000000004004be <+24>:	movss  %xmm0,(%rax)  
+\end{lstlisting}
+
+involving the register RAX, a temporary register and to return a value, upon assignment.  And in either case, register RAX has trying to access virtual (memory) address \verb|0x0| (to find this out in \verb|gdb|, do \verb|i r| or \verb|info register|).  
+
+Modern OS's run user-level code in a mode, such as \emph{protected mode}, that uses "paging" (using secondary memory source than main memory) to convert virtual addresses into physical addresses.  
+
+For each process (thread?), the OS keeps a \emph{page table} dictating how addresses are mapped.  Page table is stored in memory (and protected, so user-level code can't modify it).  For every memory access, given (memory) address, CPU translates address according to the page table.  
+
+When address translation fails, as in the case that \emph{not all addresses are valid}, and so if a memory access generates an invalid address, the processor (hardware!) raises a \emph{page fault exception}.  "This triggers a transition from \emph{user mode} (aka \emph{current privilege level (CPL) 3} on x86/x86-64) into \emph{kernel mode} (aka CPL 0) to a specific location in the kernel's code, as defined by the \emph{interrupt descriptor table} (IDT)."  cf. [What happens in OS when we dereference a NULL pointer in C?](https://stackoverflow.com/questions/12645647/what-happens-in-os-when-we-dereference-a-null-pointer-in-c)
+
+
+Kernel regains control and send signal (EY : 20171115 to the OS, I believe).   
+
+In modern OS's, page tables are usually set up to make the address 0 an invalid virtual address.  
+
+cf. [What happens in OS when we dereference a NULL pointer in C?](https://stackoverflow.com/questions/12645647/what-happens-in-os-when-we-dereference-a-null-pointer-in-c)
+
+
 
 \part{Parallel Computing}
 
