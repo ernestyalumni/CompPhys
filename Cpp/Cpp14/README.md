@@ -135,8 +135,93 @@ option3, 2048MB: 12616ms
 option3, 4096MB: 25169ms
 ```  
 
+## [The rule of 3/5/0](http://en.cppreference.com/w/cpp/language/rule_of_three); user-defined destructor, copy constructor, copy assignment/ move constructor, move assignment  
+
+### why Rule of 5  
+
+Because of presence of user-defined destructor, copy-constructor, or copy-assignment operator prevents implicit definition of the move constructor, and move assignment operator  
+
+### [move constructors](http://en.cppreference.com/w/cpp/language/move_constructor) 
+
+move constructor of class `T` (or `cls` is my notation), is non-template constructor whose 1st parameter is `T&&`, `const T&&`, `volatile T&&`, or `const volatile T&&`.  and either there are no parameters, or rest of parameters all have default values.  (i.e. `cls&&`, `const cls&&`, `volatile cls&&`, `const volatile cls&&`)    
+
+**Syntax**  
+```  
+class_name( class_name && )  
+class_name( class_name &&) = default; 
+class_name( class_name &&) = delete; 
+```  
+
+Move constructor called whenever by overload, which typically occurs when object is initialized from `rvalue` of same type, including  
+* initialization: e.g. `T a = std::move(b);` or `T a(std::move(b));` 
+* function argument passing: `f(std::move(a));`  
+* function return: `return a;`  
+
+e.g. `movconstruct.cpp`, notes: 
+
+```  
+struct A 
+{
+	std::string s;
+	// struct constructor 
+	A() : s("test") { }
+	// copy constructor
+	A(const A& o) : s(o.s) { std::cout << "move failed!\n"; } 
+	// move constructor
+	A(A&& o) noexcept : s(std::move(o.s)) { }
+}; 
+
+
+struct B : A
+{
+	std::string s2;
+	int n;
+	// implicit move constructor B::(B&&) 
+	// calls A's move constructor 
+	// calls s2's move constructor
+	// and makes a bitwise copy of n 
+}; 
+
+struct C : B 
+{
+	~C() { } 	// destructor prevents implicit move constructor C::(C&&) 
+}; 
+
+C c1;
+C c2 = std::move(c1); // calls copy constructor 
+// fails to move for c1 -> c2!
+```   
+
+`C`, when moving it, fails, because user-defined destructor (almost always case with classes) prevents implicit move constructor. Solution is to have a user-defined move constructor.    
+
+
+```  
+struct D : B 
+{
+	D() {  }
+	~D() {  }			// destructor would prevent implicit move constructor D::(D&&) 
+	D(D&&) = default; 	// forces a move constructor anyways 
+}; 
+```  
+cf. Scott Meyers. **Effective Modern C++**.  pp. 115, Item 17  
+
+** Move constructor** and ** move assignment operator**: each performs memberwise moving of non-static data members.  Generated (automatically) only if class contains no user-declared copy operations, move operations, or destructor.  
+
+EY : 20171201 - compiler knows to select the overload with move constructor or generate (automatically) a move constructor?  
 
 ## Glossary/Dictionary/Quick Look Up  
+
+`noexcept` specifier - specifies whether a function will throw exceptions or not   
+
+** Syntax **  
+  
+**`noexcept`**  				 (1)
+**`noexcept`**( *expression* )	 (2)  
+  
+1. Same as **`noexcept ( true ) ` **  
+2. If *expression* evaluates to `true`, function is declared to not throw any exceptions.  
+
+
 
 `override` - override specifier (>C++11) - specifies that virtual function overrides another virtual function, e.g.  
 ```  
