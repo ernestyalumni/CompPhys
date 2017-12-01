@@ -248,4 +248,76 @@ Defined in header `<numeric>`
 template<class ForwardIterator, class T>  
 void iota(ForwardIterator first, ForwardIterator last, T value);  
 ```  
+### smart pointers  
+
+#### [`std::unique_ptr`](http://en.cppreference.com/w/cpp/memory/unique_ptr)
+
+Defined in header `<memory>`.  
+
+```  
+template<  
+    class T,  
+    class Deleter = std::default_delete<T>  
+> class unique_ptr;  
+  
+
+template <  
+    class T,  
+    class Deleter  
+> class unique_ptr<T[], Deleter>;  
+```  		
+
+`std::unique_ptr` is a smart pointer that owns and manages another object through a pointer and disposes of that object when the `unique_ptr` goes out of scope. 
+
+cf. Scott Meyers. **Effective Modern C++**.  pp. 118, Item 18 Use `std::unique_ptr` for exclusive-ownership resource management.   
+
+`std::unique_ptr` same size as raw pointers, and for most operations (including dereferencing), they execute exactly the same instructions.  This means you can use them even in situations where memory and cycles are tight.  If a raw pointer is small enough and fast enough for you, a `std::unique_ptr` almost certainly is, too.  
+
+`std::unique_ptr` embodies *exclusive ownership* semantics.  A non-null `std::unique_ptr` always owns what it points to  
+* Moving `std::unique_ptr` transfers ownership from source pointer to the destination pointer. (Source pointer is set to null).  
+* Copying `std::unique_ptr` isn't allowed  
+* Upon destruction, a non-null `std::unique_ptr` destroys its resource, `delete` to the raw pointer by default  
+
+Use `decltype` specifier (prefix) when making your own destructor.  By definition, [`decltype`](http://en.cppreference.com/w/cpp/language/decltype) "inspects the declared type of an entity or type and value category of an expression."  But it's "useful when declaring types that are difficult or impossible to declare using standard notation, like lambda-related types or types that depend on template parameters."    
+
+"Converting a `std::unique_ptr` to a `std::shared_ptr` is easy.  (Meyers, pp. 124, Item 18)
+
+I'm thinking you can use `.release` - returns a pointer to the managed object and releases the ownership.   
+
+##### [overhead for `std::unique_ptr`](https://stackoverflow.com/questions/22295665/how-much-is-the-overhead-of-smart-pointers-compared-to-normal-pointers-in-c)   
+
+`std::unique_ptr` has memory overhead if you provide it with some non-trivial deleter.  
+
+`std::unique_ptr` has time overhead only during constructor (if it has to copy provided deleter and/or null-initialize the pointer), and during destructor (to destroy the owned object).  
+
+
+##### [overhead for `std::shared_ptr`](https://stackoverflow.com/questions/22295665/how-much-is-the-overhead-of-smart-pointers-compared-to-normal-pointers-in-c)   
+
+`std::shared_ptr` always has memory overhead for reference counter, but it's very small.  
+
+`std::shared_ptr` has time overhead in constructor (to create reference counter), in destructor (to decrement reference counter and possibly destroy the object), and assignment operator (to increment reference counter).  
+Due to thread-safety guarantees of `std::shared_ptr`, these increments/decrements are atomic, thus adding some more overhead.    
+
+cf. Meyers, pp. 125, Item 19: Use `std::shared_ptr` for shared-ownership resource management.  
+
+An object accessed via `std::shared_ptrs` has its lifetime managed by those pointers through *shared ownership*.  
+No specific `std::shared_ptr` owns the object.  Instead, all `std::shared_ptrs` pointing to it collaborate to ensure its destruction at the point where it's no longer needed.  When last `std::shared_ptr` pointing to an object stops pointing there (e.g. because `std::shared_ptr` is destroyed or made to point to a different object), `std::shared_ptr` destroys object it points to.  
+
+A `std::shared_ptr` can tell whether it’s the last one pointing to a resource by con‐ sulting the resource’s *reference count*, a value associated with the resource that keeps track of how many `std::shared_ptrs` point to it.  
+`std::shared_ptr` constructors increment this count (usually),  
+`std::shared_ptr` destructors decrement it, and   
+copy assignment operators do both.  
+(If `sp1` and `sp2` are `std::shared_ptrs` to different objects, the assignment “`sp1 = sp2;`” modifies `sp1` such that it points to the object pointed to by `sp2`.  
+The net effect of the assignment is that the reference count for the object originally pointed to by `sp1` is decremented, while that for the object pointed to by `sp2` is incremented.)  
+If a `std::shared_ptr` sees a reference count of zero after performing a decrement, no more `std::shared_ptrs` point to the resource, so the `std::shared_ptr` destroys it. 
+
+* **`std::shared_ptrs` are twice the size of a raw pointer**, because they internally contain a raw pointer to the resource as well as a raw pointer to the resource’s reference count. 
+* **Memory for the reference count must be dynamically allocated.** Conceptually, the reference count is associated with the object being pointed to,  
+but pointed-to objects know nothing about this.  
+They thus have no place to store a reference count. (A pleasant implication is that any object-even those of built-in types-may be managed by `std::shared_ptrs.`)  
+Item 21 explains that the cost of the dynamic allocation is avoided when the `std::shared_ptr` is created by `std::make_shared`, but there are situations where `std::make_shared` can’t be used. Either way, the reference count is stored as dynamically allocated data.
+* **Increments and decrements of the reference count must be atomic,**  
+
+Move-constructing a `std::shared_ptr` from another `std::shared_ptr` sets the source `std::shared_ptr` to null, and that means that the old `std::shared_ptr` stops pointing to the resource at the moment the new `std::shared_ptr starts`. As a result, no reference count manipulation is required.  Moving `std::shared_ptrs` is therefore faster than copying them: copying requires incrementing the reference count, but moving doesn’t.  
+
 
