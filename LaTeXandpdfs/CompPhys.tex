@@ -581,6 +581,77 @@ In modern OS's, page tables are usually set up to make the address 0 an invalid 
 cf. [What happens in OS when we dereference a NULL pointer in C?](https://stackoverflow.com/questions/12645647/what-happens-in-os-when-we-dereference-a-null-pointer-in-c)
 
 
+\part{C++}  
+
+\section{Free Store}  
+
+
+\href{http://www.gotw.ca/gotw/009.htm}{GotW \#9, Memory Management - Part I}
+
+
+
+cf. 11.2 Introduction of Ch. 11 Select Operations \cite{Stro2013}.  
+
+
+
+
+\section{Copy vs. Move}  
+cf. 17.1 Introduction of Ch. 17 Construction, Cleanup, Copy, and Move of Stroustrup \cite{Stro2013}.  
+
+Difference between \emph{move} and \emph{copy}: after a copy, 2 objects must have same value; whereas after a move, the source of the move isn't required to have its original value.  So moves can be used when source object won't be used again.  
+
+Refs.: Sec. 3.2.1.2, Sec. 5.2, notion of moving a resource, Sec. 13.2-Sec.13.3, object lifetime and errors explored further in Stroustrup \cite{Stro2013}  
+
+
+5 situations in which an object is copied or moved:   
+\begin{itemize}
+	\item as source of an \emph{assignment}
+	\item as object initializer 
+	\item as function argument
+	\item as function return value
+	\item as an exception  
+\end{itemize}
+
+
+
+\section{Design Patterns}
+
+cf. \href{https://en.wikibooks.org/wiki/C%2B%2B_Programming/Code/Design_Patterns}{C++ Programming/Code/Design Patterns}  
+
+Each design pattern consists of:
+\begin{itemize}
+	\item \textbf{Problem/requirement}  Go through a mini analysis design that may be coded to test out the solution.  State requirements of the problem to be solved.  Usually, this is a common problem that'll occur in more than 1 application.  
+	\item  \textbf{Forces} Constraints, usually technological.  
+	\item \textbf{Solution}  This is the design part of the design pattern.  
+\end{itemize}
+
+\subsection{Creational Patterns}  
+
+Creational Patterns deal with object creation mechanisms.  
+
+\subsubsection{Builder}  
+
+\begin{itemize}
+	\item \textbf{Problem} - Want: construct complex object; however, don't want to have a complex constructor member or 1 that would need many arguments 
+	\item \textbf{Solution} - Define intermediate object, whose member functions define desired object part by part before object is available to the client.  Builder Pattern defer the construction of object until all options for creation have been specified.  
+\end{itemize}
+
+\subsubsection{Factory}
+
+\begin{itemize}
+	\item \textbf{Problem} - Want: decide at run-time what object to be created based on some configuration or application parameter.  When writing the code, we don't know what class should be instantiated.  
+	\item \textbf{Solution} Define an \emph{interface} for creating an object, but let subclasses decide which class to instantiate.  Factory method lets a class defer instantiation to subclasses.   
+\end{itemize}
+
+\subsection{Structural Patterns}
+
+\subsubsection{Adapter} 
+
+Convert interface of a class into another interface.  \textbf{Adapter} lets classes work together that couldn't otherwise because of incompatible interfaces.  
+
+
+
+
 
 \part{Parallel Computing}
 
@@ -7953,6 +8024,27 @@ F(X(t-k), X(t-(k-1))\dots X(t-1)) = X(t), \qquad \, \forall \, t=0,1,\dots T-1
 given $F:(R-\text{Module})^k \to R-\text{Module}$, with $T=$\verb|n_steps|.  
 
 
+Stroustrup \cite{Stro2013}
+
+
+\part{Test-Driven Development}
+
+cf. \href{https://en.wikipedia.org/wiki/Test-driven_development}{Test-driven development, wikipedia}  
+
+Programmers also apply concept to improving and debugging legacy code developed with older techniques.  
+
+Test-driven development cycle: following sequence based on book \textbf{Test-Driven Development by Example}.  
+
+\begin{enumerate}
+	\item \textbf{Add a test}.  Each new feature begins with writing a test.  Write test that defines a function or improvements of a function, which should be very succinct.  To write a test, developer must clearly understand the feature's specification and requirements.  Developer can accomplish this through \emph{use cases} or \emph{user stories}, can write test in whatever testing framework appropriate to software environment.  
+	
+	This is differentiating feature of test-driven development vs. writing unit tests \emph{after} code is written.  
+	\item \textbf{Run all tests and see if new test fails}.  This validates that the \emph{test harness} is working correctly, shows that new test doesn't pass without requiring new code, because required behavior already exists, and rules out possibility that new test is flawed and will always pass.  New test should fail for the expected reason.  This step increases developer's confidence in the new test.  
+	\item \textbf{Write the code} At this point, only purpose of written code is to pass the test.  
+	\item \textbf{Run tests}
+	\item \textbf{Refactor code} Growing code must be cleaned up regularly during test-driven development.  Duplication removed, Object, class, module, variable, and method names should clearly represent their current purpose and use.  Split method bodies to improve maintainability.  
+	\item \textbf{Repeat}, starting with another new test.   
+\end{enumerate} 
 
 
 \end{multicols*}
@@ -7973,6 +8065,15 @@ Peter van der Linden.  \textbf{Expert C Programming: Deep C Secrets} 1st Edition
 \bibitem{Ferr2010}
 Leo Ferres.  "Memory management in C: The heap and the stack".  \href{http://www.inf.udec.cl/~leo/teoX.pdf}{Memory management in C: The heap and the stack}
 
+
+
+\bibitem{Stro2013}
+Bjarne Stroustrup.  \textbf{The C++ Programming Language}, 4th Edition. Addison-Wesley Professional; 4 edition (May 19, 2013).  ISBN-13: 978-0321563842
+
+\bibitem{GhJa1997} 
+Carlo Ghezzi, Mehdi Jazayeri.  \textbf{Programming Language Concepts} 3rd Edition.  Wiley; 3 edition (June 23, 1997).  ISBN-13: 978-0471104261  
+
+\url{https://vowi.fsinf.at/images/7/72/TU_Wien-Programmiersprachen_VL_(Puntigam)_-_E-Book_SS08.pdf}
 
 
 
@@ -7996,6 +8097,14 @@ John Cheng, Max Grossman, Ty McKercher.  \textbf{Professional CUDA C Programming
 CS229 Stanford University.  \url{http://cs229.stanford.edu/materials.html}
 
 
+
+\bibitem{LaGr2015}  
+Andrew Lavin, Scott Gray.  \emph{Fast Algorithms for Convolutional Neural Networks} \href{https://arxiv.org/abs/1509.09308}{arXiv:1509.09308 [cs.NE]}
+
+
+
+
+
 \bibitem{Fitz}
 Richard Fitzpatrick.  ``Computational Physics.''  \url{http://farside.ph.utexas.edu/teaching/329/329.pdf}
 
@@ -8005,8 +8114,8 @@ Richard Fitzpatrick.  ``Computational Physics.''  \url{http://farside.ph.utexas.
 \bibitem{BaPK2016}
 Prof. Dr. Michael Bader (\emph{Lecturer});  Alexander Pöppl, Valeriy Khakhutskyy.  (\emph{Tutorials}).  HPC - Algorithms and Applications - Winter 16.  Winter 16/17.  \textbf{TUM}.  \url{https://www5.in.tum.de/wiki/index.php/HPC_-_Algorithms_and_Applications_-_Winter_16}  
 
-\bibitem{Stro2013}
- Bjarne Stroustrup.  \textbf{A Tour of C++} (C++ In-Depth Series). Addison-Wesley Professional.   2013. 
+%\bibitem{Stro2013}
+% Bjarne Stroustrup.  \textbf{A Tour of C++} (C++ In-Depth Series). Addison-Wesley Professional.   2013. 
  
 \bibitem{SK2010}
 Jason Sanders, Edward Kandrot.  \textbf{CUDA by Example: An Introduction to General-Purpose GPU Programming} 1st Edition.  Addison-Wesley Professional; 1 edition (July 29, 2010).  ISBN-13: 978-0131387683
@@ -8036,6 +8145,10 @@ Rubin H. Landau, Manuel J P\'{a}ez, Cristian C. Bordeianu.  \textbf{Computationa
 
 \bibitem{AKNK2006}
 Vladimir I. Arnold, Valery V. Kozlov, Anatoly I. Neishtadt, E. Khukhro.  \textbf{Mathematical Aspects of Classical and Celestial Mechanics (Encyclopaedia of Mathematical Sciences)} 3rd Edition.  Encyclopaedia of Mathematical Sciences (Book 3).  Springer; 3rd edition (November 14, 2006).  ISBN-13: 978-3540282464
+
+
+
+
 
 
 
