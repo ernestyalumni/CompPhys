@@ -8,7 +8,8 @@ Since being good at Computational Physics means being good at C/C++, and also C+
 - Cpp
   * *Initially*, `Cpp/` directory has material based off of M. Hjorth-Jensen's **Computational Physics** [2015 lectures](https://github.com/CompPhysics/ComputationalPhysicsMSU/blob/master/doc/Lectures/lectures2015.pdf): what I did was to type up the (pedagogical) programs in the lectures, (try to) organize them so that you know which program corresponds to what part of the lectures (so that while you're reading the lectures, you can run the programs simultaneously), and compile and make sure they run (as I wanted them to run, myself).
   * Now, `Cpp/` includes more material, more or less related to C++: code snippets, pedagogical programs, programs and code exclusively built on the **C++11/C++14** standard, which is really a new language, and packages written entirely in C++ that I need practice with, such as *OpenCV* (Open Computer Vision).  
-
+  * [C++ **Design Patterns**](https://github.com/ernestyalumni/CompPhys/tree/master/Cpp/DesignPatterns)  
+  
 - CUDA-By-Example
 	* `CUDA-By-Example/` directory has material based on Sanders and Kandrot's **CUDA By Example**.  Most of the code examples from the book are there, and then some.  I truly believe this is the most comprehensive code repository (subdirectory) for codes out of that book that's out there.  
 	* `CUDA-By-Example/common` : you should also note that the subdirectory `CUDA-By-Example/common` has useful header files and I try my best to explain thoroughly what the stuff in the header files mean: especially note `gpu_anim.h` because you can use that header file to do OpenGL and CUDA C bitmap animations that's **entirely rendered on the GPU.**  
