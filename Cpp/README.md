@@ -30,7 +30,8 @@ Be aware that this Table of Contents maybe incomplete (one way around this is to
 - File I/O in C and C++
 - **stack** vs. **heap**
 - `hdf5` - C, C++, Python, saving files, File I/O from Python hdf5 to C++
-- **[Design Patterns](https://github.com/ernestyalumni/CompPhys/tree/master/Cpp/DesignPatterns)**
+- **[Design Patterns](https://github.com/ernestyalumni/CompPhys/tree/master/Cpp/DesignPatterns)**  
+- **[C++ for Mathematicians from Scheinerman](https://github.com/ernestyalumni/CompPhys/tree/master/Cpp/math)**  
 
 ## Listing of which program or script corresponds to which section, chapter, part for Hjorth-Jensen's material
 
