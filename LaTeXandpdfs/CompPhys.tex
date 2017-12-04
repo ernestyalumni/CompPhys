@@ -650,6 +650,67 @@ Creational Patterns deal with object creation mechanisms.
 Convert interface of a class into another interface.  \textbf{Adapter} lets classes work together that couldn't otherwise because of incompatible interfaces.  
 
 
+\section{vtable; virtual table}  
+
+I was given this answer to a question I posed to a 20 year C++ veteran and it was such an important answer (as I did not know a virtual table existed, at all before), that I will copy this, repeat this and explore this extensively:  
+
+"The keyword you're looking for is virtual table: " \href{https://stackoverflow.com/questions/99297/how-are-virtual-functions-and-vtable-implemented}{How are virtual functions and vtable implemented?, stackoverflow}  
+
+Original question, from \href{https://stackoverflow.com/users/3153/brian-r-bondy}{Brian R. Bondy}:  
+
+\subsection{How are virtual functions and vtable implemented?}
+
+We all know what virtual functions are in C++, but how are they implemented at a deep level?
+
+Can the vtable be modified or even directly accessed at runtime?
+
+Does the vtable exist for all classes, or only those that have at least one virtual function?
+
+Do abstract classes simply have a NULL for the function pointer of at least one entry?
+
+Does having a single virtual function slow down the whole class? Or only the call to the function that is virtual? And does the speed get affected if the virtual function is actually overwritten or not, or does this have no effect so long as it is virtual.
+
+Answer from \emph{community wiki}:  
+
+\subsubsection{How are virtual functions implemented at a deep level?}
+
+From \href{http://wayback.archive.org/web/20100209040010/http://www.codersource.net/published/view/325/virtual_functions_in.aspx}{"Virtual Functions in C++"}
+
+Whenever a program has a virtual function declared, a v - table is constructed for the class. The v-table consists of addresses to the virtual functions for classes that contain one or more virtual functions. The object of the class containing the virtual function contains a virtual pointer that points to the base address of the virtual table in memory. Whenever there is a virtual function call, the v-table is used to resolve to the function address. An object of the class that contains one or more virtual functions contains a virtual pointer called the vptr at the very beginning of the object in the memory. Hence the size of the object in this case increases by the size of the pointer. This vptr contains the base address of the virtual table in memory. Note that virtual tables are class specific, i.e., there is only one virtual table for a class irrespective of the number of virtual functions it contains. This virtual table in turn contains the base addresses of one or more virtual functions of the class. At the time when a virtual function is called on an object, the vptr of that object provides the base address of the virtual table for that class in memory. This table is used to resolve the function call as it contains the addresses of all the virtual functions of that class. This is how dynamic binding is resolved during a virtual function call.
+
+cf. \href{http://wayback.archive.org/web/20100209040010/http://www.codersource.net/published/view/325/virtual_functions_in.aspx}{"Virtual Functions in C++"}
+
+\subsubsection{What is a Virtual Function?}  
+
+A virtual function is a member function of a class, whose functionality can be over-ridden in its derived classes. It is one that is declared as virtual in the base class using the virtual keyword. The virtual nature is inherited in the subsequent derived classes and the virtual keyword need not be re-stated there. The whole function body can be replaced with a new set of implementation in the derived class. 
+
+\subsubsection{What is Binding?}  
+
+Binding is associating an object or a class with its member.   If we call a method \verb|fn()| on an object \verb|o| of a class \verb|c|, we say that object \verb|o| is binded with method \verb|fn()|.  
+
+This happens at \emph{compile time} and is known as \emph{static} - or \emph{compile-time} binding.   
+Calls to virtual member functions are resolved during \emph{run-time}.  This mechanisms is known as \emph{dynamic-binding.}   
+
+The most prominent reason why a virtual function will be used is to have a different functionality in the derived class.  The difference between a non-virtual member function and a virtual member function is, the non-virtual member functions are resolved at compile time.  
+
+\subsubsection{How does a Virtual Function work?}  
+
+When a program (code text?) has a virtual function declared, a \textbf{v-table} is \emph{constructed} for the class.  
+
+The v-table consists of addresses to virtual functions for classes that contain 1 or more virtual functions.  \\
+The object of the class containing the virtual function \emph{contains a virtual pointer} that points to the base address of the virtual table in memory.  An object of the class that contains 1 or more virtual functions contains a virtual pointer called the \textbf{vptr} at the very beginning of the object in the memory.  (Hence size of the object in this case increases by the size of the pointer; "memory/size overhead.")  \\
+Whenever there's a virtual function call, vtable is used to resolve to the function address.  
+This vptr contains base address of the virtual table in memory.  \\
+
+Note that virtual tables are class specific, i.e. there's only 1 virtual table for a class, irrespective of number of virtual functions it contains.  
+
+This virtual table in turn contains base addresses of 1 or more virtual functions of the class.  
+
+At the time when a virtual function is called on an object, the vptr of that object provides the base address of the virtual table for that class in memory.  This table is used to resolve the function call as it contains the addresses of all the virtual functions of that class.  This is how dynamic binding is resolved during a virtual function call.  
+
+
+
+
 
 
 
@@ -8046,6 +8107,88 @@ Test-driven development cycle: following sequence based on book \textbf{Test-Dri
 	\item \textbf{Repeat}, starting with another new test.   
 \end{enumerate} 
 
+\part{Optimization}
+
+\section{Differential Geometry review}  
+
+I looked up \href{https://www.ldv.ei.tum.de/en/lehre/non-convex-optimization-for-analyzing-big-data/}{Non-convex optimization for analyzing big data} with Prof. Dr. Martin Kleinsteuber for TUM and came across Absil, Mahony, and Sepulchre \cite{AMS2008}.  
+
+cf. Absil, Mahony, and Sepulchre \cite{AMS2008}, 3.1.5. The manifolds $\mathbb{R}^{n\times p}$ and $\mathbb{R}_*^{n\times p}$.  
+
+On $\mathbb{R}^{n\times p}$, define chart $\begin{aligned} & \quad \\ 
+	 & \varphi : \mathbb{R}^{n\times p } \to \mathbb{R}^{np} \\
+	 & \varphi : X \mapsto \text{vec}(X) \end{aligned}$  
+	 
+	 where $\text{vec}(X)$ "denotes the vector obtained by stacking the columns of $X$ below one another."   Absil, Mahony, and Sepulchre \cite{AMS2008}.  
+	 
+	 $\forall \, X \in \mathbb{R}^{n\times p}$, let $(i,j ) \in \lbrace 0 ,1,\dots n-1\rbrace \times \lbrace 0,1,\dots p-1 \rbrace$ (or $\lbrace 1\dots n \rbrace \times \lbrace 1 \dots p \rbrace$) for 0-based counting or 1-based counting, respectively.  
+	 
+	 $X(i,j) \in \mathbb{R}$ is the entry at the $i$th row, $j$th column.  
+	 
+I had introduced a flatten functor before.  Consider $(i,j) \mapsto k := i + nj \in \lbrace 0 ,1, \dots np-1\rbrace $ (or $k= i +n(j-1) \in \lbrace 1 \dots np \rbrace$) for \textbf{column-major ordering}.  
+
+Equip manifold $\mathbb{R}^{n\times p}$, with $(\mathbb{R}^{n\times p}, \varphi)$ chart atlas, with inner product:  
+
+\begin{equation}
+\langle Z_1, Z_2 \rangle := \text{vec}(Z_1)^T \text{vec}(Z_2) = \text{tr}(Z_1^T Z_2) 
+\end{equation}
+since $\text{tr}(Z_1^T Z_2) = \sum_{k=0}^{p-1} ()Z_1^T Z_2)_{kk} = \sum_{k=0}^{p-1} (Z_1^T)_{kl} (Z_2)_{lk} = \sum_{k=0}^{p-1} (Z_1)_{lk} (Z_2)_{lk}$.  
+
+Norm induced by inner product is \textbf{Frobenius norm}: 
+
+\begin{equation}
+\| Z \|_F^2 = \langle Z,Z\rangle = \text{tr}(Z^T Z)
+\end{equation}
+i.e. sum of squares of elements of $Z$.  
+
+Observe manifold topology of $\mathbb{R}^{n\times p}$ is equivalent to its canonical topology is Euclidean space.  
+
+Let $\mathbb{R}^{n\times p}_* \equiv $ set of all $n\times p$ matrices s.t. $p\leq n$ and columns are linearly independent.  
+
+Consider $(\mathbb{R}_*^{n\times p})^c$.  Let $X \in (\mathbb{R}_*^{n\times p })^c$.  \\
+Then $\text{det}X = 0$, by def. of $\mathbb{R}_*^{n\times p})^c$.  
+Then $\text{det}(X^TX) =\text{det}X^T \text{det}X = 0$.  
+
+Since $\mathbb{R}_*^{n\times p})^c = \lbrace X \in \mathbb{R}^{n\times p} | \text{det}(X^T X) = 0\rbrace$.  Closed.  
+
+Then $\mathbb{R}^{n\times p}_* $ is an open subset of $\mathbb{R}^{n\times p}$ and open submanifold.  
+
+Its differentiable structure is generated by chart 
+\[
+\begin{gathered}
+	\varphi : \mathbb{R}^{n\times p}_*  \to \mathbb{R}^{np} \\
+	X \mapsto \text{vec}(X) = \text{flatten}(X)
+\end{gathered}
+\]
+noncompact Stiefel manifold $\mathbb{R}^{n\times p}_* $ of full-rank $n\times p $ matrices ($p\leq n $ thus necessarily)
+
+
+
+
+
+\subsection{Immersions and Submersions}
+ 
+cf. 3.2.1 Immersions and submersions of Absil, Mahony, and Sepulchre \cite{AMS2008}.    
+
+Let smooth $F: M_1 \to M_2$, $\text{dim}M_1 = d_1$, $\text{dim}M_2 = d_2$.  
+
+Given $x\in M_1$, $\text{rank}$ of $F$ at $x$ is $\text{dim} \text{ range}(D\widehat{F}(\varphi_1(x))[\cdot ] : \mathbb{R}^{d_1} \to \mathbb{R}^{d_2})$, i.e. 
+\[
+DF(x) : T_x M_1 \to T_xM_2
+\]
+$F$ is \textbf{immersion} if rank of $F = d_1$, $\forall \, x \in \text{domain}(F)= M_1$, i.e. $\text{dim}(\text{range}(DF(x))) = d_1$ (hence $d_1 \leq d_2$).  \\
+$F$ is \textbf{submersion} if rank of $F = d_2$, $\forall \, x \in \text{domain}(F)= M_1$, i.e. $\text{dim}(\text{range}(DF(x))) = d_2$ (hence $d_1 \geq d_2$).  
+
+$F$ immersion iff $\forall \, x \in M_1$, $\exists \, (U,u^i), (V,v^i), \, x\in U$, with coordinate representation called \emph{ canonical immersion } 
+\[
+(u^1, \dots u^{d_1}) \mapsto (u^1 \dots u^{d_1} , 0 \dots 0 )
+\]
+$F$ submersion iff $\forall \, x \in M_1$, $\exists \, (U,u^i), (V,v^i), \, x\in U$, with coordinate representation called \emph{ canonical submersion } 
+\[
+(u^1, \dots u^{d_1}) \mapsto (u^1 \dots u^{d_2}  )
+\] 
+Regular value $y \in M_2$ of $F$, if rank of $F = d_2$, $\forall \, x \in F^{-1}(y)$.  
+
 
 \end{multicols*}
 \begin{thebibliography}{9}
@@ -8146,8 +8289,9 @@ Rubin H. Landau, Manuel J P\'{a}ez, Cristian C. Bordeianu.  \textbf{Computationa
 \bibitem{AKNK2006}
 Vladimir I. Arnold, Valery V. Kozlov, Anatoly I. Neishtadt, E. Khukhro.  \textbf{Mathematical Aspects of Classical and Celestial Mechanics (Encyclopaedia of Mathematical Sciences)} 3rd Edition.  Encyclopaedia of Mathematical Sciences (Book 3).  Springer; 3rd edition (November 14, 2006).  ISBN-13: 978-3540282464
 
-
-
+\bibitem{AMS2008} 
+P.-A. Absil, R. Mahony, and R. Sepulchre.  \textbf{Optimization Algorithms on Matrix Manifolds}.  Princeton University Press.  2008.  ISBN 978-0-691-13298-3
+\url{https://press.princeton.edu/titles/8586.html}  
 
 
 
