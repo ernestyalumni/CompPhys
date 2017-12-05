@@ -205,7 +205,7 @@ struct D : B
 ```  
 cf. Scott Meyers. **Effective Modern C++**.  pp. 115, Item 17  
 
-** Move constructor** and ** move assignment operator**: each performs memberwise moving of non-static data members.  Generated (automatically) only if class contains no user-declared copy operations, move operations, or destructor.  
+**Move constructor** and **move assignment operator**: each performs memberwise moving of non-static data members.  Generated (automatically) only if class contains no user-declared copy operations, move operations, or destructor.  
 
 EY : 20171201 - compiler knows to select the overload with move constructor or generate (automatically) a move constructor?  
 
@@ -213,12 +213,12 @@ EY : 20171201 - compiler knows to select the overload with move constructor or g
 
 `noexcept` specifier - specifies whether a function will throw exceptions or not   
 
-** Syntax **  
+**Syntax **  
   
 **`noexcept`**  				 (1)
 **`noexcept`**( *expression* )	 (2)  
   
-1. Same as **`noexcept ( true ) ` **  
+1. Same as `noexcept ( true ) `  
 2. If *expression* evaluates to `true`, function is declared to not throw any exceptions.  
 
 
@@ -303,7 +303,7 @@ cf. Meyers, pp. 125, Item 19: Use `std::shared_ptr` for shared-ownership resourc
 An object accessed via `std::shared_ptrs` has its lifetime managed by those pointers through *shared ownership*.  
 No specific `std::shared_ptr` owns the object.  Instead, all `std::shared_ptrs` pointing to it collaborate to ensure its destruction at the point where it's no longer needed.  When last `std::shared_ptr` pointing to an object stops pointing there (e.g. because `std::shared_ptr` is destroyed or made to point to a different object), `std::shared_ptr` destroys object it points to.  
 
-A `std::shared_ptr` can tell whether it’s the last one pointing to a resource by con‐ sulting the resource’s *reference count*, a value associated with the resource that keeps track of how many `std::shared_ptrs` point to it.  
+A `std::shared_ptr` can tell whether it’s the last one pointing to a resource by consulting the resource’s *reference count*, a value associated with the resource that keeps track of how many `std::shared_ptrs` point to it.  
 `std::shared_ptr` constructors increment this count (usually),  
 `std::shared_ptr` destructors decrement it, and   
 copy assignment operators do both.  
