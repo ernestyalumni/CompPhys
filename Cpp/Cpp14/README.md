@@ -135,6 +135,62 @@ option3, 2048MB: 12616ms
 option3, 4096MB: 25169ms
 ```  
 
+## Initializer list 
+
+From Ch. 3, pp. 49, Item 7: Distinguish between () and {} when creating objects, in Meyers  
+
+It's important to distinguish initialization from assignment, with user-defined types:  
+```  
+Widget w1; // call default constructor
+Widget w2 = w1; 	// not an assignment; calls copy ctor ctor=constructor
+w1 = w2; 			// an assignment; calls copy operator= 
+```  
+
+C++11 introduces *uniform initialization*, single initialization syntax that can, at least in concept, be used anywhere and express everything, based on braces; Meyers calls it "*braced initialization*".    
+
+Braced initialization prohibits implicit *narrowing conversions*:
+``` 
+double x,y,z;
+
+int sum1{x+y+z}; // error! sum of doubles may not be expressible as int 
+```  
+
+### C++'s *most vexing parse* - anything can be parsed as a declaration, must be interpreted as 1  
+
+```  
+Widget w1(10); // call Widget ctor=constructor with argument 10, get an object
+
+Widget w2(); 	// most vexing parse!  declares a function named w2 that returns a Widget!  
+
+Widget w3{};	// calls Widget ctor=constructor with no arguments, get an object
+```
+
+Another example, 
+```  
+class Widget {
+	public:
+		Widget();		// default ctor=constructor
+		
+		Widget(std::initializer_list<int> il);	// std::initializer
+												// _list ctor=constructor
+												// no implicit conversion functions
+};
+
+Widget w1;	// calls default ctor=constructor
+Widget w2{};	// also calls default ctor=constructor 
+Widget w3();	// most vexing parse! declares a function!  
+}  
+```  
+
+
+
+### Useful links for initializer list 
+
+cf. [`cplusplus.com` Initializer list](http://www.cplusplus.com/reference/initializer_list/initializer_list/)
+
+Scott Meyers.  Effective Modern C++ 42 Specific Ways  
+
+
 ## [The rule of 3/5/0](http://en.cppreference.com/w/cpp/language/rule_of_three); user-defined destructor, copy constructor, copy assignment/ move constructor, move assignment  
 
 ### why Rule of 5  
@@ -143,7 +199,12 @@ Because of presence of user-defined destructor, copy-constructor, or copy-assign
 
 ### [move constructors](http://en.cppreference.com/w/cpp/language/move_constructor) 
 
-move constructor of class `T` (or `cls` is my notation), is non-template constructor whose 1st parameter is `T&&`, `const T&&`, `volatile T&&`, or `const volatile T&&`.  and either there are no parameters, or rest of parameters all have default values.  (i.e. `cls&&`, `const cls&&`, `volatile cls&&`, `const volatile cls&&`)    
+cf. [`./movconstruct.cpp`](https://github.com/ernestyalumni/CompPhys/blob/master/Cpp/Cpp14/moveconstruct.cpp)
+
+move constructor of class `T` (or `cls` is my notation), is non-template constructor whose 1st parameter is `T&&`, `const T&&`, `volatile T&&`, or `const volatile T&&`.  and either there are no parameters, or rest of parameters all have default values.  (i.e. `cls&&`, `const cls&&`, `volatile cls&&`, `const volatile cls&&`), i.e. 
+
+For a class, to control what happens when we move, or move and assign object of this class type, use special member function *move constructor*, *move-assignment operator*, and define these operations.  Move constructor and move-assignment operator take a (usually nonconst) rvalue reference, to its type.  Typically, move constructor moves data from its parameter into the newly created object.  After move, it must be safe to run the destructor on the given argument.  cf. Ch. 13 of Lippman, Lajole, and Moo (2012) 
+
 
 **Syntax**  
 ```  
@@ -157,7 +218,7 @@ Move constructor called whenever by overload, which typically occurs when object
 * function argument passing: `f(std::move(a));`  
 * function return: `return a;`  
 
-e.g. `movconstruct.cpp`, notes: 
+e.g. [`movconstruct.cpp`](https://github.com/ernestyalumni/CompPhys/blob/master/Cpp/Cpp14/moveconstruct.cpp), notes: 
 
 ```  
 struct A 
@@ -208,6 +269,12 @@ cf. Scott Meyers. **Effective Modern C++**.  pp. 115, Item 17
 **Move constructor** and **move assignment operator**: each performs memberwise moving of non-static data members.  Generated (automatically) only if class contains no user-declared copy operations, move operations, or destructor.  
 
 EY : 20171201 - compiler knows to select the overload with move constructor or generate (automatically) a move constructor?  
+
+See also 
+
+[Move semantics and rvalue references in C++11](https://www.cprogramming.com/c++11/rvalue-references-and-move-semantics-in-c++11.html)
+
+for a very clear exposition about l-values vs. r-values, the contrast (clearly laid out) between C++03 and C++11 in regards to this, and thus the motivation for move constructor.  
 
 ## Glossary/Dictionary/Quick Look Up  
 
