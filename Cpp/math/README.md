@@ -21,4 +21,8 @@ long gcd(long a, long b);
 #endif // END of GCD_H  
 ```  
 
+# 2 different procedures (functions) may have same name, just have different types of arguments  
+
+e.g. `./03-gcd/gcd-extended.cpp`  
+
 
