@@ -496,6 +496,20 @@ Difference stems from differing ways smart pointers support custom deleters.  Fo
 
 ## Glossary/Dictionary/Quick Look Up  
 
+### `std::future`  
+
+**`future`** - Object that can retrieve value from some provider object or function, properly synchronizing this access if in different threads, i.e.  
+class template `std::future` provides mechanism to access result of asynchronous operations, e.g. created via `std::async`, `std::packaged_task`, `std::promise`)      
+
+Defined in header `<future>`
+
+```  		
+template< class T > class future;			(1) 	(since C++11)
+template< class T > class future<T&>;		(2) 	(since C++11)
+template<>          class future<void>;		(3) 	(since C++11)
+```  
+
+
 `noexcept` specifier - specifies whether a function will throw exceptions or not   
 
 **Syntax**  
