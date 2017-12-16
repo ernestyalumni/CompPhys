@@ -180,6 +180,16 @@ MyClass & ccc=cc;
 const MyClass& c=cc;
 ```  
 
+## C++11 vs. C++14  
+
+[The C++14 Standard: What You Need to Know, Dr. Dobb's](http://www.drdobbs.com/cpp/the-c14-standard-what-you-need-to-know/240169034)
+
+compiler deduces what type.   
+
+Reasons for *return type deduction*  
+1. Use `auto` function return type to return complex type, such as iterator, 
+2. refactor code   
+
 
 ## Initializer list 
 
@@ -488,7 +498,7 @@ Difference stems from differing ways smart pointers support custom deleters.  Fo
 
 `noexcept` specifier - specifies whether a function will throw exceptions or not   
 
-**Syntax **  
+**Syntax**  
   
 **`noexcept`**  				 (1)
 **`noexcept`**( *expression* )	 (2)  
@@ -515,7 +525,13 @@ struct B : A
 };
 ```  
 
+### `decltype` - extract type from variable so `decltype` is sort of an operator that evaluates type of passed expression  
+
+cf. [Type Inference in C++ (auto and decltype), geeksforgeeks](http://www.geeksforgeeks.org/type-inference-in-c-auto-and-decltype/)
+
 `decltype` - `decltype` specifier (since C++11) - inspects declared type of an entity or the type and value category of an expression  
+
+
 
 ### `std::iota`  
 Defined in header `<numeric>`  
@@ -523,6 +539,35 @@ Defined in header `<numeric>`
 template<class ForwardIterator, class T>  
 void iota(ForwardIterator first, ForwardIterator last, T value);  
 ```  
+
+### lambda functions  
+
+cf. [Lambda expression in C++, geeksforgeeks.com](http://www.geeksforgeeks.org/lambda-expression-in-c/)
+
+```  
+[ capture clause ] (parameters) -> return-type 
+{
+	definition of method
+}
+```  
+Generally, return-type in lambda expression evaluated by compiler itself, and we don't need to specify that explicitly and -> return-type part can be ignored,  
+but in some complex case as in conditional statement, compiler can't make out return type and we need to specify that.  
+
+A lambda expression can have more power than an ordinary function by having access to variables from the **enclosing scope**.   
+We can "capture" external variables from enclosing scope by 3 ways:   
+* Capture by reference  
+* Capture by value  
+* Capture by both (mixed capture)  
+
+*Syntax* used for capturing variables:  
+* `[&]` : capture all external variable by reference  
+* `[=]` : capture all external variable by value  
+* `[a, &b]` : capture `a` by value and `b` by reference  
+
+A lambda with empty capture clause `[]` can access only those variable which are local to it.  
+
+e.g. `lambdaexp.cpp`  
+
 ### smart pointers  
 
 #### [`std::unique_ptr`](http://en.cppreference.com/w/cpp/memory/unique_ptr)
@@ -594,5 +639,26 @@ Item 21 explains that the cost of the dynamic allocation is avoided when the `st
 * **Increments and decrements of the reference count must be atomic,**  
 
 Move-constructing a `std::shared_ptr` from another `std::shared_ptr` sets the source `std::shared_ptr` to null, and that means that the old `std::shared_ptr` stops pointing to the resource at the moment the new `std::shared_ptr starts`. As a result, no reference count manipulation is required.  Moving `std::shared_ptrs` is therefore faster than copying them: copying requires incrementing the reference count, but moving doesn’t.  
+
+
+### `std::vector`
+
+#### `std::vector<T>::iterator`  
+
+cf. [`std::vector`, `cppreference.com`](http://en.cppreference.com/w/cpp/container/vector) 
+
+**Member types**
+
+| Member type | Definition |
+| =========== | ========== |
+| `std::vector<T>::iterator` | `RandomAccessIterator` | 
+| `std::vector<T>::const_iterator` | Constant `RandomAccessIterator` | 
+| `std::vector<T>::reverse_iterator` | `std::reverse_iterator<iterator>` |
+| `std::vector<T>::const_reverse_iterator` | `std::reverse_iterator<const_iterator>` |  
+ 
+
+
+
+
 
 
