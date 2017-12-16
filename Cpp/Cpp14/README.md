@@ -582,6 +582,14 @@ A lambda with empty capture clause `[]` can access only those variable which are
 
 e.g. `lambdaexp.cpp`  
 
+### `std::optional`  
+
+cf. [`std::optional` in `cppreference.com`](http://en.cppreference.com/w/cpp/utility/optional)
+
+**class template std::optional** manages an optional contained value, i.e. value that may or may not be present
+
+Common use case for `optional` is return value of function that may fail.  `optional` handles expensive-to-construct objects well and is more readable, as intent expressed explicitly. 
+
 ### smart pointers  
 
 #### [`std::unique_ptr`](http://en.cppreference.com/w/cpp/memory/unique_ptr)
