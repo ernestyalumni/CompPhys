@@ -34,6 +34,8 @@
 #include <string>  // std::string, for example of Address_w_ctor 
 #include <sstream> // ostringstream
 
+#include <array> // std::array 
+
 /* ========== defining structs in global scope, outside of main ========== */
 /** @struct Address_global
  * @brief example of a struct in global scope 
@@ -228,6 +230,42 @@ Array_global shift_global(Array_global a, Point_global p)
 	return a; 
 };
 
+/* ============ using std::array instead of struct ============ */
+
+using Array_std3 = std::array<Point_global, 3> ; // array of 3 Point_global's
+
+Array_std3 shift_std3(Array_std3 a, Point_global p) 
+{
+	for (int i =0; i!=a.size(); ++i ) {
+		a[i].x += p.x; 
+		a[i].y += p.y;
+	}
+	return a;
+}
+
+/* main advantage of std::array over a built-in array are that 
+ * it's a proper object type (has assignment, etc.) and 
+ * doesn't implicitly convert to a pointer to an individual element 
+ * */ 
+std::ostream& operator << (std::ostream& os, Point_global p)
+{	
+	std::cout << '{' << p.x << ',' << p.y << '}';  
+}
+
+void print(Point_global a[], int s) // must specify number of elements 
+{
+	for (int i=0; i != s; ++i) {
+		std::cout << a[i] << '\n'; 
+	}
+}
+
+template<typename T, int N>
+void print(std::array<T,N>& a)
+{
+	for (int i=0; i != a.size(); ++i) {
+		std::cout << a[i] << '\n'; 
+	}
+}
 
 
 /* =============== MAIN =============== */
@@ -382,6 +420,60 @@ int main(int argc, char* argv[]) {
 	std::cout << ax_global.elem[0].x << " " << ax_global.elem[0].y << " " 
 		<< ax_global.elem[1].x << " " << ax_global.elem[1].y << " "  
 		<< ax_global.elem[2].x << " " << ax_global.elem[2].y << std::endl;
+
+// need the following line in global scope for function shift2
+//	using Array_std3 = std::array<Point_global, 3> ; // array of 3 Point_global's
+
+//	Array_std3 pts3  ={ {1,2}, {3,4}, {5,6}}; // error: too many initializers for 
+	// ‘Array_std3 {aka std::array<Point_global2, 3ul>}’
+
+	Array_std3 pts3  ={Point_global{1,2}, Point_global{3,4}, Point_global{5,6}};
+
+	Array_std3 ax3 = shift_std3(pts3, Point_global({10,20}));
+	
+	std::cout << ax3[0].x << " " << ax3[0].y << " " 
+		<< ax3[1].x << " " << ax3[1].y << " "  
+		<< ax3[2].x << " " << ax3[2].y << std::endl;
+
+
+	print(pts_arr,3);  // {1,2} \\ {3,4} \\ {5,6} 
+	auto points2 = std::array<Point_global,3>( {Point_global{1,2}, Point_global{3,4}, Point_global{5,6}});
+	print<Point_global,3>(points2 ) ; 
+
+	/** @ref pp. 209 Ch.8, Sec. 8.2.4, of Stroustrup
+	 * @details "Disadvantage of std::array compared to a built-in array is that 
+	 * we can't deduce the number of elements from the length of the initializer" 
+	 * */ 
+	
+	// 8.2.5 Type Equivalence  
+	// 2 structs are different types even when they have the same members.  
+	
+	// 8.2.6. Plain Old Data 
+	
+	
+	struct S0 {};	// a POD
+	struct S1 {int a; }; // a POD
+	struct S2 {
+		int a;
+		S2(int aa) : a(aa) {} };	// not a POD (no default constructor)  
+	struct S3 { 
+		int a;
+		S3(int aa) : a(aa) { }  
+		S3() {} }; // a POD (user-defined default constructor  
+	struct S4 { int a; 
+		S4(int aa) : a(aa) { }  
+		S4() = default; }; // a POD
+//	struct S5 { virtual void f(); /* ... */ }; // not a POD (has a virtual function)  	
+	
+	struct S6 : S1 {}; 		// a POD
+	struct S7 : S0 { int b; }; // a POD  
+	struct S8 : S1 { int b; }; // not a POD (data in both S1 and S8) 
+	struct S9 : S0, S1 {} ; // a POD
+	
+		
+	 
+	
+
 
 
 }
