@@ -108,6 +108,12 @@ Everything about Computational Physics, including Parallel computing/ Parallel p
 
 \part{Algorithms as needed}
 
+\section{Hash Tables}  
+
+\href{https://www.hackerearth.com/practice/data-structures/hash-tables/basics-of-hash-tables/tutorial/}{Basics of Hash Tables}
+
+\href{https://jeremykun.com/category/data-structures/}{Load Balancing and Power of Hashing, Math cup Programming}, 
+
 \section{Divide and Conquer}
 
 \href{https://people.eecs.berkeley.edu/~vazirani/algorithms/chap2.pdf}{Divide and Conquer}
@@ -6325,6 +6331,201 @@ Topics in Geometric Topology (18.937)
 
 \href{http://www.math.harvard.edu/~lurie/937notes/937Lecture2.pdf}{Piecewise Linear Topology (Lecture 2)}
 
+\section{Ising Model}  
+
+EY : 20171223 Things to check from Hjorth-Jensen (2015) \cite{Hjor2015}:  
+
+2-dim. Ising model, with $\mathcal{B} \equiv h_j =0$, undergoes phase transition of 2nd. order: meaning below given critical temperature $T_C$, there's spontaneous magnetization with $\langle \mathcal{M} \rangle \equiv \langle \mathbf{M} \rangle \neq 0$.  $\langle \mathbf{B} \rangle \to 0$ at $T_C$ with \emph{infinite} slope, a behavior called \emph{critical phenomena}.  Critical phenomenon normally marked by 1 or more thermodynamical variables which is 0 above a critical point.  In this case, $\langle \mathbf{B} \rangle \neq 0$, such a parameter normally called \emph{order parameter}.  
+
+Critical phenomena; we still don't have a satisfactory understanding of system's properties close to the critical point, even for simplest 3-dim. systems.  Even mean-field models can predict wrong physics; mean-field theory results in a 2nd.-order phase transition for 1-dim. Ising model, wherea 1-dim. Ising model doesn't predict any spontaneous magnetization at any finite temperature $T$.  
+
+e.g. Consider 1-dim. $N$-spin system.  Assume periodic boundary conditions.  Consider state of all spins up, with total energy $-NJ$ and magnetization $N$.  Flip half of spins (e.g. all spins of index $i>N/2$) so 1st half of spins point upwards and last half points downwards.  Energy is $-NJ + 4J$, net magnetization $0$.  This is an example of a possible disordered state with net magnetization $0$.  Change in energy is too small to stabilize disordered state (to $-NJ$).  
+
+\subsection{Metropolis algorithm setup}  
+
+Let \\
+\textbf{selection probabilities} $g(\mu, \nu) := $ prob. that state $\nu$ selected by algorithm out of all states, given that 1 is in state $\mu$.  \\
+\textbf{acceptance probabilities} $A(\mu,\nu)$; if new state $\nu$ accepted, move to state $\nu$; if $\nu$ is not accepted, then we stay in $\mu$
+
+Given $L = |\Lambda|$ total sites on lattice, given single spin-flip, then there are $L$ total new states $\nu$ from present state $\mu$.  Metropolis algorithm assumes selection probability equal to the $L$ states $g(\mu,\nu) = \frac{1}{L}$.  
+
+
+
+Suppose system in thermal equilibrium, so system's energy only fluctuates within small range.  
+
+EY:20171223
+\[
+\begin{aligned}
+\uparrow \downarrow \uparrow \mapsto \uparrow \uparrow \uparrow  \qquad \  & 2J \mapsto -2J & \Delta E = -4J \\ 
+\uparrow \uparrow \downarrow \mapsto \uparrow \uparrow \uparrow  \qquad \  & 0 \mapsto -2J & \Delta E = -2J \\ 
+\uparrow \uparrow \uparrow \mapsto \uparrow \downarrow \downarrow \qquad \  & 0 \mapsto 0 & \Delta E = 0 \\ 
+\uparrow \uparrow \uparrow \mapsto \uparrow \downarrow \uparrow  \qquad \  & 0 \mapsto 2J & \Delta E = 2J 
+\end{aligned}
+\]
+
+$2^3=8$.  $8(8-1) = 8 \cdot 7 = 56$ transitions.  $\frac{56}{2} = 28$ (up down symmetry)
+
+Nevertheless, by detailed balance 
+\[
+\frac{P(\mu,\nu)}{ P(\nu,\mu)} = \frac{g(\mu,\nu) A(\mu,\nu) }{ g(\nu,\mu) A(\nu,\mu)} = \frac{ A(\mu,\nu) }{ A(\nu, \mu)} = \frac{P_{\beta}(\nu) }{ P_{\beta}(\mu)} = \frac{ \frac{1}{2} \exp{ (-\beta(H_{\nu}))} }{ \frac{1}{2} \exp{ (-\beta(H_{\mu}))}  } = \exp{ (-\beta(H_{\nu} - H_{\mu}))} 
+\] 
+
+Thus, select acceptance probability for our algorithm to satisfy:
+\begin{equation}
+\frac{ A(\mu,\nu) }{ A(\nu,\mu) } = \exp{ (-\beta(H_{\nu} - H_{\mu}))}  
+\end{equation}
+
+If $H_{\mu} < H_{\nu}$, then $A(\nu,\mu) > A(\mu,\nu)$ (go to lower energies).    
+
+Thus, the Metropolis acceptance algorithm is 
+\begin{equation}
+A(\mu,\nu)  = \begin{cases} \exp{ (-\beta( H_{\nu} - H_{\mu} ))} & \text{ if } H_{\nu} - H_{\mu} > 0 \\ 
+1 & \text{ otherwise } \end{cases}
+\end{equation}
+
+Compare the algorithm's steps given in \href{https://en.wikipedia.org/wiki/Ising_model}{Wikipedia, "Ising model"} vs. pp. 435, 13.5 The Metropolis Algorithm and the 2-dim. Ising Model of Hjorth-Jensen (2015) \cite{Hjor2015}, respectively: 
+
+\begin{enumerate}
+	\item Pick spin site using selection probability $g(\mu,\nu)$ and calculate contribution to energy involving this spin, $E_b\equiv E_{\mu}$.  
+	\item Flip spin and calculate new contribution, $E_t$.  
+	\item If $E_t < E_{\mu}$, keep flipped value.  
+	\item If $E_t > E_{\mu}$, only keep with probability $\exp{(-\beta (H_{\nu} - H_{\mu}))}$
+	\item Repeat
+\end{enumerate}
+
+\begin{enumerate}
+	\item Establish initial state with energy $E_b$ by positioning yourself at random configuration in lattice
+	\item Change initial configuration by flipping 1 spin only.  Compute energy of this trial state $E_t$.  
+	\item Calculate $\Delta E_t - E_b$.  
+	\item If $\Delta E \leq 0$, accept new configuration.  
+	\item If $\Delta E >0$, calculate $w=\exp{ (- (\beta \Delta E))}$.  
+	\item Compare $w$ with random number $r$.  If $r\leq w$, accept new configuration: else keep old configuration.  
+	\item Next, update various expectation values.  
+	\item Repeat.  
+\end{enumerate}
+
+Hjorth-Jensen (2015) \cite{Hjor2015} notes that each time you sweep through lattice, i.e., when you've summed over all spins, this constitutes a "Monte Carlo cycle."  One could think of one of such a cycle as a measurement.  At the end, you should divide the expectation value by total number of cycles.  You can choose to divide by number of spins or not.  If you divide with number of spins as well, result, e.g. for the energy is now energy per spin.  
+
+Calculate all possible $\Delta E \equiv H_{\nu} - H_{\mu}$ beforehand for a given $\Lambda_d$ for computational efficiency.  
+
+Since all we care about is $\Delta E \equiv H_{\nu} - H_{\mu}$, use symmetry to find unique values of $\Delta E \equiv H_{\nu} - H_{\mu}$.  
+
+There are $2^{ |\mathbf{y}(\mathbf{k}) | } $ total possible spin configurations, given a chosen lattice site $\mathbf{k}$, and its (nearest-neighbor) edges $\mathbf{y}(\mathbf{k})$.  
+
+For $d=1$, start with $2^{ |\mathbf{y}(\mathbf{k}) | } = 2^2$.  By symmetry, subtract as follows: 
+\[
+2^2 - \left( \binom{2}{1} - 1 \right) = 2^2-1=3
+\]
+Then unique $\Delta E \equiv H_{\nu} - H_{\mu}$ changes for single spin flips are
+\[
+\begin{aligned}
+& \uparrow \uparrow \uparrow \mapsto \uparrow \downarrow \uparrow \qquad \  & -2J \mapsto 2J \qquad \  & \Delta E = 4J \\
+& \uparrow \uparrow \downarrow \mapsto \downarrow \uparrow \downarrow \qquad \  & 0 \mapsto 2J  \qquad \  & \Delta E = 2J \\ 
+& \uparrow \uparrow \downarrow \mapsto \uparrow \downarrow \downarrow \qquad \  & 0 \mapsto 0 \qquad \  & \Delta E = 0 \\ 
+& \uparrow \uparrow \downarrow \mapsto \uparrow \uparrow \uparrow \qquad \  & 0 \mapsto -2J \qquad \  & \Delta E = -2J \\
+& \downarrow \uparrow \downarrow \mapsto \downarrow \downarrow \downarrow \qquad \  & 2J \mapsto -2J \qquad \  & \Delta E = -4J 
+\end{aligned}
+\]
+
+Likewise, for $d=2$, 
+\[
+\begin{aligned} 
+& 2^{ |\mathbf{y}(\mathbf{k}) | } = 2^4 = 16 \\ 
+& 2^4 - \left( \binom{4}{1} - 1 \right) - \left( \binom{4}{2} - 1 \right) - \left( \binom{4}{3} - 1 \right) = 2^4-(4-1) - (6-1) - (4-1) = 16-3-5-3=5 
+\end{aligned}
+\]
+Expect 5 unique $H_{\mu}$ configurations.  
+\[
+\begin{aligned}
+	& \phantom{\uparrow} \uparrow  \,     &   &  \phantom{\uparrow} \uparrow \qquad \  & &  \\
+	& \uparrow  \uparrow \uparrow \,     & \mapsto \,  & \uparrow  \downarrow \uparrow \qquad  \ & -4J \mapsto 4J  \qquad \  &  \Delta E = 8 J  \\
+	& \phantom{\uparrow} \uparrow  \,    &   & \phantom{\uparrow} \uparrow    & \qquad \  & & \\  
+		& \phantom{\uparrow} \uparrow  \,     &   &  \phantom{\uparrow} \uparrow \qquad \  & &  \\
+	& \downarrow  \uparrow \uparrow \,     & \mapsto \,  & \downarrow  \downarrow \uparrow \qquad  \ & -2J \mapsto 2J  \qquad \  &  \Delta E = 4 J  \\
+	& \phantom{\uparrow} \uparrow  \,    &   & \phantom{\uparrow} \uparrow    & \qquad \  & & \\
+		& \phantom{\uparrow} \uparrow  \,     &   &  \phantom{\uparrow} \uparrow \qquad \  & &  \\
+& \downarrow  \uparrow \uparrow \,     & \mapsto \,  & \downarrow  \downarrow \uparrow \qquad  \ & 0 \mapsto 0  \qquad \  &  \Delta E = 0 J  \\
+& \phantom{\uparrow} \downarrow  \,    &   & \phantom{\uparrow} \downarrow    & \qquad \  & & \\	
+		& \phantom{\uparrow} \downarrow  \,     &   &  \phantom{\uparrow} \downarrow \qquad \  & &  \\
+& \uparrow  \uparrow \downarrow \,     & \mapsto \,  & \uparrow  \downarrow \downarrow \qquad  \ & 2J \mapsto -2J  \qquad \  &  \Delta E = -4 J  \\
+& \phantom{\uparrow} \downarrow  \,    &   & \phantom{\uparrow} \downarrow    & \qquad \  & & \\
+		& \phantom{\uparrow} \downarrow  \,     &   &  \phantom{\uparrow} \downarrow \qquad \  & &  \\
+& \downarrow  \uparrow \downarrow \,     & \mapsto \,  & \downarrow  \downarrow \downarrow \qquad  \ & 4J \mapsto -4J  \qquad \  &  \Delta E = -8 J  \\
+& \phantom{\uparrow} \downarrow  \,    &   & \phantom{\uparrow} \downarrow    & \qquad \  & & \\
+\end{aligned}
+\]
+
+
+Near critical point methods include Wolff algorithm; I found a parallelized version; cf. \href{https://pdfs.semanticscholar.org/985f/282b432feb4e05f5f3156076f65b43a8d28e.pdf}{Parallelization of the Wolff Single-Cluster Algorithm}; a review of these "new Monte Carlo algorithms" is given by Barkema and Newman; cf. \href{https://arxiv.org/abs/cond-mat/9703179}{New Monte Carlo algorithms for classical spin systems}  
+
+\subsubsection{Periodic boundary conditions for "grids"}
+
+Consider $d$-dim. "grid":  $\begin{aligned} & \quad \\ 
+	& i_1  = 0 ,1,\dots L_1 -1 \\
+	& i_2 = 0,1,\dots L_2 - 1 \\ 
+	& \vdots \\
+	& i_d = 0,1,\dots L_d-1 \end{aligned}$ e.g. $d=3$, $\begin{aligned} & \quad \\ 
+& i = 0 , 1,\dots L_x - 1 \\ 
+ & j = 0,1, \dots L_y - 1 \\ 
+ & k = 0,1,\dots L_z - 1 \end{aligned}$  
+ 
+ Consider for periodic boundary conditions 
+ \[
+ \begin{aligned}
+	& i_1 \in \mathbb{Z}_{L_1} \\ 
+	& i_2 \in \mathbb{Z}_{L_2} \\ 
+	& \vdots \\ 
+	& i_d \in \mathbb{Z}_{L_d} 
+ \end{aligned}
+ \]
+ e.g. $d=3$, so $\begin{aligned} & \quad \\ 
+ 	& i \in \mathbb{Z}_{L_x} \\ 
+ 	& j \in \mathbb{Z}_{L_y} \\
+ 	& z \in \mathbb{Z}_{L_z} \end{aligned}$  
+ 	
+ 	Suppose the "stencil" is given by $\nu_1, \nu_2 \dots \nu_d$ where 
+ 	\[
+ 	\begin{aligned}
+ 	& \nu_1 \in \lbrace -1, 1 \rbrace \\ 
+ 	& \nu_2 \in \lbrace -1, 1 \rbrace \\ 
+ 	& \vdots \\ 
+ 	& \nu_d \in \lbrace -1, 1 \rbrace \\ 
+ 	\end{aligned} 	
+ 	\]
+ e.g. $  	\begin{aligned} & \qquad \\ 
+ & \nu_x \in \lbrace -1, 1 \rbrace \\ 
+ & \nu_y \in \lbrace -1, 1 \rbrace \\ 
+ & \nu_z \in \lbrace -1, 1 \rbrace \\ 
+ \end{aligned} 	
+ $ 
+
+
+
+Consider the implementation given by Hjorth-Jensen (2015) \cite{Hjor2015} on pp. 436 for \verb|ising_2dim.cpp| in Ch. 13 Monte Carlo Methods in Statistical Physics (which is unnecessary complicated) for the periodic boundary condition: 
+\begin{lstlisting}
+inline int periodic(int i, int limit, int add) {
+return (i+ limit+add) % (limit); 
+}
+\end{lstlisting}
+This is because 
+\[
+(i_i + \nu_i + L_i ) \equiv (i_i + \nu_i) \bmod{L_i}
+\] since 
+\[
+\frac{ (i_i + \nu_i + L_i) - (i_i + \nu_i) }{ L_i } = 1 \in \mathbb{Z} 
+\]
+So $i_i + \nu_i + L_i \sim i_i + \nu_i$, modulo $L-i$.  
+
+Thus we seek to calculate for periodic boundary conditions to be implemented
+\begin{equation}
+[i_i + \nu_i ] \in \mathbb{Z}_{L_i}
+\end{equation}
+
+
+
+Weigel (2011) used the double checkerboard Metropolis method  
+\href{https://arxiv.org/pdf/1006.3865.pdf}{Simulating spin models on GPU by Martin Weigel} \url{https://arxiv.org/pdf/1006.3865.pdf}
+
 \part{Computational Fluid Dynamics (CFD); Computational Methods} 
 
 \section{On Computational Methods for Aerospace Engineering, via Darmofal, Spring 2005}
@@ -8403,6 +8604,45 @@ Regular value $y \in M_2$ of $F$, if rank of $F = d_2$, $\forall \, x \in F^{-1}
 
 
 \end{multicols*}
+
+\section{Notes for presentation}  
+
+\qquad \, \\ 
+
+\begin{Huge}
+\[
+	\begin{gathered}
+	\frac{ \partial \mathbf{u}}{\partial t} + \frac{ \partial u^j\mathbf{u} }{ \partial x^j} + \text{grad} p = \frac{1}{\text{Re}} \Delta \mathbf{u} + \mathbf{g}^*  \qquad \,  \\
+	\text{div}(\mathbf{u}) = 0 
+	\end{gathered}
+\]
+
+\qquad \, \\ 
+
+\[
+\text{div}\text{grad} p = \Delta p = \text{div} \left( - \frac{ \partial (u^j \mathbf{u} )}{ \partial x^j} + \frac{1}{\text{Re} }\Delta \mathbf{u} + \mathbf{g}^* \right)
+\]
+
+
+\[
+\begin{aligned}
+& F := (u^x)^n + \delta t \left[ \frac{1}{\text{Re}}\Delta u^x - \frac{ \partial (u^ju^x)}{ \partial x^j} + (g^*)^x \right] \\
+& G := (u^y)^n + \delta t \left[ \frac{1}{\text{Re}}\Delta u^y - \frac{ \partial (u^ju^y)}{ \partial x^j} + (g^*)^y \right]
+\end{aligned}
+\]
+
+\[
+u_{i,j}^{(n+1)} = F_{i,j}^{(n)} - \frac{ \delta t}{ \delta x }( p_{i+1,j}^{(n+1)} - p_{i,j}^{(n+1)} ) \qquad \, \begin{aligned}  & i = 1 \dots i_{\text{max}} - 1  \\
+& j = 1 \dots j_{\text{max}} \end{aligned} 
+\]
+
+\[
+v_{i,j}^{(n+1)} = G_{i,j}^{(n)} - \frac{ \delta t}{ \delta y }( p_{i,j+1}^{(n+1)} - p_{i,j}^{(n+1)} ) \qquad \, \begin{aligned}  & i = 1 \dots i_{\text{max}}   \\
+& j = 1 \dots j_{\text{max}} -1 \end{aligned} 
+\]
+
+\end{Huge}
+
 \begin{thebibliography}{9}
 
 \bibitem{Shaw2015}
