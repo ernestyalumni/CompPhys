@@ -3871,6 +3871,120 @@ cf. \href{https://www5.in.tum.de/lehre/vorlesungen/hpc/WS16/tutorial/sparse_02.p
 
 Bader, P\"{o}ppl, and Khakhutskyy \cite{BaPK2016}
 
+\section{Cooperative Groups}  
+
+\subsection{Example of reduction (summation)}  
+
+cf. \verb|thread_sum|  
+
+Let 
+\[
+\begin{aligned} 
+& \verb|cooperative_group::thread_block ctg;|  \\
+& \verb|int lane = ctg.thread_rank();|
+\end{aligned}
+\]
+Let \verb|lane|$\equiv l = 0,1,\dots ( |\verb|ctg||-1)$, where $|\verb|ctg|| = \verb|ctg.size()|$.  
+
+Consider, 
+\[
+\forall \, i = \frac{ | ctg |}{2}, \frac{| ctg|}{2^2}, \dots \frac{| ctg|}{2^{K_{| ctg |}-1}}, 1
+\]
+with $2^{K_{|\verb|ctg||}} = \verb|ctg|$ or $\lfloor K_{|\verb|ctg||} \rfloor = \log_2{| \verb|ctg||}$, i.e. $i = \frac{ |ctg| }{2^j}$ and $i>0$, $j=1,2,\dots K_{|\verb|ctg||}$.  
+
+In almost all use cases, since thread group is in multiples of 32 (or 16), then $\log_2{ |ctg|} \in \mathbb{Z}^+$.  
+
+Given 
+\[
+\begin{aligned}
+& X:\lbrace 0 ,1,\dots N-1 \rbrace  \to \mathbb{K} \\ 
+& X: l \mapsto X(l) 
+\end{aligned}
+\]
+and given some $s\in \mathbb{K}$, with $\mathbb{K} = \mathbb{Z}$ in this example case, then 
+\[
+X(l):= s
+\]
+(which implies $|\verb|ctg|| =N$; otherwise, it's necessary that $N \leq |\verb|ctg||$).  \\
+\verb|ctg.sync()| $\Longleftrightarrow  \forall \, l = 0,1,\dots (\verb|ctg|-1), \, X(l):= s $  \\
+
+If $l<i$, $s:= s + X(l+i)$.  Explicitly, 
+
+Suppose $i = \frac{ |ctg|}{2}$, $l=0,1,\dots \frac{|ctg|}{2} - 1$, $l+i = \frac{ |ctg|}{2}, \frac{ |ctg|}{2} + 1, \dots |ctg| - 1 $ \\ 
+Suppose $i = \frac{ |ctg|}{2^2}$, $l=0,1,\dots \frac{|ctg|}{2^2} - 1$, $l+i = \frac{ |ctg|}{2^2}, \frac{ |ctg|}{2^2} + 1, \dots \frac{|ctg|}{2} - 1 $ \\ 
+Suppose $i=1$, $l=0$, $l+i=1$.  
+
+But we should also consider first doing vector loading, and then, as a general strategy, load the result of vector loading into shared memory, \emph{and then} do the reduction directly on shared memory.  
+
+\section{Vector loads for higher memory access efficiency}  
+
+cf. \verb|reduce_sum|  
+
+Given 
+\[
+\begin{aligned}
+	& X : \lbrace 0 ,1,\dots L-1\rbrace \to \mathbb{K}  \\
+	& X:i \mapsto X[i] \in \mathbb{K}  
+\end{aligned}
+\] with $\mathbb{K} = \mathbb{R}, \mathbb{Z}$ or even $\mathbb{C}$, and  
+
+Given 
+\[
+\begin{aligned}
+& i_x \in \lbrace 0,1,\dots M_x-1 \rbrace \equiv \verb|threadIdx.x| \\ 
+& j_x \in \lbrace 0,1,\dots N_x-1 \rbrace \equiv \verb|blockIdx.x| 
+\end{aligned}
+\]
+Then $\forall\, k_x := i_x + j_x M_x = 0,1,\dots N_xM_x-1$, \\
+Consider $\frac{L}{4}$, $\exists \, 0 \leq r_4 < 4 $ s.t. $L=4q_4 + r_4$, so that $\frac{L}{4} = q_4 \in \mathbb{Z}^+$ (Division theorem).  
+
+Consider $i=k_x, k_x + N_xM_x, \dots $, with $i< L/4 = q_4$.  \\
+if $k_x=0$, $i=0,N_xM_x,2N_xM_x, \dots $, with $i< L/4 = q_4$ \\
+if $k_x=1$, $i=1,1+N_xM_x,1+2N_xM_x, \dots $ with $i<L/4 = q_4$.  \\
+if $k_x=N_xM_x-1$, $i=N_xM_x-1,2N_xM_x-1,3N_xM_x-1, \dots$ with $i<L/4 = q_4$.  
+
+Then consider $i=k_4 + 4q_4$, $i<L$.  Then $i=4q_4, 4q_4+1, \dots 4q_4 + 3$.  
+
+So for $k_x$, consider $q_x \in \lbrace 0 ,1,\dots \frac{L}{4}-1 \rbrace$, with $k_x=q_x$.  
+
+Let 
+\[
+v = v(q_x) := \sum_{\nu=0}^{4-1} X[4q_x + \nu]
+\]
+
+\subsection{Vector loading and reduction on a single thread block in shared memory}
+
+Then consider $i_x + j_x M_x = j_xM_x, j_x M_x + 1, \dots (j_x+1)M_x-1$, for fixed $j_x$.  
+
+Let 
+\[
+\begin{aligned}
+& shX : \lbrace 0 ,1,\dots M_x -1\rbrace \to \mathbb{K} \\ 
+& shX: i_x \mapsto shX[i_x] 
+\end{aligned}
+\]
+represent the shared memory, upon which we'll directly reduce the sum.  
+
+lane $\equiv l := i_x$, 
+\[
+shX[l] := v(q_x)
+\]
+\verb|ctg.sync()| $\Longleftrightarrow \forall \, l = 0,1,\dots (\verb|ctg|01)$, $shX[l] := v(q_x)$ since $q_x = q_x(i_x) = q_x(l)$.  
+
+And so, $\forall \, i = \frac{ |ctg| }{2}, \frac{ |ctg|}{2^2} \dots \frac{ |ctg| }{2^{ K_{| ctg|}-1}} = 2,1$, 
+
+if $i=\frac{ |ctg|}{2}$, $l <i$, $l=0,1,\dots \frac{|ctg|}{2} - 1$, $l+i = \frac{|ctg|}{2}, \frac{|ctg|}{2} + 1, \dots |\verb|ctg|| - 1$, 
+\[
+v(q_x) := v(q_x) + shX[l+i]
+\] 
+Then $shX[l] := v(q_x)$ and so 
+\[
+shX[l] := shX[l] + shX[l+i]
+\]
+
+So reduce block done entirely on shared memory, which is fast.  
+
+
 
 
 \part{Notes on \text{Professional CUDA C Programming}, Cheng, Grossman, McKercher}
@@ -6520,6 +6634,29 @@ Thus we seek to calculate for periodic boundary conditions to be implemented
 \begin{equation}
 [i_i + \nu_i ] \in \mathbb{Z}_{L_i}
 \end{equation}
+
+\subsection{Parallel Metropolis algorithm for the Ising model}  
+
+It appears that the heart of the Metropolis algorithm is that we flip a \emph{single} spin, i.e. \emph{single-spin flip}.  
+
+Let random variable $X  \in \lbrace 0,1\rbrace$, s.t. $X=1$ if some single lattice site $k$ is chosen, $X=0$ if particular site $k$ is not chosen.  
+
+Suppose we choose $p(X=1) = \frac{1}{L}$ where $L= $ total number of sites (e.g. $L=L_xL_y$ for a $L_x \times L_y$ 2-dim. grid).  Thus, we have a uniform distribution for the choice of spin to flip.  
+
+Now
+\[
+E[X] = \frac{1}{L} = \text{ expectation value of $X$ }
+\]
+which can intuitively be interpreted as the average number of sites chosen at some particular site $k$.  
+
+Since site selection is completely random, i.e. for $X_k$, $k\in \Lambda$, a random variable for site $k$ in lattice $\Lambda$, the $X_k$'s are independent and identically distributed, $\sum_{k=0}^{L-1} X_k $ represents the total number of sites chosen on lattice $\Lambda$.  
+
+\[
+E \left[ \sum_{k=0}^{L-1} X_k \right] = \sum_{k=0}^{L-1} E[X_k] = L \left( \frac{1}{L} \right) = 1
+\]
+which can intuitively be interpreted that on average, 1 site will be selected on lattice $\Lambda$.  
+
+Therefore, I would suggest to assign a single thread of the entire (thread) grid in CUDA to each lattice site, and that thread will run a uniform (distribution) random variable once to determine if the site is selected or not for a spin flip.  
 
 
 
