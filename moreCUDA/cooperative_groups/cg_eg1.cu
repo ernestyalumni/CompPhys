@@ -23,7 +23,7 @@
  * */
 /* 
  * COMPILATION TIP
- * nvcc cg_eg.cu -o cg_eg
+ * nvcc cg_eg1.cu -o cg_eg1
  * 
  * */
 #include <cooperative_groups.h>  

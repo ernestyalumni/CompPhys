@@ -245,7 +245,8 @@ int main(int argc, char* argv[])
 	std::cout << std::endl << std::endl; 
 	for (int idx=0; idx< min(L/2,256); idx++) { std::cout << h_outputs32[idx] << " " ; }
 	std::cout << std::endl << std::endl; 
-	for (int idx=n-min(L/2,256); idx<L; idx++) { std::cout << h_outputs32[idx] << " " ; }
+//	for (int idx=n-min(L/2,256); idx<L; idx++) { std::cout << h_outputs32[idx] << " " ; }
+	for (int idx=L-min(L/2,256); idx<L; idx++) { std::cout << h_outputs32[idx] << " " ; }
 	std::cout << std::endl << std::endl; 
 
 
