@@ -6512,6 +6512,136 @@ given $F:(R-\text{Module})^k \to R-\text{Module}$, with $T=$\verb|n_steps|.
 
 
 
+% ==============================================================================
+% 20180203
+% ==============================================================================
+
+\part{Finite State Machines, State Machines; Embedded Systems}  
+
+\section{Discrete Dynamics; Finite-State Machines}  
+
+cf. Ch. 3 Discrete Dynamics, Lee and Seshia (2016) \cite{LeSe2016}
+
+cf. 3.1 Discrete Systems, Lee and Seshia (2016) \cite{LeSe2016}
+
+e.g. consider,  \\
+count number of cars in garage by counting number of cars that enter and leave.  
+
+Each entry, departure, modeled as discrete event; \\
+discrete event occurs at instance of time rather than over time.  
+
+cont., integrator case: given input $x:\mathbb{R} \to \mathbb{R}$ (cont.-time signal) \\
+
+signal $u$ going into up port of counter, on the other hand, 
+\[
+\begin{aligned}
+	u : \mathbb{R} \to \lbrace \text{absent}, \text{present}  \rbrace \equiv \lbrace \lbrace \rbrace, \lbrace * \rbrace \rbrace 
+\end{aligned}
+\]
+means $\forall \, t\in \mathbb{R}$, $u(t) = $ absent $= \lbrace \rbrace$, meaning there's no event at that time, or \\
+$u(t) = $ present $\equiv \lbrace * \rbrace$, meaning that there is.  
+
+Counter.  \\
+when event present at up/down input port, \\
+increments/decrement its count and produces on \\
+output new value of the count \\
+at all other times (when both inputs absent), produces no output (count output absent)
+
+\[
+c:\mathbb{R} \to \lbrace \text{ absetn } \rbrace \cup \mathbb{Z} \equiv \lbrace \lbrace \rbrace \rbrace \cup \mathbb{Z}
+\]
+Clearly, no need for this counter to do anything when input is absent.  
+
+\subsubsection{Discrete signals}
+
+Discrete signals consist of sequence of instantaneous events in time \\
+consider signal $e: \mathbb{R} \to \lbrace \text{ absent } \rbrace \cup X$, $X \in \text{Obj}\textbf{Sets}$.  
+
+\begin{definition}
+Signal $e$ is \textbf{discrete signal} if, absent most of time, and, we can count, in order, times which it's present.  $\forall \, $ time it's present, we have discrete event.   
+
+Count events in order is important.  
+
+Let $T \subseteq \mathbb{R}$ s.t. 
+\[
+T = \lbrace t\in \mathbb{R} | e(t) \neq \text{ absent} \equiv \lbrace \lbrace \rbrace \rbrace 
+\]
+Then $e$ discrete if $\exists \, $ 1-to-1 function $f: T \to \mathbb{N}$.  That's order preserving, i.e. $\forall \, t_1,t_2 \in T$, where $t_1 \leq t_2$, then $f(t_1) \leq f(t_2)$  
+
+reactions of discrete system triggered by environment in which discrete system operates, \textbf{ event triggered}.  \\
+
+when both inputs to counter are absent, no reaction occur.  
+\end{definition}
+
+\subsubsection{Modeling Actors as Functions}
+
+integrator actor in Sec. 2.2, Fig. 3.2, modeled by 
+\[
+\begin{aligned}
+& I_i : \mathbb{R}^{\mathbb{R}_+} \to \mathbb{R}^{\mathbb{R}_+} \\ 
+&  I_i : L(\mathbb{R}, \mathbb{R}_+ ) \to L(\mathbb{R}, \mathbb{R}_+)
+\end{aligned}
+\]
+
+$y= I_i(x)$  \\
+where $i\equiv $ initial value of integration, $x,y$ cont.-time signal 
+
+e.g., if $i=0$, $\forall \, t \in \mathbb{R}_+$, $x(t) = 1$, then 
+\[
+y(t) = i + \int_0^t x(\tau ) d\tau = t
+\]
+Similarly, counter in Fig. 3.1, modeled by 
+\[
+c_i : (\mathbb{R}_+ \to \lbrace \text{ absent} , \text{ present} \rbrace )^P \to (\mathbb{R}_+ \to \lbrace \text{ absent } \rbrace \cup \mathbb{Z})
+\]
+where $P = \lbrace \text{up, down } \rbrace \equiv \lbrace u ,d \rbrace = $ set of input ports.  
+
+For example, 
+\[
+\begin{gathered}
+\begin{aligned}
+& u: \mathbb{R}_+ \to \lbrace \text{ absent, present } \rbrace \equiv \lbrace \emptyset , \lbrace * \rbrace \rbrace \\ 
+& u: t \mapsto u(t) \in  \rbrace \equiv \lbrace \emptyset , \lbrace * \rbrace \rbrace 
+\end{aligned}
+\end{gathered}
+\]
+
+Lee and Seshia (2016) \cite{LeSe2016} notation: 
+\[
+A^B \equiv  \text{ set of all functions from $B$ to $A$ }
+\]
+A particular reaction will observe values of inputs at particular time $t$, and calculate output values for some time $t$.  
+
+Suppose actor has input ports $P = \lbrace p_1 \dots p_N \rbrace$.  
+
+Assume $\forall \, p \in P$, $V_p \in \text{Obj} \textbf{Sets} \equiv $ values that maybe received on port $p$, when input present.  
+
+$V_p \equiv $ type of port $p$.  
+
+At reaction, $\forall \, p \in P$, let value of $p$, $p\in V_p \cup \lbrace \text{ absent } \rbrace$ (Lee and Seshia seems to reuse notation, notation by context, here; but it's troublesome)
+
+valuation of inputs $P$ is assignment of value in $V_p$, \, $\forall \, $ variable $p\in P$, or assertion that $p $ absent.  
+
+I think Lee and Seshia is terribly confused in the writing and lack of clarity is horrendous and pernicious.  
+
+ 
+
+
+
+
+
+
+
+
+
+% ==============================================================================
+% END of 20180203
+% ==============================================================================
+
+
+
+
+
 \end{multicols*}
 \begin{thebibliography}{9}
 \bibitem{HTF2009}
@@ -6571,6 +6701,16 @@ Rubin H. Landau, Manuel J P\'{a}ez, Cristian C. Bordeianu.  \textbf{Computationa
 
 \bibitem{AKNK2006}
 Vladimir I. Arnold, Valery V. Kozlov, Anatoly I. Neishtadt, E. Khukhro.  \textbf{Mathematical Aspects of Classical and Celestial Mechanics (Encyclopaedia of Mathematical Sciences)} 3rd Edition.  Encyclopaedia of Mathematical Sciences (Book 3).  Springer; 3rd edition (November 14, 2006).  ISBN-13: 978-3540282464
+
+
+% ---------------------------------------------------------------------------------------
+% 20180203
+
+\bibitem{LeSe2016}
+Edward Ashford Lee, Sanjit Arunkumar Seshia.   \textbf{Introduction to Embedded Systems: A Cyber-Physical Systems Approach}. (MIT Press) 2nd Edition. The MIT Press; (December 30, 2016).  ISBN-13: 978-0262533812
+
+% ---------------------------------------------------------------------------------------
+% END of 20180203
 
 
 
