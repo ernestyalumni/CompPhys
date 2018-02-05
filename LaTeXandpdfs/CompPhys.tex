@@ -6635,7 +6635,9 @@ Thus we seek to calculate for periodic boundary conditions to be implemented
 [i_i + \nu_i ] \in \mathbb{Z}_{L_i}
 \end{equation}
 
-\subsection{Parallel Metropolis algorithm for the Ising model}  
+%\subsection{Parallel Metropolis algorithm for the Ising model}  
+
+\subsection{Single-spin selection as the first step of the Metropolis algorithm, and the case for its thorough, whole modification for the parallel computation case}  
 
 It appears that the heart of the Metropolis algorithm is that we flip a \emph{single} spin, i.e. \emph{single-spin flip}.  
 
@@ -6656,12 +6658,85 @@ E \left[ \sum_{k=0}^{L-1} X_k \right] = \sum_{k=0}^{L-1} E[X_k] = L \left( \frac
 \]
 which can intuitively be interpreted that on average, 1 site will be selected on lattice $\Lambda$.  
 
-Therefore, I would suggest to assign a single thread of the entire (thread) grid in CUDA to each lattice site, and that thread will run a uniform (distribution) random variable once to determine if the site is selected or not for a spin flip.  
+%Therefore, I would suggest to assign a single thread of the entire (thread) grid in CUDA to each lattice site, and that thread will run a uniform (distribution) random variable once to determine if the site is selected or not for a spin flip.  
+
+\subsubsection{Single-spin selection for serial Metropolis method, explicitly discussed}  
+
+It should be clarified that when it says to "pick a single spin from the lattice grid", the probability of choosing \emph{a} (or \emph{some}) spin in this step is \emph{1}, i.e. 
+\[
+P(\text{some} \mathbf{k} \in \Lambda) = 1 = \text{ probability of choosing some spin site $\mathbf{k}$ in lattice grid $\Lambda$ }  
+\]
+Indeed, since the probability of picking a \emph{particular} site $\mathbf{k}$ from $\Lambda$ is $\frac{1}{|\Lambda|}$, and since the picking of a particular site $\mathbf{k}$ is \emph{independent} of picking a different particular site $\mathbf{k}'$, then 
+\[
+\sum_{\mathbf{k} \in \Lambda} P(\mathbf{k}) = \sum_{\mathbf{k} \in \Lambda} \frac{1}{ |\Lambda|} = \Lambda \frac{1}{ \Lambda } = 1
+\] 
+For the example of a 2-dim. $L_x\times L_y$ grid, the above expressions specialize to 
+\[
+P( \text{some} (i,j) \in \lbrace 0,1,\dots L_x -1 \rbrace \times \lbrace 0,1,\dots L_y -1 \rbrace ) = 1
+\]
+\[
+\sum_{  (i,j) \in \lbrace 0,1,\dots L_x -1 \rbrace \times \lbrace 0,1,\dots L_y -1 \rbrace } P((i,j)) = \sum_{j=0}^{L_y-1} \sum_{i=0}^{L_x-1} P((i,j)) = \sum_{j=0}^{L_y-1} \sum_{i=0}^{L_x-1} \frac{1}{ L_xL_y } = L_x L_y  \frac{1}{ L_x L_y } = 1
+\]
+
+I extensively expounded on this point because it becomes important in the actual \emph{implementation} of this step in serial code.  
+
+Let's say that we are already given a random number generator.  Because $|\Lambda|$, the size of the lattice grid ($L_xL_y$ for the 2-dim. case) can be huge ($L_xL_y \sim 10^6$ for a $1024 \times 1024$ lattice grid), it doesn't make sense to call a function that'll randomly pick 1 integer from $\lbrace 0 ,1,\dots |\Lambda|-1 \rbrace$, but rather to employ a random number generator that'll return a float between $0,1$, i.e. in $[0.,1.)$, multiply it by $L_x$, and take the integer "floor", and then take another float in $[0.,1.)$, multiply it by $L_y$, and take the integer "floor."  
+
+But notice that in this procedure, we end up always picking \emph{a spin}.  What we cannot do, for example in the 2-dim. lattice grid case, is to take 2 for loops, 1 for $j \in \lbrace 0 ,1,\dots L_y-1 \rbrace$, another for $i\in \lbrace 0 ,1,\dots L_x-1 \rbrace$, and then assign a probability $\frac{1}{L_xL_y}$ of whether spin at site $(i,j)$ will be chosen.  This is because there is the possibility that no spins will get chosen after completing these 2 for loops - we have then not assigned the correct probability for this event, nor implemented correctly that we pick \emph{a spin} from $\Lambda$.  
+
+\subsubsection{Single-spin selection is not tenable for (CUDA) parallel code because you idle all threads but 1}  
+
+However, for CUDA, which is a SIMT (Single-Instruction Multiple Thread) architecture, selecting a single spin at 1 time is not in anyway a reasonable action.  Clearly, all the other threads, but 1, will be idled.  After a choice of a single site, only 1 thread would be doing the next computations in the Metropolis algorithm.  Nothing parallel is occurring.  
+
+This deficiency with this first step of picking a single spin has not been addressed in previous papers on a parallel implementation of the Ising model.  Rather, most of the papers, at this point, discuss linear congruential generators for random numbers, which I here make outdated with the implementation of CURAND, CUDA's random number generator, available to each single thread.  
+
+\subsubsection{Why then was there a single spin selection as the first step of the Metropolis algorithm?}  
+
+Then why was there a single-spin selection as a first step of the Metropolis algorithm?  What was the rationale for it?  Consider that the number of all possible spin configurations, $\sigma \equiv \lbrace \sigma_{\mathbf{k}} \rbrace_{\mathbf{k} \in \Lambda}$, given a lattice grid $\Lambda$, is $2^{|\Lambda|}$, where we have a factor of 2 (spin up or spin down) for each lattice site, i.e. each spin in $\Lambda$.  Also, recall that the partition function $Z= Z(\beta) = \sum_{ \sigma } \exp{ (-\beta H(\sigma) )}$, where $\beta = \frac{1}{T}$, i.e. it's the inverse of the system's temperature, and summation is over all possible spin configurations $\sigma$, a summation of $2^{|Lambda|}$ terms.  Calculating directly $Z$ was never practical and so another method was sought out.  
+
+Rather, observe that the probability of spin configuration $\sigma$ is $P_{\beta}(\sigma) = \frac{\exp{ (-\beta H(\sigma))} }{ Z_{\beta}}$.  Clearly, $P$, as a function of $\sigma$ is highly peaked at a few, certain spin configurations, while being near 0 for (many) others.  So we shouldn't search the entire spin configuration space of $\sigma$'s but rather deduce the most probable spin configuration.  
+
+\subsubsection{"Completely random" spin-selection vs. "biased"; Parallel utilization vs. serial code}
+
+So we have the strategy that we want to minimize the Hamiltonian, $H(\sigma)$, and so we'll calculate changes in energy $\Delta H$ with a single spin flip at a particular site, ahead of us as the following steps in a Metropolis algorithm, which will help us find this most probable spin configuration, given $\beta$.  
+
+But beforehand, for the first step, if we are, as an extreme example, choosing the exact same spin to flip, we are not searching at all the entire spin configuration space of $\sigma$'s, our search is extremely "biased."  On the other hand, if we pick a single site with uniform probability distribution assigned to each site in $\Lambda$, then our search is "completely random."  Suppose this spectrum of schemes for picking a single site lie on an axis of "randomness", from "completely biased" to "completely random."  
+
+Also, consider another axis orthogonal to the axis, from being "biased" to "completely random."  An essentially serial (CPU) implementation of the single spin selection process would involve a single thread that would perform mathematical operations for a single spin site.  Beforehand, it would pick a single spin, and no other, and then sequentially follow the Metropolis algorithm.  For instance, some implement a "sweep" of the lattice grid with 2 or more for loops to loop through each grid coordinate.  But keep in mind that this for loop is completely sequential, in order of the given start value, incremented up to the end value, e.g. from $0$ to $L_x-1$ for coordinate $i$.  
+
+Thus, we are back to the problem that we are idling all thread, but 1, for a parallel implementation.  We cannot naively parallelize those 2 for loops immediately above, in a "sweep" because we need to guarantee a single spin is selected for each thread.  But with the selection of a single spin, suppose 2 threads choose the same spin site, and so 1 operation would have to proceed after the completion of the other, defeating parallelization.  
+
+The single spin selection step, the first step of the Metropolis algorithm, cannot be saved for the parallel implementation.  
+
+For the sake of argument, the "most parallel" scheme would be to choose all spin sites to flip or not flip.  On an axis for the spectrum from "serial" to "parallel", this would be "parallel", opposite to the serial "sweep" method for single spin selection.  Of course, choosing all the spins once would run into problems with the calculation of $\Delta H(\sigma)$ since it depends on the values of the spins of its nearest neighbor, at its present configuration.  Then there are so-called "checkerboard decomposition" to update even sites first, and then odd sites next, to avoid calculating $\Delta H$ from adjacent spins that could have changed values already in a parallel update.  
+
+However, the concern with these schemes, where all sites are updated in parallel or in a checkerboard decomposition, is that, on the axis from "biased" to "completely random", the spin selection is not "completely random" and so we are "biased" in our search over all possible spin configurations $\sigma$.  
+
+I would argue that the subsequent Metropolis step where we use the transition probability $A(\mu,\nu) = \exp{(-\beta(H_{\nu} - H_{\mu}))}$ is all that's necessary to ensure that we are obtaining the spin configuration $\sigma$ that is the most probable spin configuration.  
+
+Nevertheless, this discussion was made to make explicit that any parallel implementation of the Metropolis algorithm necessitates scrapping the first step of single-spin selection.  Selecting which spins to choose, whether in a checkerboard or double checkerboard decomposition, at once in parallel is open for discussion.      
+
+ 
+
+
+
+
+
+Newman and Barkema (1999) \cite{NeBa1999}
 
 
 
 Weigel (2011) used the double checkerboard Metropolis method  
 \href{https://arxiv.org/pdf/1006.3865.pdf}{Simulating spin models on GPU by Martin Weigel} \url{https://arxiv.org/pdf/1006.3865.pdf}
+
+
+
+\href{http://www.ictp-saifr.org/?page_id=15446}{Minicourse on Machine Learning for Many-Body Physics; September 25-29, 2017} in S\~{a}o Paulo, Brazil.  \href{http://www.ictp-saifr.org/}{ICTP-SAIFR/IFT-UNESP}    \url{http://www.ictp-saifr.org/?page_id=15446}
+
+
+
+
+
 
 \part{Computational Fluid Dynamics (CFD); Computational Methods} 
 
@@ -8739,6 +8814,222 @@ $F$ submersion iff $\forall \, x \in M_1$, $\exists \, (U,u^i), (V,v^i), \, x\in
 \] 
 Regular value $y \in M_2$ of $F$, if rank of $F = d_2$, $\forall \, x \in F^{-1}(y)$.  
 
+% ==============================================================================
+% 20180203
+% ==============================================================================
+\part{Finite State Machines, State Machines; Embedded Systems}  
+\section{Discrete Dynamics; Finite-State Machines}  
+cf. Ch. 3 Discrete Dynamics, Lee and Seshia (2016) \cite{LeSe2016}
+cf. 3.1 Discrete Systems, Lee and Seshia (2016) \cite{LeSe2016}
+e.g. consider,  \\
+count number of cars in garage by counting number of cars that enter and leave.  
+Each entry, departure, modeled as discrete event; \\
+discrete event occurs at instance of time rather than over time.  
+cont., integrator case: given input $x:\mathbb{R} \to \mathbb{R}$ (cont.-time signal) \\
+signal $u$ going into up port of counter, on the other hand, 
+\[
+\begin{aligned}
+u : \mathbb{R} \to \lbrace \text{absent}, \text{present}  \rbrace \equiv \lbrace \lbrace \rbrace, \lbrace * \rbrace \rbrace 
+\end{aligned}
+\]
+means $\forall \, t\in \mathbb{R}$, $u(t) = $ absent $= \lbrace \rbrace$, meaning there's no event at that time, or \\
+$u(t) = $ present $\equiv \lbrace * \rbrace$, meaning that there is.  
+Counter.  \\
+when event present at up/down input port, \\
+increments/decrement its count and produces on \\
+output new value of the count \\
+at all other times (when both inputs absent), produces no output (count output absent)
+\[
+c:\mathbb{R} \to \lbrace \text{ absetn } \rbrace \cup \mathbb{Z} \equiv \lbrace \lbrace \rbrace \rbrace \cup \mathbb{Z}
+\]
+Clearly, no need for this counter to do anything when input is absent.  
+\subsubsection{Discrete signals}
+Discrete signals consist of sequence of instantaneous events in time \\
+consider signal $e: \mathbb{R} \to \lbrace \text{ absent } \rbrace \cup X$, $X \in \text{Obj}\textbf{Sets}$.  
+\begin{definition}
+	Signal $e$ is \textbf{discrete signal} if, absent most of time, and, we can count, in order, times which it's present.  $\forall \, $ time it's present, we have discrete event.   
+	Count events in order is important.  
+	Let $T \subseteq \mathbb{R}$ s.t. 
+	\[
+	T = \lbrace t\in \mathbb{R} | e(t) \neq \text{ absent} \equiv \lbrace \lbrace \rbrace \rbrace 
+	\]
+	Then $e$ discrete if $\exists \, $ 1-to-1 function $f: T \to \mathbb{N}$.  That's order preserving, i.e. $\forall \, t_1,t_2 \in T$, where $t_1 \leq t_2$, then $f(t_1) \leq f(t_2)$  
+	reactions of discrete system triggered by environment in which discrete system operates, \textbf{ event triggered}.  \\
+	when both inputs to counter are absent, no reaction occur.  
+\end{definition}
+\subsubsection{Modeling Actors as Functions}
+integrator actor in Sec. 2.2, Fig. 3.2, modeled by 
+\[
+\begin{aligned}
+& I_i : \mathbb{R}^{\mathbb{R}_+} \to \mathbb{R}^{\mathbb{R}_+} \\ 
+&  I_i : L(\mathbb{R}, \mathbb{R}_+ ) \to L(\mathbb{R}, \mathbb{R}_+)
+\end{aligned}
+\]
+$y= I_i(x)$  \\
+where $i\equiv $ initial value of integration, $x,y$ cont.-time signal 
+e.g., if $i=0$, $\forall \, t \in \mathbb{R}_+$, $x(t) = 1$, then 
+\[
+y(t) = i + \int_0^t x(\tau ) d\tau = t
+\]
+Similarly, counter in Fig. 3.1, modeled by 
+\[
+c_i : (\mathbb{R}_+ \to \lbrace \text{ absent} , \text{ present} \rbrace )^P \to (\mathbb{R}_+ \to \lbrace \text{ absent } \rbrace \cup \mathbb{Z})
+\]
+where $P = \lbrace \text{up, down } \rbrace \equiv \lbrace u ,d \rbrace = $ set of input ports.  
+For example, 
+\[
+\begin{gathered}
+\begin{aligned}
+& u: \mathbb{R}_+ \to \lbrace \text{ absent, present } \rbrace \equiv \lbrace \emptyset , \lbrace * \rbrace \rbrace \\ 
+& u: t \mapsto u(t) \in  \rbrace \equiv \lbrace \emptyset , \lbrace * \rbrace \rbrace 
+\end{aligned}
+\end{gathered}
+\]
+Lee and Seshia (2016) \cite{LeSe2016} notation: 
+\[
+A^B \equiv  \text{ set of all functions from $B$ to $A$ }
+\]
+A particular reaction will observe values of inputs at particular time $t$, and calculate output values for some time $t$.  
+Suppose actor has input ports $P = \lbrace p_1 \dots p_N \rbrace$.  
+Assume $\forall \, p \in P$, $V_p \in \text{Obj} \textbf{Sets} \equiv $ values that maybe received on port $p$, when input present.  
+$V_p \equiv $ type of port $p$.  
+At reaction, $\forall \, p \in P$, let value of $p$, $p\in V_p \cup \lbrace \text{ absent } \rbrace$ (Lee and Seshia seems to reuse notation, notation by context, here; but it's troublesome)
+valuation of inputs $P$ is assignment of value in $V_p$, \, $\forall \, $ variable $p\in P$, or assertion that $p $ absent.  
+I think Lee and Seshia is terribly confused in the writing and lack of clarity is horrendous and pernicious.  
+
+% ==============================================================================
+% END of 20180203
+% ==============================================================================
+
+\subsection{Discrete Signals}  
+
+Assume output is absent at times $t$ where reaction doesn't occur.  
+
+e.g. 
+\[
+Q = \lbrace \text{ count } \rbrace
+\]
+
+$V_{\text{count}} = \mathbb{Z}$  
+
+at reaction, count assigned count of cars in garage.  
+
+So ports $P=\lbrace p_1 \dots p_N \rbrace$, output ports $Q= \lbrace q_1 \dots q_M \rbrace$, $\forall \, p \in P$, $V_p \in \textbf{Set}$ or $\mathbb{R}$, $\forall \, q \in Q$, $V_q \in \textbf{Set}$ or $\mathbb{R}$, at reaction, 
+\[
+\begin{aligned}
+& y: P \to V_p \bigcup \lbrace \emptyset \rbrace  \\ 
+& z : Q \to V_q \bigcup \lbrace \emptyset \rbrace
+\end{aligned}
+\]
+
+\subsection{Finite-State Machines}
+
+\subsubsection{Notion of a State}  
+
+cf. Sec. 3.2 The Notion of State, Lee, Seshia (2011) \cite{LeSe2011}
+
+state, state of a system, formally, encoding of everything about past that has an affect on system's reaction to amount and future inputs  
+
+cf. Sec. 3.3 Finite-State Machines, Lee, Seshia (2011) \cite{LeSe2011}  
+
+Finite state machine; assume states $\equiv S \in \textbf{FiniteSet}$  
+
+\subsection{Transitions}
+
+cf. Sec. 3.3.1 Transitions, Lee, Seshia (2011) \cite{LeSe2011}
+
+\textbf{transition} - directed edge, $\forall \, $ transition, label with "guard/action"  
+
+\textbf{guard} - determines whether transition maybe taken on reactions  
+
+\textbf{action} -specifies what outputs are produced on each reaction  
+
+
+guard is a \textbf{predicate} (boolean valued) s.t. true when transition should be taken.  
+
+e.g. example 3.4, FSM model for garage counter  
+
+\begin{tabular}{l l c}
+	$\begin{aligned}
+	\neg \\ 
+	\sim \\ 
+	! 
+	\end{aligned}$ & negation, not &  $\neg A$ true, iff $A$ false  \\ \hline
+	$\begin{aligned}
+	\wedge \\ \& \
+	\end{aligned}$ & logical conjunction, and & if $A$ and $B$ both true, $T$, $A \wedge B$ true.  Else, it's false.    \\ \hline 
+	$\begin{aligned}
+	& \vee \\ & + \\ & \parallel \end{aligned}$ & logical (inclusion) disjunction, or & if $A$ or $B$ (or both) true, $A \vee B$ false, if both false, $A\vee B$ false  
+	\\ \hline  
+	$\begin{aligned}
+	& \oplus \\ 
+	& \veebar \end{aligned}$ & exclusive disjunction, xor & $A \oplus B$ true when either $A$ or $B$, but not both are true.    
+\end{tabular}
+
+\begin{tabular}{c c c c c c}
+	\hline
+	$A$ & $B$ & $\neg A$ & $ A\wedge B$ & $A \vee B$ & $A \oplus B$ \\ \hline
+	T & T & F & T & T & F  \\
+	T & F & F & F & T & T \\ 
+	F & T & T & F & T & T \\ 
+	F & F & T & F & F & F  
+\end{tabular}
+
+
+\textbf{action} (in reference to Lee, Seshia (2011)), on a transition, action specifies resulting valuation on output ports when transition is taken.  
+
+"When assigning a value to an output port, we use notation name $:=$ value to distinguish assignment from a predicate, which would be written name $=$ value.  
+
+Let \\
+ports $P_{\text{in}} = \lbrace p_1^{(\text{in})}, \dots p_{N_{\text{in}}^{(\text{in})}} \rbrace$ \\
+output ports $P_{\text{out}} = \lbrace p_1^{(\text{out})}, \dots p_{N_{\text{out}}^{(\text{out})}} \rbrace$ \\
+
+At a reaction, 
+\begin{equation}
+\begin{gathered}
+\begin{aligned}
+& i: P_{\text{in}} \to V_{P_{\text{in}}} \cup \lbrace \emptyset \rbrace \\
+& i: p \mapsto i(p) 
+\end{aligned} \\
+\begin{aligned}
+& o: P_{\text{out}} \to V_{P_{\text{out}}} \cup \lbrace \emptyset \rbrace \\ 
+& o: p \mapsto o(p)	
+\end{aligned}
+\end{gathered}
+\end{equation}
+Given 
+\[
+i(p_1^{(\text{in})}, \dots p_{N_{\text{in}}}^{(\text{in}) } )  \in ( V_{P_{\text{in}}} \cup \lbrace \emptyset \rbrace )^{P_{\text{in}} } \times S
+\]
+where $S \equiv $ states of the system,  \\
+
+\textbf{guard}, $g_{\text{guard}}$, 
+\begin{equation}
+\begin{aligned}
+& g_{\text{guard}} : ( V_{P_{\text{in}}} \cup \lbrace \emptyset \rbrace )^{P_{\text{in}} } \times S \to \mathbb{Z}_2 = \lbrace \text{true}, \text{false} \rbrace \\ 
+& g_{\text{guard}}( p_1^{(\text{in})}, \dots p_{N_{\text{in}}}^{(\text{in})} ) \in \lbrace \text{true}, \text{false} \rbrace 
+\end{aligned}
+\end{equation}
+
+\textbf{action}  $a$, 
+\begin{equation}
+\begin{aligned}
+& a : g_{\text{guard}}, e \mapsto o( p_1^{(\text{out})}, \dots p_{N_{\text{out}}}^{(\text{out})} )
+\end{aligned}
+\end{equation}
+where  $e\in E$, $E \equiv $ set of all possible transitions.  
+
+cf. Sec. 3.3.3. Update Functions of Lee, Seshia (2011)  
+
+(States, Inputs, Outputs, update, initial State) $\equiv  (S,I, O, u,s_0)$,  
+
+where $u: S\times I \to S \times O$, and update $\equiv $ transition function (synonymous)
+
+
+
+
+
+
 
 \end{multicols*}
 
@@ -8858,6 +9149,12 @@ Prof. Dr. Michael Bader (\emph{Lecturer});  Alexander Pöppl, Valeriy Khakhutsky
 \bibitem{SK2010}
 Jason Sanders, Edward Kandrot.  \textbf{CUDA by Example: An Introduction to General-Purpose GPU Programming} 1st Edition.  Addison-Wesley Professional; 1 edition (July 29, 2010).  ISBN-13: 978-0131387683
 
+
+
+\bibitem{NeBa1999} 
+M.E.J. Newman and G.T. Barkema.  \textbf{Monte Carlo Methods in Statistical Physics}.  Oxford University Press.  1999.  
+
+
 \bibitem{Darm2005}
   David Darmofal. ``16.901 Computational Methods in Aerospace Engineering, Spring 2005.'' (Massachusetts Institute of Technology: MIT OpenCourseWare), \url{http://ocw.mit.edu} (Accessed 12 Jun, 2016). \href{http://creativecommons.org/licenses/by-nc-sa/4.0/}{License: Creative Commons BY-NC-SA}
 
@@ -8889,6 +9186,12 @@ P.-A. Absil, R. Mahony, and R. Sepulchre.  \textbf{Optimization Algorithms on Ma
 \url{https://press.princeton.edu/titles/8586.html}  
 
 
+% ---------------------------------------------------------------------------------------
+% 20180203
+\bibitem{LeSe2016}
+Edward Ashford Lee, Sanjit Arunkumar Seshia.   \textbf{Introduction to Embedded Systems: A Cyber-Physical Systems Approach}. (MIT Press) 2nd Edition. The MIT Press; (December 30, 2016).  ISBN-13: 978-0262533812
+% ---------------------------------------------------------------------------------------
+% END of 20180203
 
 
   
