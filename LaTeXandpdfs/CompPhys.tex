@@ -3757,6 +3757,58 @@ From \href{https://stackoverflow.com/questions/868568/what-do-the-terms-cpu-boun
 \textbf{Memory bound} means rate at which a process progresses is limited by amount memory available and speed of that memory access.  A task that processes large amounts of in memory data, for example, multiplying large matrices, is likely to be Memory bound.  
 
 
+%--------------------------------------------------------------------------------
+% 20180311 
+%-------------------------------------------------------------------------------
+
+
+\section{Factorization}
+
+\href{https://www.cse.buffalo.edu//faculty/miller/Courses/CSE710/Factorization_of_a_Large_number.pdf}{Morgan Cooper for CSE710, Fall 2009}
+
+Let $n' := \sqrt{n} \in \mathbb{Z}^+$.  
+
+We want $a_i, b_i$, $i=1,\dots n'$ s.t. $a_i b_i = n$.  
+
+e.g. $n=20$.  
+\[
+n' = \sqrt{20} = 5 \in \mathbb{Z}^+
+\]
+(so we want the \emph{ceiling}).
+
+Consider $x_i := i$ \, $ \forall \, i =  1, \dots 2n'$. 
+
+Clearly, \\
+if $\frac{n}{i} \in \mathbb{Z}$, i.e. $\gcd(n,i)=i$ for some $i\leq n'$, \\
+then let $x_{i+n'} := q = \frac{n}{i}$ (let $x_{i+n'}$ be the other factor).  
+
+Generalize this to 
+$n' \in \mathbb{Z}^+$ $(n':= \sqrt{n}$, usually).  \\
+Let $a_0 \in \mathbb{Z}^+$ (most likely $a_0 =1$ or $a_0 = 2$ is what you'd "start off with", but no hard restrictions).  \\
+Then let 
+\[
+x_{i_x} := i_x + a_0 \qquad \, \forall \, i_x = 0,1,\dots M_x -1 
+\]
+
+Essentially, looping through entire blocks of threads so to "catch" every element in the array,  \\
+$\forall \, \begin{aligned} & \quad \\ 
+& i_x , i_x + M_x, i_x + 2M_x \dots < n' \\
+& i_x + a_0, i_x + a_0 + M_x, i_x + a_0 + 2M_x \dots \end{aligned}$, 
+
+If $n \bmod{x_{i_x}} = n \bmod{(i_x + a_0)} = 0$, i.e. $\frac{ 0 - n}{i_x + a_0} \in \mathbb{Z} \Longleftrightarrow \frac{n}{ i_x+ a_0 } \in \mathbb{Z}$, then 
+\[
+\begin{aligned}
+& y(i_x) := x_{i_x} \\ 
+& y(i_x + n') := \frac{n}{x_{i_x}}
+\end{aligned}
+\]
+
+
+
+%--------------------------------------------------------------------------------
+% END of 20180311 
+%-------------------------------------------------------------------------------
+
 
 
 \section{Matrix Multiplication, tiled, with shared memory}
