@@ -1,10 +1,9 @@
 /**
- * @file   : sieve.h
+ * @file   : gcd.h
  * @author : Ernest Yeung
  * @email  : ernestyalumni@gmail.com
- * @brief  : The header file for a procedure to build a table of primes via the
- * Sieve of Eratosthenes. 
- * @ref    : pp. 79 Program 5.6 Ch. 5 Arrays; Edward Scheinerman, C++ for Mathematicians: An Introduction for Students and Professionals. Taylor & Francis Group, 2006. 
+ * @brief  : GCD of 2 integers
+ * @ref    : pp. 159 Ch. 9 Modular Arithmetic; Edward Scheinerman, C++ for Mathematicians: An Introduction for Students and Professionals. Taylor & Francis Group, 2006. 
  * 
  * If you find this code useful, feel free to donate directly and easily at this direct PayPal link: 
  * 
@@ -18,22 +17,25 @@
  * 	feel free to copy, edit, paste, make your own versions, share, use as you wish.    
  * Peace out, never give up! -EY
  * 
- * COMPILATION TIPS:
- *  g++ -std=c++17 -c factor.cpp
  * */
-#ifndef SIEVE_H
-#define SIEVE_H
+#ifndef __GCD_H__
+#define __GCD_H__
+
+namespace Fields
+{
 
 /**
- * The Sieve of Eratosthenes: Generate a table of primes.
- * 
- * @param n upper limit on the primes (i.e., we find all primes
- * less than or equal to n).
- * @param primes array to hold the table of primes.
- * @return the number of primes we found.
+ * @brief Calculate the greatest common divisor of 2 integers.
+ * @details Note: gcd(0, 0) will return 0 and print an error message.
+ * @param a the first integer
+ * @param b the second integer
+ * @return the greatest common divisor of a and b
  * */
-long sieve(long n, long* primes);
+long gcd(long a, long b);
 
-//int sieve(size_t n, long primes[]);
+// overload
+int gcd(int a, int b);
 
-#endif 
+} // namespace Fields
+
+#endif // __GCD_H__ this line and previous are the mechanism to prevent double inclusion

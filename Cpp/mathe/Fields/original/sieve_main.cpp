@@ -22,6 +22,8 @@
  * */
 #include "sieve.h"
 #include <iostream>
+#include <cmath>    // log
+#include <string>   // stol
 
 const long N = 10000000;            // ten million
 const long TABLE_SIZE = 800000;     // prime number theorem overestimate
@@ -30,7 +32,7 @@ const long TABLE_SIZE = 800000;     // prime number theorem overestimate
  * A program to test the sieve procedure.
  * */
 
-int main() 
+int main(int argc, char* argv[]) 
 {
   long primes[TABLE_SIZE];
   long np = sieve(N, primes);
@@ -45,7 +47,30 @@ int main()
   }
   std::cout << '\n';
 
-  std::cout << "The larges prime we found is " << primes[np -1] << std::endl;
+  std::cout << "The largest prime we found is " << primes[np -1] << std::endl;
 
+  // second way taking in command line arguments
+  long n;
+
+  if (argc > 1)
+  {
+    n = std::stol(argv[0]);
+  }
+  else
+  {
+    n = (2 << 5);
+  }
+  std::cout << " n : " << n << '\n';
+  const long TABLE_SIZE2 {static_cast<long>(n/(std::log(n)))};
+/*  long primes2[TABLE_SIZE2];
+  long* primes2 {new long[TABLE_SIZE2]}; 
+  long np2 {sieve(n, primes2)};
+
+  std::cout << "We found " << np2 << " primes " << '\n';
+
+  std::cout << "The largest prime we found is " << primes2[np2 -1] << std::endl;
+
+  delete[] primes2;
+*/
   return 0;
 }

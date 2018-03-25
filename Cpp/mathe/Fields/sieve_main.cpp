@@ -1,10 +1,9 @@
 /**
- * @file   : sieve.h
+ * @file   : sieve_main.cpp
  * @author : Ernest Yeung
  * @email  : ernestyalumni@gmail.com
- * @brief  : The header file for a procedure to build a table of primes via the
- * Sieve of Eratosthenes. 
- * @ref    : pp. 79 Program 5.6 Ch. 5 Arrays; Edward Scheinerman, C++ for Mathematicians: An Introduction for Students and Professionals. Taylor & Francis Group, 2006. 
+ * @brief  : A program to test the sieve procedure.
+ * @ref    : pp. 82 Program 5.8 Ch. 5 Arrays; Edward Scheinerman, C++ for Mathematicians: An Introduction for Students and Professionals. Taylor & Francis Group, 2006. 
  * 
  * If you find this code useful, feel free to donate directly and easily at this direct PayPal link: 
  * 
@@ -21,19 +20,37 @@
  * COMPILATION TIPS:
  *  g++ -std=c++17 -c factor.cpp
  * */
-#ifndef SIEVE_H
-#define SIEVE_H
+#include "sieve.h"
+#include <iostream>
+
+const long N = 10000000;            // ten million
+const long TABLE_SIZE = 800000;     // prime number theorem overestimate
 
 /**
- * The Sieve of Eratosthenes: Generate a table of primes.
- * 
- * @param n upper limit on the primes (i.e., we find all primes
- * less than or equal to n).
- * @param primes array to hold the table of primes.
- * @return the number of primes we found.
+ * A program to test the sieve procedure.
  * */
-long sieve(long n, long* primes);
+//using sieve<long, TABLE_SIZE>;
+//template <>
+//long sieve<long, TABLE_SIZE>(long, long(&)[TABLE_SIZE]);
 
-//int sieve(size_t n, long primes[]);
+int main(int argc, char* argv[]) 
+{
+  long primes[TABLE_SIZE];
+//  long np = sieve<long, TABLE_SIZE>(N, primes);
+//  long np = sieve_long(N, primes);
+  long np {sieve(N, primes)} ;
 
-#endif 
+  std::cout << "We found " << np << " primes " << '\n';
+
+  std::cout << "The first 10 primes we found are these: " << '\n';
+
+  for (long k = 0; k < 10; k++)
+  {
+    std::cout << primes[k] << " ";
+  }
+  std::cout << '\n';
+
+  std::cout << "The largest prime we found is " << primes[np -1] << std::endl;
+
+  return 0;
+}

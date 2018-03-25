@@ -1,5 +1,5 @@
 /**
- * @file   : sieve.h
+ * @file   : sieve.cpp
  * @author : Ernest Yeung
  * @email  : ernestyalumni@gmail.com
  * @brief  : The header file for a procedure to build a table of primes via the
@@ -21,19 +21,45 @@
  * COMPILATION TIPS:
  *  g++ -std=c++17 -c factor.cpp
  * */
-#ifndef SIEVE_H
-#define SIEVE_H
+#include "sieve.h"
 
-/**
- * The Sieve of Eratosthenes: Generate a table of primes.
- * 
- * @param n upper limit on the primes (i.e., we find all primes
- * less than or equal to n).
- * @param primes array to hold the table of primes.
- * @return the number of primes we found.
- * */
-long sieve(long n, long* primes);
+//template <typename T, long TABLE_SIZE>
+//long sieve(long n, T(&primes)[TABLE_SIZE])
+long sieve(const long n, long primes[])
+{
+  if (n < 2)
+  {
+    return 0;   // no primes unless n is at least 2.
+  }
 
-//int sieve(size_t n, long primes[]);
+  char* sieve {new char[n + 1]}; // hold the marks
 
-#endif 
+  // Names of marks to put in the sieve
+  constexpr const char blank {0};
+  constexpr const char marked {1};
+ 
+  // Make sure sieve is blank to begin
+  for (long p = 2; p <= n; p++)
+  {
+    sieve[p] = blank;
+  }
+
+  long idx = 0;     // index into the primes array
+
+  for (long p = 2; p <= n; p++)
+  {
+    if (sieve[p] == blank)      // we found an unmarked entry
+    {
+      sieve[p] = marked;        // mark it as a prime
+      primes[idx] = p;          // record p in the primes array
+      idx++;
+    }
+    // Now mark off all multiples of p
+    for (long q = 2*p; q <= n; q += p)
+    {
+      sieve[q] = marked;
+    }
+  } // END of for k loop
+  delete[] sieve;
+  return idx;
+}

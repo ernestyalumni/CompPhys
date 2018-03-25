@@ -1,10 +1,9 @@
 /**
- * @file   : sieve.h
+ * @file   : gcd-tested.cpp
  * @author : Ernest Yeung
  * @email  : ernestyalumni@gmail.com
- * @brief  : The header file for a procedure to build a table of primes via the
- * Sieve of Eratosthenes. 
- * @ref    : pp. 79 Program 5.6 Ch. 5 Arrays; Edward Scheinerman, C++ for Mathematicians: An Introduction for Students and Professionals. Taylor & Francis Group, 2006. 
+ * @brief  : GCD of 2 integers
+ * @ref    : Ch. 3 Greatest Common Divisor; Edward Scheinerman, C++ for Mathematicians: An Introduction for Students and Professionals. Taylor & Francis Group, 2006. 
  * 
  * If you find this code useful, feel free to donate directly and easily at this direct PayPal link: 
  * 
@@ -18,22 +17,28 @@
  * 	feel free to copy, edit, paste, make your own versions, share, use as you wish.    
  * Peace out, never give up! -EY
  * 
- * COMPILATION TIPS:
- *  g++ -std=c++17 -c factor.cpp
+ * COMPILATION TIPS
+ * 
  * */
-#ifndef SIEVE_H
-#define SIEVE_H
+#include "gcd.h"
+#include <iostream>
+
+//using namespace Fields;
+using Fields::gcd;
 
 /**
- * The Sieve of Eratosthenes: Generate a table of primes.
- * 
- * @param n upper limit on the primes (i.e., we find all primes
- * less than or equal to n).
- * @param primes array to hold the table of primes.
- * @return the number of primes we found.
+ * A program to test the gcd procedure
  * */
-long sieve(long n, long* primes);
+int main()
+{
+    long a, b;
 
-//int sieve(size_t n, long primes[]);
+    std::cout << "Enter the first number  --> ";
+    std::cin >> a;
+    std::cout << "Enter the second number --> ";
+    std::cin >> b;
 
-#endif 
+    std::cout << "The gcd of " << a << " and " << b << " is "
+                << gcd(a,b) << std::endl;
+    return 0;
+}

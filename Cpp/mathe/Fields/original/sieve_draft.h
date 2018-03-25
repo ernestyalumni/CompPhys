@@ -1,5 +1,5 @@
 /**
- * @file   : sieve.h
+ * @file   : sieve_draft.h
  * @author : Ernest Yeung
  * @email  : ernestyalumni@gmail.com
  * @brief  : The header file for a procedure to build a table of primes via the
@@ -33,7 +33,5 @@
  * @return the number of primes we found.
  * */
 long sieve(long n, long* primes);
-
-//int sieve(size_t n, long primes[]);
 
 #endif 

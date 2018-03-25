@@ -62,3 +62,45 @@ long sieve(long n, long* primes)
   delete[] theSieve;
   return idx;
 }
+
+/*int sieve(size_t n, long primes[])
+{
+  if (n < 2)
+  {
+    return 0; // no primes unless n is at least 2
+  }
+
+  char* theSieve; 
+
+  theSieve = new char[n+1];
+
+  // Names of marks to put in theSieve
+  constexpr const char blank  = 0;
+  constexpr const char marked = 1;
+
+  // Make sure theSieve is blank to begin
+  for (long p = 2; p <= n; p++)   // p = a prime number
+  {
+    theSieve[p] = blank;
+  }
+
+  long idx = 0;   // index into the primes array
+
+  for (long p = 2; p <= n; p++)   // p = a prime number
+  {
+    if (theSieve[p] == blank)     // we found an unmarked entry
+    {
+      theSieve[p] = marked;       // mark it as a prime
+      primes[idx] = p;            // record k in the primes array
+      idx++;
+    }
+    // Now mark off all multiples of k 
+    for (long q = 2*p; q <= n; q += p)
+    {
+      theSieve[q] = marked;
+    }
+  }     // END of for (long p = 2; p <= n; k++) loop
+  delete[] theSieve;
+  return idx;
+}
+*/

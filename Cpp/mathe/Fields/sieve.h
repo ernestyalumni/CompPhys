@@ -32,8 +32,53 @@
  * @param primes array to hold the table of primes.
  * @return the number of primes we found.
  * */
-long sieve(long n, long* primes);
+//template <typename T, long TABLE_SIZE>
+//long sieve(long n, T(&primes)[TABLE_SIZE]);
 
+//template <typename T, long TABLE_SIZE>
+//long sieve(long n, T(&primes)[TABLE_SIZE])
+//long sieve(long n, long primes[]);
+long sieve(const long n, long* primes);
+/*
+{
+  if (n < 2)
+  {
+    return 0;   // no primes unless n is at least 2.
+  }
+
+  char* sieve;
+  sieve = new char[n + 1];      // hold the marks
+
+  // Names of marks to put in the sieve
+  constexpr const char blank  {0};
+  constexpr const char marked {1};
+ 
+  // Make sure sieve is blank to begin
+  for (long p = 2; p <= n; p++)
+  {
+    sieve[p] = blank;
+  }
+
+  long idx {0};     // index into the primes array
+
+  for (long p = 2; p <= n; p++)
+  {
+    if (sieve[p] == blank)      // we found an unmarked entry
+    {
+      sieve[p] = marked;        // mark it as a prime
+      primes[idx] = p;          // record p in the primes array
+      idx++;
+    }
+    // Now mark off all multiples of p
+    for (long q = 2*p; q <= n; q += p)
+    {
+      sieve[p] = marked;
+    }
+  } // END of for k loop
+  delete[] sieve;
+  return idx;
+};
+*/
 //int sieve(size_t n, long primes[]);
 
 #endif 
