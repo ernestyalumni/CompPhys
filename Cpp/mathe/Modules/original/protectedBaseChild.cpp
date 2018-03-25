@@ -1,9 +1,9 @@
 /**
- * @file   : publicParentChild.cpp
+ * @file   : protectedParentChild.cpp
  * @author : Ernest Yeung
  * @email  : ernestyalumni@gmail.com
- * @brief  : Program 10.1: A program to illustrate inheritance
- * @ref    : pp. 181 Sec. 10.3 Inheritance Ch. 10 The Projective Plane; Edward Scheinerman, C++ for Mathematicians: An Introduction for Students and Professionals. Taylor & Francis Group, 2006. 
+ * @brief  : Program 10.2: A program to illustrate the use of protected members of a class
+ * @ref    : pp. 184 Sec. 10.4 Protected class members Ch. 10 The Projective Plane; Edward Scheinerman, C++ for Mathematicians: An Introduction for Students and Professionals. Taylor & Francis Group, 2006. 
  * 
  * If you find this code useful, feel free to donate directly and easily at this direct PayPal link: 
  * 
@@ -22,56 +22,86 @@
  * */
 #include <iostream>
 
-class Parent {
-  public:
-    Parent(const double a, const double b):
-      x_ {a}, y_ {b}
-    {}
-
-    const double sum() const
-    {
-      return x_ + y_;
-    }
-
-    void print() const
-    {
-      std::cout << "(" << x_ << "," << y_ << ")";
-    }
-  private:
-    double x_, y_;
-};
-
-class Child : public Parent
+class Base
 {
   public:
-    Child(const double a, const double b, const int n): 
-      Parent(a, b), k_{n}
+    Base(int x, int y):
+      a_{x}, b_{y}
     {}
-    
-    const double value() const
-    {
-      return sum() * k_;
-    }
 
-    void print() const
+   void print() const
+   {
+     std::cout << "(" << a_ << "," << b_ << ")"; 
+   }
+
+  protected:
+    int b_;
+
+    int sum() const
     {
-      Parent::print();
-      std::cout << "*" << k_;
+      return a_ + b_;
     }
 
   private:
-    int k_;
+    int a_;
+};
+
+class Child : public Base
+{
+  public:
+    
+    Child(int x, int y):
+      Base(x, y)
+    {}
+
+  void increase_b()
+  {
+    b_++;
+  }
+
+  void print() const
+  {
+    Base::print(); 
+    std::cout << "=" << sum();
+  }
+};
+
+class GrandChild : public Child
+{
+  public:
+    GrandChild(int x, int y, int z):
+      Child(x,y), c_{z}
+    {}
+
+    void print() const
+    {
+      Base::print(); 
+      std::cout << "/" << c_;
+    }
+
+  private:
+    int c_;
 };
 
 int main()
 {
-  Parent P(3., -2.);
-  P.print();
-  std::cout << " --> " << P.sum() << '\n';
+  Base          B(1, 2);
+  Child         C(3, 4);
+  GrandChild    D(5, 6, 7);
 
-  Child C(-1., 3., 5);
+  B.print(); 
+  std::cout << '\n';
+
   C.print();
-  std::cout << " --> " << C.sum() << " --> " << C.value() << std::endl;
+  std::cout << "  -->  ";
+  C.increase_b();
+  C.print(); 
+  std::cout << '\n';
+
+  D.print();
+  std::cout << "  -->  ";
+  D.print();
+  std::cout << std::endl;
 
   return 0;
 }
