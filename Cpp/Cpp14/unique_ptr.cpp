@@ -39,6 +39,8 @@
 // cf. http://en.cppreference.com/w/cpp/utility/forward
 #include <utility> // std::forward
 
+#include <fstream> // std::ifstream
+
 struct B {
     // virtual specifier specifies that non-static member function is virtual and supports dynamic binding
     virtual void bar() { std::cout << "B::bar\n"; }
@@ -178,7 +180,61 @@ int main()
     std::cout << " uptr11.get() +5 : " << uptr11.get() +5 << std::endl;
     std::cout << " *uptr11.get() : " << *uptr11.get() << std::endl;
 
-    std::shared_ptr<float> shptr11{ std::move(uptr11.get() + 5 ) }; 
+	// the following example is a big no-no; CANNOT transfer ownership of 
+	// unique_ptr resource to shared ptr!  
+//    std::shared_ptr<float> shptr11{ std::move(uptr11.get() + 5 ) };  // this is a big no-no; 
+
+
+	/* =============== smart pointers and std::istream =============== */
+	// Also construction/initialization
+	std::unique_ptr<std::istream> u_str;
+	std::unique_ptr<std::istream> u_emptystr(nullptr);
+
+	if (u_emptystr) {
+		std::cout << " u_emptystr, initialized to nullptr, gives a true value in if statement " << std::endl; 
+	}
+	else {
+		std::cout << " u_emptystr, initialized to nullptr, gives a false value in if statement " << std::endl; 
+	}
+
+  //----------------------------------------------------------------------------
+  /// \brief We want to copy a unique_ptr of size N to another unique_ptr of 
+  ///   a different size, say N+1. How do we do that?
+  //----------------------------------------------------------------------------
+
+  std::unique_ptr<double[]> uptr_of_4_elements {
+    std::make_unique<double[]>(4)
+  };
+
+  std::unique_ptr<double[]> uptr_of_5_elements {
+    std::make_unique<double[]>(5)
+  };
+
+  for (int i {0}; i < 4; i++)
+  {
+    uptr_of_4_elements[i] = i;
+    std::cout << uptr_of_4_elements[i] << " ";
+  }
+  std::cout << '\n';
+
+  uptr_of_5_elements = std::move(uptr_of_4_elements);
+  for (int i {0}; i < 5; i++)
+  {
+    std::cout << uptr_of_5_elements[i] << " ";
+  }
+  std::cout << '\n';
+
+  std::cout << " is uptr_of_4_elements now nullptr ?" << 
+    (uptr_of_4_elements == nullptr) << '\n' << '\n';
+
+  // Can we reuse uptr_of_4_elements?
+  uptr_of_4_elements = std::move(uptr_of_5_elements);  
+  for (int i {0}; i < 5; i++)
+  {
+    std::cout << uptr_of_4_elements[i] << " ";
+  }
+  std::cout << '\n';
+
 
 
 }    
