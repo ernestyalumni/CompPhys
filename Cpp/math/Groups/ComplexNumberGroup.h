@@ -117,6 +117,8 @@ class AbelianComplexNumber : public AbelianGroup<AbelianComplexNumber<T>>
 	//	Fields::ComplexNumbers<T> identity_{};
 }; // class AbelianComplexNumbers
 
+
+
 } // namespace Groups
 
 #endif // _COMPLEXNUMBERSGROUP_H_
