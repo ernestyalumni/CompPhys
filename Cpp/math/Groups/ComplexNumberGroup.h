@@ -97,7 +97,7 @@ class AbelianComplexNumber : public AbelianGroup<AbelianComplexNumber<T>>
 		{
 //			z.z_ += w.z_;
 			z += w;
-			return z;
+			return z; // copy ctor is needed here.
 		}
 
 		AbelianComplexNumber<T> identity() const

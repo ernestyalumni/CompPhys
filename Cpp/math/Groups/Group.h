@@ -66,11 +66,11 @@ class AbelianGroup
 		AbelianGroup() = default;
 
 		// copy constructor needed for binary addition
-		AbelianGroup(const AbelianGroup&); 
+		AbelianGroup(const AbelianGroup&) = default; 
 		AbelianGroup& operator=(const AbelianGroup&) = delete;
 
 		// move constructor needed because in derived classes, identity will need it
-		AbelianGroup(AbelianGroup&&);
+		AbelianGroup(AbelianGroup&&) = delete;
 		AbelianGroup& operator=(AbelianGroup&&) = delete;
 
 		virtual Object& operator+=(const Object& g) = 0; 

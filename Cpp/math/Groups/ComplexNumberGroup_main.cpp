@@ -79,7 +79,12 @@ ComplexNumberGroup_main.cpp:(.text._ZN6Groups20AbelianComplexNumberIdEC2ERKS1_[_
 ComplexNumberGroup_main.cpp:(.text._ZN6Groups20AbelianComplexNumberIdEC2EOS1_[_ZN6Groups20AbelianComplexNumberIdEC5EOS1_]+0x1f): undefined reference to `Groups::AbelianGroup<Groups::AbelianComplexNumber<double> >::AbelianGroup(Groups::AbelianGroup<Groups::AbelianComplexNumber<double> >&&)'
 collect2: error: ld returned 1 exit status
 */
+  /// The resolution to these linking problems was for AbelianGroup to have to 
+  /// declare as default (as something) to have copy constructors (ctor).
 
-//	AbelianComplexNumber<double> addition_result {abelian_I + abelian_inverse};
+	AbelianComplexNumber<double> addition_result {abelian_I + abelian_inverse};
+  std::cout << addition_result.real() << " " << addition_result.imag() << 
+    '\n'; // 64 128
+
 //	auto addition_result = abelian_I + abelian_inverse;
 }
