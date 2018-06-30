@@ -1,5 +1,5 @@
 //------------------------------------------------------------------------------
-/// \file   : ComplexNumber_main.cpp
+/// \file   : ComplexNumbers_main.cpp
 /// \author : Ernest Yeung
 /// \email  : ernestyalumni@gmail.com
 /// \brief  : Complex numbers as Concrete class, arithmetic type, parametrized 
@@ -24,12 +24,12 @@
 /// Peace out, never give up! -EY
 //------------------------------------------------------------------------------
 /// COMPILATION TIPS:
-/// 	g++ -std=c++14 ComplexNumber_main.cpp ComplexNumber.cpp -o ComplexNumber_main
+/// 	g++ -std=c++14 ComplexNumbers_main.cpp ComplexNumbers.cpp -o ComplexNumbers_main
 //------------------------------------------------------------------------------
-#include "ComplexNumber.h"
+#include "ComplexNumbers.h"
 
-#include <iostream>
 #include <limits>
+#include <iostream>
 
 using namespace Fields;
 
@@ -37,69 +37,69 @@ int main()
 {
 
 	//----------------------------------------------------------------------------
-	/// ComplexNumberConstructsFromTwoScalars
-	ComplexNumber<double> a2{0.1, 2.3};
+	/// ComplexNumbersConstructsFromTwoScalars
+	ComplexNumbers<double> a2{0.1, 2.3};
 	std::cout << a2.real() << " " << a2.imag() << '\n';
 
-	/// ComplexNumberConstructsFromOneScalar
-	ComplexNumber<double> a1{2.3};
+	/// ComplexNumbersConstructsFromOneScalar
+	ComplexNumbers<double> a1{2.3};
 	std::cout << a1.real() << " " << a1.imag() << '\n';
 
-	/// ComplexNumberConstructs
-	ComplexNumber<double> a{};
+	/// ComplexNumbersConstructs
+	ComplexNumbers<double> a{};
 	std::cout << a.real() << " " << a.imag() << '\n';
 
-	/// ComplexNumberConstructsForNominalValuesNumericLimitsAndEpsilons
+	/// ComplexNumbersConstructsForNominalValuesNumericLimitsAndEpsilons
 	std::cout << 
-		"\n ComplexNumberConstructsForNominalValuesNumericLimitsAndEpsilons \n";
+		"\n ComplexNumbersConstructsForNominalValuesNumericLimitsAndEpsilons \n";
 	{
-		ComplexNumber<float> a_max {std::numeric_limits<float>::max(),
+		ComplexNumbers<float> a_max {std::numeric_limits<float>::max(),
 			std::numeric_limits<float>::max()};
 		std::cout << a_max.real() << " " << a_max.imag() << '\n';
 
-		ComplexNumber<float> a_lowest {std::numeric_limits<float>::lowest(),
+		ComplexNumbers<float> a_lowest {std::numeric_limits<float>::lowest(),
 			std::numeric_limits<float>::lowest()};
 		std::cout << a_lowest.real() << " " << a_lowest.imag() << '\n';
 
-		ComplexNumber<float> a_epsilon {std::numeric_limits<float>::epsilon(),
+		ComplexNumbers<float> a_epsilon {std::numeric_limits<float>::epsilon(),
 			std::numeric_limits<float>::epsilon()};
 		std::cout << a_epsilon.real() << " " << a_epsilon.imag() << '\n';
 
-		ComplexNumber<float> a_roundoff_error {
+		ComplexNumbers<float> a_roundoff_error {
 			std::numeric_limits<float>::round_error(),
 			std::numeric_limits<float>::round_error()};
 		std::cout << a_roundoff_error.real() << " " << a_roundoff_error.imag() << '\n';
 
-		ComplexNumber<double> b_max {std::numeric_limits<double>::max(),
+		ComplexNumbers<double> b_max {std::numeric_limits<double>::max(),
 			std::numeric_limits<double>::max()};
 		std::cout << b_max.real() << " " << b_max.imag() << '\n';
 
-		ComplexNumber<double> b_lowest {std::numeric_limits<double>::lowest(),
+		ComplexNumbers<double> b_lowest {std::numeric_limits<double>::lowest(),
 			std::numeric_limits<double>::lowest()};
 		std::cout << b_lowest.real() << " " << b_lowest.imag() << '\n';
 
-		ComplexNumber<double> b_epsilon {std::numeric_limits<double>::epsilon(),
+		ComplexNumbers<double> b_epsilon {std::numeric_limits<double>::epsilon(),
 			std::numeric_limits<double>::epsilon()};
 		std::cout << b_epsilon.real() << " " << b_epsilon.imag() << '\n';
 
-		ComplexNumber<double> b_roundoff_error {
+		ComplexNumbers<double> b_roundoff_error {
 			std::numeric_limits<double>::round_error(),
 			std::numeric_limits<double>::round_error()};
 		std::cout << b_roundoff_error.real() << " " << b_roundoff_error.imag() << '\n';
 	}
 
 	/// MemberFunctionAdditiveIdentityReturnsZero
-	ComplexNumber<double> zI{};
+	ComplexNumbers<double> zI{};
 	std::cout << (zI.additiveIdentity()).real() << " " << 
 		(zI.additiveIdentity()).imag() << '\n';
 
 	/// MemberFunctionAdditiveInverseReturnsAdditiveInverse
-	ComplexNumber<double> zInv{1., 2.};
+	ComplexNumbers<double> zInv{1., 2.};
 	std::cout << (zInv.additiveInverse()).real() << " " << 
 		(zInv.additiveInverse()).imag() << '\n';
 
 	/// AdditiveInverseReturnsAdditiveInverse
-	ComplexNumber<double> wInv{1., 2.};
+	ComplexNumbers<double> wInv{1., 2.};
 	std::cout << (additiveInverse<double>(wInv)).real() << " " <<
 		(additiveInverse<double>(wInv)).imag() << '\n';
 

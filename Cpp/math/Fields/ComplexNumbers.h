@@ -1,10 +1,10 @@
 //------------------------------------------------------------------------------
-/// \file   : ComplexNumber.h
+/// \file   : ComplexNumbers.h
 /// \author : Ernest Yeung
 /// \email  : ernestyalumni@gmail.com
 /// \brief  : ComplexNumber numbers as Concrete class or Arithmetic type, parametrized 
 /// \ref    : 3.2.1.1 An Arithmetic Type, Ch. 3 A Tour of C++: Abstraction 
-///  	Mechanisms. Bjarne Stroustrup, The C++ Programming Language, 4th Ed.
+///   Mechanisms. Bjarne Stroustrup, The C++ Programming Language, 4th Ed.
 /// \details : Using RAII for Concrete classes. 
 /// \copyright If you find this code useful, feel free to donate directly and
 /// easily at this direct PayPal link: 
@@ -22,29 +22,29 @@
 /// Peace out, never give up! -EY
 //------------------------------------------------------------------------------
 /// COMPILATION TIPS:
-///   g++ -std=c++14 ComplexNumbers_main.cpp ComplexNumbers.cpp -o ComplexNumbers_main
+///   g++ -std=c++14 ComplexNumber_main.cpp ComplexNumber.cpp -o ComplexNumber_main
 //------------------------------------------------------------------------------
-#ifndef _COMPLEXNUMBER_H_
-#define _COMPLEXNUMBER_H_
+#ifndef _COMPLEXNUMBERS_H_
+#define _COMPLEXNUMBERS_H_
 
 namespace Fields
 {
 
 template<typename T>
-class ComplexNumber
+class ComplexNumbers
 {
 	public:
-		ComplexNumber(T r, T i);	// construct complex from 2 scalars
-		ComplexNumber(T r);						// construct complex from 1 scalar
-		ComplexNumber();										// default complex: {0,0}
+		ComplexNumbers(T r, T i);	// construct complex from 2 scalars
+		ComplexNumbers(T r);						// construct complex from 1 scalar
+		ComplexNumbers();										// default complex: {0,0}
 
-    ComplexNumber(const ComplexNumber&) = default;
-    ComplexNumber& operator=(const ComplexNumber&) = default;
+    ComplexNumbers(const ComplexNumbers&) = default;
+    ComplexNumbers& operator=(const ComplexNumbers&) = default;
 
-    ComplexNumber(ComplexNumber&&) = default;
-    ComplexNumber& operator=(ComplexNumber&&) = default;
+    ComplexNumbers(ComplexNumbers&&) = default;
+    ComplexNumbers& operator=(ComplexNumbers&&) = default;
 
-    ~ComplexNumber() = default;
+    ~ComplexNumbers() = default;
 
 		// Accessors
 		T real() const;
@@ -57,51 +57,51 @@ class ComplexNumber
 		void imag(const T d);
 
 		// unary arithmetic
-		ComplexNumber& operator+=(const ComplexNumber& z);
+		ComplexNumbers& operator+=(const ComplexNumbers& z);
 
-		ComplexNumber& operator-=(const ComplexNumber& z);
+		ComplexNumbers& operator-=(const ComplexNumbers& z);
 
-		ComplexNumber& operator*=(const ComplexNumber&); 		// defined out-of-class somewhere
-		ComplexNumber& operator/=(const ComplexNumber&);
+		ComplexNumbers& operator*=(const ComplexNumbers&); 		// defined out-of-class somewhere
+		ComplexNumbers& operator/=(const ComplexNumbers&);
 
     // binary arithmetic
     template<typename K>
-    friend ComplexNumber<K> operator+(
-      ComplexNumber<K> a, const ComplexNumber<K>& b);
+    friend ComplexNumbers<K> operator+(
+      ComplexNumbers<K> a, const ComplexNumbers<K>& b);
 
     template<typename K>
-    friend ComplexNumber<K> operator-(
-      ComplexNumber<K> a, const ComplexNumber<K>& b);
+    friend ComplexNumbers<K> operator-(
+      ComplexNumbers<K> a, const ComplexNumbers<K>& b);
 
     template<typename K>
-    friend ComplexNumber<K> operator-(const ComplexNumber<K>& a);
+    friend ComplexNumbers<K> operator-(const ComplexNumbers<K>& a);
 
     template<typename K>
-    friend ComplexNumber<K> operator*(
-      ComplexNumber<K> a, const ComplexNumber<K>& b);
+    friend ComplexNumbers<K> operator*(
+      ComplexNumbers<K> a, const ComplexNumbers<K>& b);
 
     template<typename K>
-    friend ComplexNumber<K> operator/(
-      ComplexNumber<K> a, const ComplexNumber<K>& b);
+    friend ComplexNumbers<K> operator/(
+      ComplexNumbers<K> a, const ComplexNumbers<K>& b);
 
 		/// ComplexNumbers Conjugation
 		//--------------------------------------------------------------------------
 		/// \brief Return the complex conjugate of this complex number.
 		//--------------------------------------------------------------------------
-		ComplexNumber conjugate() const;
+		ComplexNumbers conjugate() const;
 
 		//--------------------------------------------------------------------------
 		/// \brief Conjugate this complex number itself.
 		//--------------------------------------------------------------------------
 		void conjugation();
 
-    ComplexNumber additiveIdentity() const;
-    ComplexNumber multiplicativeIdentity() const;
+    ComplexNumbers additiveIdentity() const;
+    ComplexNumbers multiplicativeIdentity() const;
 
 //    ComplexNumbers additiveInverse(const ComplexNumbers&) const;
-    ComplexNumber additiveInverse() const;
+    ComplexNumbers additiveInverse() const;
 //    ComplexNumbers multiplicativeInverse(const ComplexNumbers&) const;
-    ComplexNumber multiplicativeInverse() const;
+    ComplexNumbers multiplicativeInverse() const;
 
 	private:
 		T im_;
@@ -113,10 +113,10 @@ class ComplexNumber
 /// \details Definitions of == and != are straightforward:
 //------------------------------------------------------------------------------
 template<typename T>
-bool operator==(const ComplexNumber<T>& a, const ComplexNumber<T>& b);		// equal
+bool operator==(const ComplexNumbers<T>& a, const ComplexNumbers<T>& b);		// equal
 
 template<typename T>
-bool operator!=(const ComplexNumber<T>& a, const ComplexNumber<T>& b); 	// not equal 
+bool operator!=(const ComplexNumbers<T>& a, const ComplexNumbers<T>& b); 	// not equal 
 
 // originally from Stroustrup, pp. 61
 //ComplexNumbers sqrt(ComplexNumbers);
@@ -125,16 +125,16 @@ bool operator!=(const ComplexNumber<T>& a, const ComplexNumber<T>& b); 	// not e
 /// \details r = |z| = |x + yi| = \sqrt{x^2 + y^2}
 //------------------------------------------------------------------------------
 template<typename T>
-T modulus(const ComplexNumber<T>& z);
+T modulus(const ComplexNumbers<T>& z);
 
 template<typename T>
-T modulusSquared(const ComplexNumber<T>& z);
+T modulusSquared(const ComplexNumbers<T>& z);
 
 template<typename T>
-ComplexNumber<T> additiveInverse(const ComplexNumber<T>&);
+ComplexNumbers<T> additiveInverse(const ComplexNumbers<T>&);
 
 template<typename T>
-ComplexNumber<T> multiplicativeInverse(const ComplexNumber<T>&);
+ComplexNumbers<T> multiplicativeInverse(const ComplexNumbers<T>&);
 
 } // namespace Fields
 

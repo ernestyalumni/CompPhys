@@ -1,5 +1,5 @@
 //------------------------------------------------------------------------------
-/// \file   : ComplexNumber.cpp
+/// \file   : ComplexNumbers.cpp
 /// \author : Ernest Yeung
 /// \email  : ernestyalumni@gmail.com
 /// \brief  : Complex numbers as Concrete class, arithmetic type, parametrized. 
@@ -22,9 +22,9 @@
 /// Peace out, never give up! -EY
 //------------------------------------------------------------------------------
 /// COMPILATION TIPS:
-/// 	g++ -std=c++14 ComplexNumber_main.cpp ComplexNumber.cpp -o ComplexNumber_main
+/// 	g++ -std=c++14 ComplexNumbers_main.cpp ComplexNumbers.cpp -o ComplexNumbers_main
 //------------------------------------------------------------------------------
-#include "ComplexNumber.h"
+#include "ComplexNumbers.h"
 
 #include <cassert> 	// assert
 
@@ -34,49 +34,49 @@ namespace Fields
 {
 
 template<typename T>
-ComplexNumber<T>::ComplexNumber(T r, T i):
+ComplexNumbers<T>::ComplexNumbers(T r, T i):
 	re_{r}, im_{i}
 {}
 
 template<typename T>
-ComplexNumber<T>::ComplexNumber(T r):						// construct complex from 1 scalar
+ComplexNumbers<T>::ComplexNumbers(T r):						// construct complex from 1 scalar
 	re_{r}, im_{0}
 {}
 
 template<typename T>
-ComplexNumber<T>::ComplexNumber():										// default complex: {0,0}
+ComplexNumbers<T>::ComplexNumbers():										// default complex: {0,0}
 	re_{0}, im_{0}		
 {}		
 
 // Accessors
 template<typename T>
-T ComplexNumber<T>::real() const 
+T ComplexNumbers<T>::real() const 
 {
 	return re_;
 }
 
 template<typename T>
-T ComplexNumber<T>::imag() const
+T ComplexNumbers<T>::imag() const
 {
 	return im_;
 }
 
 // Setters
 template<typename T>
-void ComplexNumber<T>::real(const T d)
+void ComplexNumbers<T>::real(const T d)
 {
 	re_ = d;
 }
 
 template<typename T>
-void ComplexNumber<T>::imag(const T d)
+void ComplexNumbers<T>::imag(const T d)
 {
 	im_ = d;
 }
 
 // unary arithmetic
 template<typename T>
-ComplexNumber<T>& ComplexNumber<T>::operator+=(const ComplexNumber& z) 
+ComplexNumbers<T>& ComplexNumbers<T>::operator+=(const ComplexNumbers& z) 
 {
 	re_ += z.real();
 	im_ += z.imag();
@@ -84,7 +84,7 @@ ComplexNumber<T>& ComplexNumber<T>::operator+=(const ComplexNumber& z)
 }
 
 template<typename T>
-ComplexNumber<T>& ComplexNumber<T>::operator-=(const ComplexNumber& z)
+ComplexNumbers<T>& ComplexNumbers<T>::operator-=(const ComplexNumbers& z)
 {
 	re_ -= z.real();
 	im_ -= z.imag();
@@ -100,7 +100,7 @@ ComplexNumber<T>& ComplexNumber<T>::operator-=(const ComplexNumber& z)
 /// \details z*w = (a+bi)*(c+di) = (a*c - b*d) + i(a*d + b*c)
 //------------------------------------------------------------------------------
 template<typename T>
-ComplexNumber<T>& ComplexNumber<T>::operator*=(const ComplexNumber& z)
+ComplexNumbers<T>& ComplexNumbers<T>::operator*=(const ComplexNumbers& z)
 {
 	this->re_ = this->real() * z.real() - this->imag() * z.imag();
 	this->im_ = this->real() * z.imag() + this->imag() * z.real();
@@ -111,7 +111,7 @@ ComplexNumber<T>& ComplexNumber<T>::operator*=(const ComplexNumber& z)
 /// 	((ac+bd) +i(bc-ad))/(c^2 + d^2)
 //------------------------------------------------------------------------------
 template<typename T>
-ComplexNumber<T>& ComplexNumber<T>::operator/=(const ComplexNumber& z)
+ComplexNumbers<T>& ComplexNumbers<T>::operator/=(const ComplexNumbers& z)
 {
 	assert(modulusSquared<T>(z) != 0.);
  
@@ -131,67 +131,67 @@ ComplexNumber<T>& ComplexNumber<T>::operator/=(const ComplexNumber& z)
 ///		Be careful about l-value references vs. r-value references 
 //------------------------------------------------------------------------------
 /*template<typename T>
-ComplexNumber<T> ComplexNumber<T>::operator+(
-	const ComplexNumber<T>& a, const ComplexNumber<T>& b)
+ComplexNumbers<T> ComplexNumbers<T>::operator+(
+	const ComplexNumbers<T>& a, const ComplexNumbers<T>& b)
 {
 	return a += b;
 }*/
 
 template<typename T>
-ComplexNumber<T> operator+(
-	ComplexNumber<T> a, const ComplexNumber<T>& b)
+ComplexNumbers<T> operator+(
+	ComplexNumbers<T> a, const ComplexNumbers<T>& b)
 {
 	return a += b; // return result by value (uses move constructor)
 }
 
 /*template<typename T>
-ComplexNumber<T> ComplexNumber<T>::operator-(
-	const ComplexNumber<T>& a, const ComplexNumber<T>& b)
+ComplexNumbers<T> ComplexNumbers<T>::operator-(
+	const ComplexNumbers<T>& a, const ComplexNumbers<T>& b)
 {
 	return a -= b;
 }*/
 template<typename T>
-ComplexNumber<T> operator-(
-	ComplexNumber<T> a, const ComplexNumber<T>& b)
+ComplexNumbers<T> operator-(
+	ComplexNumbers<T> a, const ComplexNumbers<T>& b)
 {
 	return a -= b; // return result by value (uses move constructor)
 }
 
 /*template<typename T>
-ComplexNumber<T> ComplexNumber<T>::operator-(const ComplexNumber<T>& a)
+ComplexNumbers<T> ComplexNumbers<T>::operator-(const ComplexNumbers<T>& a)
 {
 	return {-a.real(), -a.imag()};	// unary minus
 }*/
 template<typename T>
-ComplexNumber<T> operator-(const ComplexNumber<T>& a)
+ComplexNumbers<T> operator-(const ComplexNumbers<T>& a)
 {
 	return {-a.real(), -a.imag()};	// unary minus
 }
 
 /*template<typename T>
-ComplexNumber<T> ComplexNumber<T>::operator*(
-	const ComplexNumber<T>& a, const ComplexNumber<T>& b)
+ComplexNumbers<T> ComplexNumbers<T>::operator*(
+	const ComplexNumbers<T>& a, const ComplexNumbers<T>& b)
 {
 	return a *= b;
 }*/
 
 template<typename T>
-ComplexNumber<T> operator*(
-	ComplexNumber<T> a, const ComplexNumber<T>& b)
+ComplexNumbers<T> operator*(
+	ComplexNumbers<T> a, const ComplexNumbers<T>& b)
 {
 	return a *= b; // return result by value (uses move constructor)
 }
 
 /*template<typename T>
-ComplexNumber<T> ComplexNumber<T>::operator/(
-	const ComplexNumber& a, const ComplexNumber& b)
+ComplexNumbers<T> ComplexNumbers<T>::operator/(
+	const ComplexNumbers& a, const ComplexNumbers& b)
 {
 	return a /= b;
 }*/
 
 template<typename T>
-ComplexNumber<T> operator/(
-	ComplexNumber<T> a, const ComplexNumber<T>& b)
+ComplexNumbers<T> operator/(
+	ComplexNumbers<T> a, const ComplexNumbers<T>& b)
 {
 	return a /= b; // return result by value (uses move constructor)
 }
@@ -201,7 +201,7 @@ ComplexNumber<T> operator/(
 /// \brief Return the complex conjugate of this complex number.
 //------------------------------------------------------------------------------
 template<typename T>
-ComplexNumber<T> ComplexNumber<T>::conjugate() const
+ComplexNumbers<T> ComplexNumbers<T>::conjugate() const
 {
 	return {re_, -im_};
 }
@@ -210,7 +210,7 @@ ComplexNumber<T> ComplexNumber<T>::conjugate() const
 /// \brief Conjugate this complex number itself.
 //------------------------------------------------------------------------------
 template<typename T>
-void ComplexNumber<T>::conjugation()
+void ComplexNumbers<T>::conjugation()
 {
 	im_ = -im_;
 }
@@ -219,65 +219,65 @@ void ComplexNumber<T>::conjugation()
 /// \details Definitions of == and != are straightforward:
 //------------------------------------------------------------------------------
 template<typename T>
-bool operator==(ComplexNumber<T>& a, ComplexNumber<T>& b)		// equal
+bool operator==(ComplexNumbers<T>& a, ComplexNumbers<T>& b)		// equal
 {
 	return a.real() == b.real() && a.imag() == b.imag();
 }
 
 template<typename T>
-bool operator!=(ComplexNumber<T>& a, ComplexNumber<T>& b) 	// not equal 
+bool operator!=(ComplexNumbers<T>& a, ComplexNumbers<T>& b) 	// not equal 
 {
 	return !(a == b);
 }
 
 template<typename T>
-ComplexNumber<T> ComplexNumber<T>::additiveIdentity() const
+ComplexNumbers<T> ComplexNumbers<T>::additiveIdentity() const
 {
 	return {};
 }
 
 template<typename T>
-ComplexNumber<T> ComplexNumber<T>::multiplicativeIdentity() const
+ComplexNumbers<T> ComplexNumbers<T>::multiplicativeIdentity() const
 {
 	return {1};
 }
 
 /*template<typename T>
-ComplexNumber<T> ComplexNumber<T>::additiveInverse(const ComplexNumber& z) const
+ComplexNumbers<T> ComplexNumbers<T>::additiveInverse(const ComplexNumbers& z) const
 {
 	return -z;
 }*/
 template<typename T>
-ComplexNumber<T> ComplexNumber<T>::additiveInverse() const
+ComplexNumbers<T> ComplexNumbers<T>::additiveInverse() const
 {
 	return -(*this);
 }
 
 /*template<typename T>
-ComplexNumber<T> ComplexNumber<T>::multiplicativeInverse(
-	const ComplexNumber& z) const
+ComplexNumbers<T> ComplexNumbers<T>::multiplicativeInverse(
+	const ComplexNumbers& z) const
 {
-	return (ComplexNumber<T>(static_cast<T>(1)) / z);
+	return (ComplexNumbers<T>(static_cast<T>(1)) / z);
 }*/
 
 template<typename T>
-ComplexNumber<T> ComplexNumber<T>::multiplicativeInverse() const
+ComplexNumbers<T> ComplexNumbers<T>::multiplicativeInverse() const
 {
 	assert((real() != 0) && (imag() != 0));
-	return (ComplexNumber<T>(static_cast<T>(1)) / *this);
+	return (ComplexNumbers<T>(static_cast<T>(1)) / *this);
 }
 
 //------------------------------------------------------------------------------
 /// \details Definitions of == and != are straightforward:
 //------------------------------------------------------------------------------
 template<typename T>
-bool operator==(const ComplexNumber<T>& a, const ComplexNumber<T>& b)		// equal
+bool operator==(const ComplexNumbers<T>& a, const ComplexNumbers<T>& b)		// equal
 {
 	return a.real() == b.real() && a.imag() == b.imag();
 }
 
 template<typename T>
-bool operator!=(const ComplexNumber<T>& a, const ComplexNumber<T>& b) 	// not equal 
+bool operator!=(const ComplexNumbers<T>& a, const ComplexNumbers<T>& b) 	// not equal 
 {
 	return !(a==b);
 }
@@ -289,27 +289,27 @@ bool operator!=(const ComplexNumber<T>& a, const ComplexNumber<T>& b) 	// not eq
 /// \details r = |z| = |x + yi| = \sqrt{x^2 + y^2}
 //------------------------------------------------------------------------------
 template<typename T>
-T modulus(const ComplexNumber<T>& z)
+T modulus(const ComplexNumbers<T>& z)
 {
 	return std::sqrt(z.real() * z.real() + z.imag() * z.imag());
 }
 
 template<typename T>
-T modulusSquared(const ComplexNumber<T>& z)
+T modulusSquared(const ComplexNumbers<T>& z)
 {
 	return z.real() * z.real() + z.imag() * z.imag();
 }
 
 template<typename T>
-ComplexNumber<T> additiveInverse(const ComplexNumber<T>& z)
+ComplexNumbers<T> additiveInverse(const ComplexNumbers<T>& z)
 {
 	return -z;
 }
 
 template<typename T>
-ComplexNumber<T> multiplicativeInverse(const ComplexNumber<T>& z)
+ComplexNumbers<T> multiplicativeInverse(const ComplexNumbers<T>& z)
 {
-	return (ComplexNumber<T>(static_cast<T>(1)) / z);
+	return (ComplexNumbers<T>(static_cast<T>(1)) / z);
 }
 
 
@@ -322,12 +322,12 @@ ComplexNumber<T> multiplicativeInverse(const ComplexNumber<T>& z)
 /// 	or explicit instantiations; drawback for explicit instantiations is ALL
 /// 	use cases must be first explicitly instantiations
 //------------------------------------------------------------------------------
-template class ComplexNumber<int>;
-template class ComplexNumber<long>;
-template class ComplexNumber<float>;
-template class ComplexNumber<double>;
+template class ComplexNumbers<int>;
+template class ComplexNumbers<long>;
+template class ComplexNumbers<float>;
+template class ComplexNumbers<double>;
 
-template ComplexNumber<double> additiveInverse<double>(
-	const ComplexNumber<double>& z);
+template ComplexNumbers<double> additiveInverse<double>(
+	const ComplexNumbers<double>& z);
 
 } // namespace Fields
