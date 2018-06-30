@@ -27,6 +27,8 @@
 #ifndef _COMPLEXNUMBERS_H_
 #define _COMPLEXNUMBERS_H_
 
+#include <iostream> // std::ostream
+
 namespace Fields
 {
 
@@ -103,6 +105,11 @@ class ComplexNumbers
 //    ComplexNumbers multiplicativeInverse(const ComplexNumbers&) const;
     ComplexNumbers multiplicativeInverse() const;
 
+    template<typename K>
+    friend std::ostream& operator<<(
+      std::ostream& os,
+      const ComplexNumbers<K> & z);
+
 	private:
 		T im_;
 		T re_;		
@@ -135,6 +142,19 @@ ComplexNumbers<T> additiveInverse(const ComplexNumbers<T>&);
 
 template<typename T>
 ComplexNumbers<T> multiplicativeInverse(const ComplexNumbers<T>&);
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const ComplexNumbers<T>& z)
+{
+  if (z.imag() == T(0))
+  {
+    os << z.real();
+    return os;
+  }
+
+  os << "(" << z.real() << ") + (" << z.imag() << ")i";
+  return os;
+}
 
 } // namespace Fields
 

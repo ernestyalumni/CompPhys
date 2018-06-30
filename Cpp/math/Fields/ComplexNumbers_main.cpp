@@ -37,13 +37,15 @@ int main()
 {
 
 	//----------------------------------------------------------------------------
-	/// ComplexNumbersConstructsFromTwoScalars
+	/// ComplexNumbersConstructsFromTwoScalarsAndPrints
 	ComplexNumbers<double> a2{0.1, 2.3};
 	std::cout << a2.real() << " " << a2.imag() << '\n';
+	std::cout << a2 << '\n';
 
-	/// ComplexNumbersConstructsFromOneScalar
+	/// ComplexNumbersConstructsFromOneScalarAndPrints
 	ComplexNumbers<double> a1{2.3};
 	std::cout << a1.real() << " " << a1.imag() << '\n';
+	std::cout << a1 << '\n';
 
 	/// ComplexNumbersConstructs
 	ComplexNumbers<double> a{};
