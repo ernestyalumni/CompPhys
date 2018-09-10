@@ -23,7 +23,7 @@
 /// Peace out, never give up! -EY
 //------------------------------------------------------------------------------
 /// COMPILATION TIPS:
-///   g++ -std=c++14 ComplexNumber_main.cpp ComplexNumber.cpp -o ComplexNumber_main
+///   g++ -std=c++14 Point.cpp Point_main.cpp -o Point_main
 //------------------------------------------------------------------------------
 #include "Point.h"
 
@@ -33,10 +33,12 @@
 namespace AffineSpace
 {
 
+#if 0
 Point::Point() :
   x_{0.},
   y_{0.}
 {}
+#endif 
 
 Point::Point(const double x, const double y):
   x_{x},

@@ -24,7 +24,7 @@
 /// Peace out, never give up! -EY
 //------------------------------------------------------------------------------
 /// COMPILATION TIPS:
-///   g++ -std=c++14 ComplexNumber_main.cpp ComplexNumber.cpp -o ComplexNumber_main
+///   g++ -std=c++14 Point.cpp Point_main.cpp -o Point_main
 //------------------------------------------------------------------------------
 #include "Point.h"
 

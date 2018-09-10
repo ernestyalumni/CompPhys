@@ -23,7 +23,7 @@
 /// Peace out, never give up! -EY
 //------------------------------------------------------------------------------
 /// COMPILATION TIPS:
-///  g++ -std=c++14 Socket_main.cpp -o Socket_main
+///  g++ -std=c++14 Point.cpp Point_main.cpp -o Point_main
 //------------------------------------------------------------------------------
 #ifndef _AFFINE_SPACE_POINT_H_
 #define _AFFINE_SPACE_POINT_H_
@@ -37,8 +37,12 @@ class Point
 {
   public:
 
+    #if 0
     Point();
     Point(const double x, const double y);
+    #endif 
+
+    explicit Point(const double x = 0., const double y = 0.);
 
     const double x() const
     {
