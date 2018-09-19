@@ -59,9 +59,9 @@ class ComplexNumber
 		void imag(const T d);
 
 		// unary arithmetic
-		ComplexNumber& operator+=(const ComplexNumber& z);
+		inline ComplexNumber& operator+=(const ComplexNumber& z);
 
-		ComplexNumber& operator-=(const ComplexNumber& z);
+		inline ComplexNumber& operator-=(const ComplexNumber& z);
 
 		ComplexNumber& operator*=(const ComplexNumber&); 		// defined out-of-class somewhere
 		ComplexNumber& operator/=(const ComplexNumber&);

@@ -76,7 +76,7 @@ void ComplexNumber<T>::imag(const T d)
 
 // unary arithmetic
 template<typename T>
-ComplexNumber<T>& ComplexNumber<T>::operator+=(const ComplexNumber& z) 
+inline ComplexNumber<T>& ComplexNumber<T>::operator+=(const ComplexNumber& z) 
 {
 	re_ += z.real();
 	im_ += z.imag();
@@ -84,7 +84,7 @@ ComplexNumber<T>& ComplexNumber<T>::operator+=(const ComplexNumber& z)
 }
 
 template<typename T>
-ComplexNumber<T>& ComplexNumber<T>::operator-=(const ComplexNumber& z)
+inline ComplexNumber<T>& ComplexNumber<T>::operator-=(const ComplexNumber& z)
 {
 	re_ -= z.real();
 	im_ -= z.imag();
