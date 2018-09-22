@@ -40,6 +40,9 @@ class ComplexNumber
 		ComplexNumber(T r);						// construct complex from 1 scalar
 		ComplexNumber();										// default complex: {0,0}
 
+    // cannot be overloaded.
+    // constexpr ComplexNumber(T r, T i);
+
     ComplexNumber(const ComplexNumber&) = default;
     ComplexNumber& operator=(const ComplexNumber&) = default;
 

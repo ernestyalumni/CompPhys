@@ -48,6 +48,12 @@ ComplexNumber<T>::ComplexNumber():										// default complex: {0,0}
 	re_{0}, im_{0}		
 {}		
 
+// cannot be overloaded
+// template<typename T>
+// constexpr ComplexNumber<T>::ComplexNumber(T r = 0, T i = 0):
+// 	re_{r}, im_{i}
+// {}
+
 // Accessors
 template<typename T>
 T ComplexNumber<T>::real() const 
@@ -104,6 +110,7 @@ ComplexNumber<T>& ComplexNumber<T>::operator*=(const ComplexNumber& z)
 {
 	this->re_ = this->real() * z.real() - this->imag() * z.imag();
 	this->im_ = this->real() * z.imag() + this->imag() * z.real();
+	return *this;
 }
 
 //------------------------------------------------------------------------------
@@ -120,6 +127,7 @@ ComplexNumber<T>& ComplexNumber<T>::operator/=(const ComplexNumber& z)
 
 	this->im_ = (-this->real() * z.imag() + this->imag() * z.real())/
 		modulusSquared<T>(z);
+	return *this;
 }
 
 //------------------------------------------------------------------------------
@@ -311,7 +319,6 @@ ComplexNumber<T> multiplicativeInverse(const ComplexNumber<T>& z)
 {
 	return (ComplexNumber<T>(static_cast<T>(1)) / z);
 }
-
 
 //------------------------------------------------------------------------------
 /// \brief explicit instantiations
