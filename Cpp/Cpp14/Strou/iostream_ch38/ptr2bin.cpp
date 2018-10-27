@@ -35,17 +35,30 @@
 
 
 void ptr2bin( std::string& filename, std::unique_ptr<double[]>& uptr, size_t N) {
-//	std::fstream fstre(filename, std::ios::binary); 
-	std::fstream fstre(filename, fstre.binary | fstre.trunc | fstre.in | fstre.out ); 
+//	std::fstream fstre(filename, std::ios::binary);
+//	std::fstream fstre(filename, fstre.binary | fstre.trunc | fstre.in | fstre.out );
+	std::fstream fstre(filename, fstre.binary | fstre.app | fstre.in | fstre.out );
+
 	if (!fstre.is_open()) {
-		std::cout << "Failed to open " << filename << std::endl; 
+		std::cout << "Failed to open " << filename << std::endl;
 	} else {
 		for (size_t idx=0; idx<N; idx++) {
-			double input = uptr[idx];  
-			fstre.write(reinterpret_cast<char*>(&input), sizeof input); // binary output 
+			double input = uptr[idx];
+			fstre.write(reinterpret_cast<char*>(&input), sizeof input); // binary output
 		}
-		fstre.close();  
-	}  
+		fstre.close();
+	}
+};
+
+void add2bin( std::string& filename, double& dval) {
+//	std::fstream fstre(filename, std::ios::binary); 
+	std::fstream fstre(filename, fstre.binary | fstre.app | fstre.in | fstre.out );
+	if (!fstre.is_open()) {
+		std::cout << "Failed to open " << filename << std::endl;
+	} else {
+		fstre.write(reinterpret_cast<char*>(&dval), sizeof dval); // binary output
+		fstre.close();
+	}
 };
 
 
@@ -71,18 +84,18 @@ int main() {
 		double output;
 		fread.read(reinterpret_cast<char*>(&output), sizeof output);  
 		std::cout << " " << output; 
-	}
+	} std::cout << std::endl << std::endl; 
 
-/*
-	std::fstream fstre(filename, std::ios::binary);  
-	if (!fstre.is_open())  {
-		std::cout << "Failed to open " << filename << std::endl; 
-	} else {
-		
-		
-	}
-*/	
+	double addd = 100.1;
+	add2bin( filename, addd) ;
+
+	// for ifstream, this moves file position pointer (both put and get)
+	fread.seekg(0);
 	
 	
-	
+	for (size_t idx=0; idx<N+1; idx++) {
+		double output;
+		fread.read(reinterpret_cast<char*>(&output), sizeof output);
+		std::cout << " " << output;
+	} std::cout << std::endl << std::endl;
 }

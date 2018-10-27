@@ -14,3 +14,7 @@ class Body {
 }
 ```  
 
+## [Structural](https://github.com/ernestyalumni/CompPhys/tree/master/Cpp/DesignPatterns/Structural)
+
+### [Composite](https://github.com/ernestyalumni/CompPhys/blob/master/Cpp/DesignPatterns/Structural/Composite.cpp)
+

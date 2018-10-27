@@ -99,7 +99,25 @@ __global__ void calcE_kernel(int* Sptr, Sysparam* sysparams, size_t Lx, size_t L
 void initialize_allup(Spins2d& spins2d, Sysparam_ptr& sysParams,
 	const std::array<int,3> MAXGRIDSIZES,const dim3 M_is={32,32});
 
+
+/** @fn init_allup_partialsumM
+ * @brief initialize spins randomly and calculate partial sums for magnetization M
+ * @details 1st part of initialize_allup_kernel, 2nd. part is block_sumM
+ * */
+__device__ int unifl2intspin(const float unif) ;
+__device__ int init_rand_partialsumM(int* Sptr,size_t Lx,size_t Ly, curandState *state) ;
+__global__ void initialize_rand_kernel(int* Sptr, Sysparam* sysparams, size_t Lx, size_t Ly,  
+	curandState *state) ;
+
+/**
+ * @fn initialize_rand
+ * @brief "driver" function to initialize energy, spin matrix, and magnetization with each spins having random spin
+ * */
+void initialize_rand(Spins2d& spins2d, Sysparam_ptr& sysParams,
+	const std::array<int,3> MAXGRIDSIZES, devStatesXOR & devStates,const dim3 M_is={32,32});
+
 /* =============== END of initialization =============== */
+
 
 /* =============== Metropolis algorithm =============== */
 

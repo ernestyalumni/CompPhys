@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 	std::cout << " L : " << spins.L_is[0]*spins.L_is[1] << std::endl; 
 	
 	// number of trials or number of times to run the Metropolis algorithm 
-	constexpr const unsigned int trials = 10000;
+	constexpr const unsigned int trials = 50000;
 	
 	// file name
 	std::string filename = "./data/IsingMetroGPU.bin";  
@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 
 	constexpr const float initial_temp = 1.f;  // typically 1.
 	constexpr const float final_temp = 3.f;  // typically 3.
-	constexpr const float tempstep = 0.01f;  // typically 0.05
+	constexpr const float tempstep = 0.005f;  // typically 0.05
 
 /*	Sysparam_ptr sysparams_ptr = { initial_temp } ;
 	TransProb_ptr transprob_ptr = { initial_temp , 1.f } ;
@@ -109,15 +109,20 @@ int main(int argc, char* argv[])
 
 		metropolis(spins,sysparams_ptr,avgs_ptr,transprob_ptr,MAXGRIDSIZES,M_is,devstatesXOR,trials); 
 
+		// following 3 line is for timing code purposes only 
+		auto end1 = std::chrono::steady_clock::now();
+		auto diff1 = end1-start1;
+		std::cout << std::chrono::duration<double,std::milli>(diff1).count() << " ms" << std::endl;  
+
 		cudaMemcpy(&h_sysparams_out,sysparams_ptr.d_sysparams.get(),1*sizeof(Sysparam),cudaMemcpyDeviceToHost);  
 		cudaMemcpy(&h_avgs_out,avgs_ptr.d_avgs.get(),1*sizeof(Avg),cudaMemcpyDeviceToHost);  
 
 		process_avgs(trials, spins.L_is[0]*L_is[1], filename, h_sysparams_out, h_avgs_out) ;  
 			
 		// following 3 line is for timing code purposes only 
-		auto end1 = std::chrono::steady_clock::now();
-		auto diff1 = end1-start1;
-		std::cout << std::chrono::duration<double,std::milli>(diff1).count() << " ms" << std::endl;  
+		auto end2 = std::chrono::steady_clock::now();
+		auto diff2 = end2-start1;
+		std::cout << std::chrono::duration<double,std::milli>(diff2).count() << " ms" << std::endl;  
 			
 	}
 			
