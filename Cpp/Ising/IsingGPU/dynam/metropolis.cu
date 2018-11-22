@@ -243,6 +243,100 @@ void initialize_allup(Spins2d& spins2d, Sysparam_ptr& sysParams,
 
 } // end of function initialize_allup 
 
+__device__ int unifl2intspin(const float unif) {
+	return (2 * static_cast<int>(floorf(2.f*unif)) - 1); 
+}
+
+/** @fn init_rand_partialsumM
+ * @brief initialize spins all up and calculate partial sums for magnetization M
+ * @details 1st part of initialize_allup_kernel, 2nd. part is block_sumM
+ * */
+__device__ int init_rand_partialsumM(int* Sptr,size_t Lx,size_t Ly,curandState *state) {
+	int sum=0; // partial sum of the magnetization M
+
+	// global thread index, k_x = 0,1,...N_x*M_x, k_y = 0,1,...N_y*M_y
+	unsigned int k_x = threadIdx.x + blockDim.x * blockIdx.x ; 
+	unsigned int k_y = threadIdx.y + blockDim.y * blockIdx.y ; 
+	unsigned int k = k_x + gridDim.x * blockDim.x * k_y;  
+
+	curandState localState = state[k]; 
+
+	for (unsigned int idx = k; idx < Lx*Ly/4; idx+= blockDim.x * gridDim.x * blockDim.y * gridDim.y ) {
+		float ranf = curand_uniform(&localState); 
+		int ranint0 = unifl2intspin(ranf); 
+		ranf = curand_uniform(&localState); 
+		int ranint1 = unifl2intspin(ranf); 
+		ranf = curand_uniform(&localState); 
+		int ranint2 = unifl2intspin(ranf); 
+		ranf = curand_uniform(&localState); 
+		int ranint3 = unifl2intspin(ranf); 
+
+		reinterpret_cast<int4*>(Sptr)[idx] = {ranint0,ranint1,ranint2,ranint3} 	;
+		int4 s4 = ((int4*) Sptr)[idx]; 
+		sum += s4.x + s4.y + s4.z + s4.w; 
+	}
+	
+	// process remaining elements
+	for (unsigned int idx = k + Lx*Ly/4 *4; idx < Lx*Ly; idx += 4) { 
+		float ranf = curand_uniform(&localState); 
+		int ranint = unifl2intspin(ranf); 
+
+		Sptr[idx] = ranint; 
+		sum += Sptr[idx]; 
+	}
+	return sum;
+} 
+
+_
+_global__ void initialize_rand_kernel(int* Sptr, Sysparam* sysparams, size_t Lx, size_t Ly, 
+	curandState *state) {
+	// global thread index, k_x = 0,1,...N_x*M_x, k_y = 0,1,...N_y*M_y
+	// partial sum of spins for magnetization M
+	int sum4M = init_rand_partialsumM( Sptr, Lx,Ly); 
+	extern __shared__ int temp[]; 
+	auto ttb = cg::this_thread_block(); 
+	int block_sum = block_sumM(ttb, temp, sum4M) ;
+
+	if (ttb.thread_rank() == 0) {
+		atomicAdd(&(sysparams->M), ((float) block_sum)); 
+	}
+}
+
+/**
+ * @fn initialize_rand
+ * @brief "driver" function to initialize energy, spin matrix, and magnetization 
+ * */
+void initialize_rand(Spins2d& spins2d, Sysparam_ptr& sysParams,
+	const std::array<int,3> MAXGRIDSIZES,devStatesXOR & devStates,const dim3 M_is) 
+{ 
+	size_t Lx = spins2d.L_is[0]; // total number of spins of system
+	size_t Ly = spins2d.L_is[1]; // total number of spins of system
+	const float J = spins2d.J; 
+
+	unsigned int RAD = 1; // "radius" or width of "halo" cells needed 
+
+	/* ========== (thread) grid,block dims ========== */ 
+	unsigned long MAX_BLOCKS_y = (MAXGRIDSIZES[1] + M_is.y - 1)/ M_is.y; 
+	// notice how we're only launching 1/4 of Ly threads in y-direction needed
+	unsigned int N_y = std::min( MAX_BLOCKS_y, ((Ly/4 + M_is.y - 1)/ M_is.y)); 
+	unsigned int N_y_full = std::min( MAX_BLOCKS_y, ((Ly + M_is.y - 1)/ M_is.y)); 
+	unsigned long MAX_BLOCKS_x = (MAXGRIDSIZES[0] + M_is.x - 1)/ M_is.x; 
+	// notice how we're only launching 1/4 of Lx threads in x-direction needed
+	unsigned int N_x = std::min( MAX_BLOCKS_x, ((Lx/4 + M_is.x - 1)/ M_is.x)); 
+	unsigned int N_x_full = std::min( MAX_BLOCKS_x, ((Lx + M_is.x - 1)/ M_is.x)); 
+	dim3 N_is { N_x,N_y }; // single (thread) block dims., i.e. number of threads in a single (thread) block
+	dim3 N_is_full { N_x_full,N_y_full }; // single (thread) block dims., i.e. number of threads in a single (thread) block
+	int sharedBytes = (M_is.x+RAD)*(M_is.y + RAD)* sizeof(int);
+	
+	/* ========== END of (thread) grid,block dims ========== */ 
+
+	initialize_allup_kernel<<<N_is,M_is, sharedBytes>>>(spins2d.S.get(),sysParams.d_sysparams.get(),Lx,Ly,
+		devStates.devStates.get());
+	calcE_kernel<<<N_is_full,M_is,sharedBytes>>>(spins2d.S.get(),sysParams.d_sysparams.get(),Lx,Ly,J); 
+
+} // end of function initialize_allup 
+
+
 /* =============== END of initialization =============== */
 
 
@@ -326,10 +420,13 @@ __device__ Sysparam spinflips(cg::thread_group & tg, int* Sptr, float * transpro
 	
 			// if tg.thread_rank() even
 			if ( ( tg.thread_rank() % 2) == 0) 
+//			if ( (k_x + k_y) % 2 ==0 ) 
 			{
 				// pick ALL the "even" spins in this thread block
 				// do the nearest neighbor (unique) pair of spins summation entirely in shared memory
-				int intdeltaE = calcintDeltaE(temp, S_x,S_y,s_x,s_y,RAD);					
+//				int intdeltaE = calcintDeltaE(temp, S_x,S_y,s_x,s_y,RAD);					
+				
+//				float Wprob = curand_uniform(&localState); 
 
 				// roll dice, see if we transition or not, given transprob
 				if ( curand_uniform(&localState) <= transprob[intdeltaE +8] ) 
@@ -385,6 +482,8 @@ __global__ void metropolis_kernel(int* Sptr, Sysparam* sysparams,float* transpro
 		atomicAdd(&(sysparams->E), spinflipresults.E ); 
 		atomicAdd(&(sysparams->M), spinflipresults.M ); 
 	}
+	ttb.sync();
+	
 	if ((j % 2) != 0) {
 		Sysparam spinflipresults = spinflips(ttb, Sptr, transprob, temp, Lx,Ly,J, state);
 	
@@ -445,8 +544,11 @@ void metropolis(Spins2d& spins2d, Sysparam_ptr& sysParams,Avg_ptr& averages,Tran
 		update_avgs<<<1,1>>>( sysParams.d_sysparams.get(), averages.d_avgs.get() );  
 
 	}
-	
 
 }
+
+
+
+
 
 /* =============== END of Metropolis algorithm =============== */

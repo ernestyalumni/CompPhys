@@ -113,6 +113,13 @@ take integer 43, odd, in binary 43 is 0010101**1**, least significant bit *b0* i
 
 So low bit set seems to be odd.  So we'd expect half of the numbers to be odd, the other half to be even.  
 
+## [Modules, Device API](http://docs.nvidia.com/cuda/curand/group__DEVICE.html#group__DEVICE)  
 
+### `curand`
+
+```  
+__device__ unsigned int curand ( curandStateXORWOW_t* state)  
+```  
+Return 32-bits of pseudorandomness from an XORWOW generator.  
 
 

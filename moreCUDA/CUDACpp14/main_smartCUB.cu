@@ -63,6 +63,28 @@ int main(int argc, char* argv[]) {
 	// print out result:
 	std::cout << " g_vec[0] : " << g_vec[0] << std::endl;
 
+	// Allocate host arrays
+	std::vector<float> f1_vec(Lx,2.f);
+
+	// Allocate problem device arrays
+	auto sh_instance = make_sh_u(Lx);
+	
+    // Initialize device input
+	cudaMemcpy(sh_instance.get(), f1_vec.data(), Lx*sizeof(float), cudaMemcpyHostToDevice);
+	
+	auto d_out1 = reduce_Sum(Lx, sh_instance);
+
+	// Allocate output host array
+	std::vector<float> g1_vec(1,0.f);
+
+	// Copy results from Device to Host
+	cudaMemcpy(g1_vec.data(), d_out1.get(), 1*sizeof(float),cudaMemcpyDeviceToHost);
+
+	// print out result:
+	std::cout << " g1_vec[0] : " << g1_vec[0] << std::endl;
+
+
+
 	// Clean up
 	cudaDeviceReset();
 	return 0;

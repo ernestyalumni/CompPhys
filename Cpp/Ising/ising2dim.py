@@ -3,9 +3,9 @@
 @brief 2-dim. Ising model
 @details cf. https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.item.html  
 numpy.ndarray.item  
-item is very similar to a[args], except, instead of an array scalar, a standard Python scalar is returned. 
+item is very similar to a[args], except, instead of an array scalar, a standard Python scalar is returned.   
 This can be useful for speeding up access to elements of the array and 
-doing arithmetic on elements of the array using Python’s optimized math.
+doing arithmetic on elements of the array using Python's optimized math
 """
 import numpy
 import numpy as np
@@ -49,7 +49,7 @@ def monteCarlo(temp, size, trials):
 	numpy.ndarray.item  
 	item is very similar to a[args], except, instead of an array scalar, a standard Python scalar is returned. 
 	This can be useful for speeding up access to elements of the array and 
-	doing arithmetic on elements of the array using Python’s optimized math.
+	doing arithmetic on elements of the array using Python's optimized math.
 	"""
 	
 	# Setup spin matrix, initialize to ground state
@@ -69,7 +69,7 @@ def monteCarlo(temp, size, trials):
 	# Calculate initial energy 
 	for j in xrange(size):
 		for i in xrange(size): 
-			E -= spin_matrix.item(i,j) * \ 
+			E -= spin_matrix.item(i,j) * \
 					(spin_matrix.item(periodic(i,size,-1),j) + spin_matrix.item(i,periodic(j,size,1)))  
 					
 	# Start Metropolis Monte Carlo computation 
@@ -91,7 +91,7 @@ def monteCarlo(temp, size, trials):
 				E += deltaE
 				
 		# Update expectation values 
-		E_va 	+= E
+		E_av 	+= E
 		E2_av 	+= E**2
 		M_av 	+= M
 		M2_av 	+= M**2

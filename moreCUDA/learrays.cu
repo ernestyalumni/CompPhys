@@ -6,6 +6,8 @@
 #include <iostream>
 #include "./common/errors.h"
 
+#include <cmath>
+
 __constant__ float dev_hds[3];
 
 __constant__ float3 dev_cnus[4];
@@ -177,6 +179,27 @@ int main() {
 	
 //	std::cout << divresult->x << std::endl;
 //	std::cout << (*divresult).x << std::endl;
+	
+	/* ==================== arithmetic for thread-block sizing ==================== */
+	
+	int m = 100;
+	int p = ((int) log2(m) );
+	std::cout << " p : " << p << std::endl; 
+	std::cout << " 2^p : " << pow(2,p) << std::endl; 
+	std::cout << " 2^(p+1) : " << pow(2,p+1) << std::endl; 
+
+	m = 200;
+	p = ((int) log2(m) );
+	std::cout << " p : " << p << std::endl; 
+	std::cout << " 2^p : " << pow(2,p) << std::endl; 
+	std::cout << " 2^(p+1) : " << pow(2,p+1) << std::endl; 
+	
+	m =1;
+	p = ((int) log2(m) );
+	std::cout << " p : " << p << std::endl; 
+	std::cout << " 2^p : " << pow(2,p) << std::endl; 
+	std::cout << " 2^(p+1) : " << pow(2,p+1) << std::endl; 
+	
 	
 	
 	HANDLE_ERROR( 

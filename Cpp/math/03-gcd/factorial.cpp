@@ -1,13 +1,16 @@
-/**
- * 	@file 	factorial.cpp
- * 	@brief 	A program to test the gcd procedure.  Calculate the greatest common divisor of 2 integers.   
- * 	@ref	Edward Scheinerman.  C++ for Mathematicians: An Introduction for Students and Professionals. 2006.  Ch. 3
- * 	Exercise 3.2.
- * http://www.cplusplus.com/forum/general/33968/
- * 	@details 3 basic elements of recursion: 1. a test to stop or continue recursion, 2. end, base case, 3. a recursion call
- * COMPILATION TIP : -Wall warning all, -g debugger, gdb can step through 
- * gcc -Wall -g factorial.cpp -o factorial
- * */
+//------------------------------------------------------------------------------
+/// \file   factorial.cpp
+/// \author Ernest Yeung
+/// \email  ernestyalumni@gmail.com
+/// \brief  A program to test the gcd procedure.  Calculate the greatest common
+/// divisor of 2 integers.   
+/// \ref    Edward Scheinerman.  C++ for Mathematicians: An Introduction for
+/// Students and Professionals. 2006. Ch. 3. Exercise 3.2.
+///\details 3 basic elements of recursion: 1. a test to stop or continue
+/// recursion, 2. end, base case, 3. a recursion call
+/// COMPILATION TIP : -Wall warning all, -g debugger, gdb can step through 
+/// g++ -std=c++17 -Wall -g factorial.cpp -o factorial
+//------------------------------------------------------------------------------
 #include <iostream> // std::cout in main  
 
 long factorial(long n) {
@@ -17,6 +20,8 @@ long factorial(long n) {
 	// if n<0 case
 	if (n<0) { return n*factorial(n+1); } 
 	
+	std::cout << "used non-constexpr function of factorial" << '\n';
+
 	// if n>0 case
 	return n*factorial(n-1);
 }
@@ -35,7 +40,26 @@ long factorial_fast(long n, long result=1) {
 		return factorial_fast(n-1, n*result);
 	}
 }
-	
+
+//------------------------------------------------------------------------------
+/// \details C++11 constexpr functions use recursion rather than iteration.
+/// (C++14 constexpr functions may use local variables and loops)
+/// \ref https://en.cppreference.com/w/cpp/language/constexpr
+//------------------------------------------------------------------------------
+constexpr int factorial(int n)
+{
+	return n <= 1 ? 1 : (n * factorial(n - 1));
+}
+
+//------------------------------------------------------------------------------
+/// \details output function that requires a compile-time constant, for testing
+/// \ref https://en.cppreference.com/w/cpp/language/constexpr
+//------------------------------------------------------------------------------
+template <int n>
+struct constN
+{
+	constN() { std::cout << n << '\n'; }
+};
 
 int main() {
 	long n;
@@ -48,6 +72,8 @@ int main() {
 
 	std::cout << "The factorial of " << n << " is " << factorial_fast(n) << std::endl; 
 
+	std::cout << "4! = ";
+	constN<factorial(4)> out1; // computed at compile time
 
 	return 0;	
 }

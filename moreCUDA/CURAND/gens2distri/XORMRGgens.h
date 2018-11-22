@@ -33,5 +33,83 @@
 
 #include <memory> // std::unique_ptr
 
+__global__ void setup_kernel(curandState *state, const size_t L); 
+
+__global__ void setup_kernel(curandStatePhilox4_32_10_t *state, const size_t L) ;
+
+__global__ void setup_kernel(curandStateMRG32k3a *state, const size_t L) ;
+
+
+/* =============== custom deleters =============== */
+// custom deleters as structs   
+struct del_curandState_struct { 
+	void operator()(curandState* devStates) { cudaFree(devStates); } 
+}; 
+struct del_curandStateMRG32k3a_struct {
+	void operator()(curandStateMRG32k3a *devMRGStates) { cudaFree(devMRGStates); } 
+}; 
+struct del_curandStatePhilox4_32_10_t_struct {
+	void operator()(curandStatePhilox4_32_10_t *devPHILOXState) {cudaFree(devPHILOXState); }
+};  
+
+
+
+struct devStatesXOR {
+	// (data) members
+	std::unique_ptr<curandState[],del_curandState_struct> devStates;  
+
+	// default constructor
+	devStatesXOR(); 
+	
+	// constructors
+	devStatesXOR(const size_t) ;
+	devStatesXOR(const size_t, const unsigned int, const unsigned int) ;
+	
+	// move constructor; necessitated by unique_ptr
+	devStatesXOR(devStatesXOR &&) ;  
+ 
+	// operator overload assignment = 
+	devStatesXOR &operator=(devStatesXOR &&) ;
+
+};
+
+struct devStatesMRG {
+	// (data) members
+	std::unique_ptr<curandStateMRG32k3a[],del_curandStateMRG32k3a_struct> devStates; 
+
+	// default constructor
+	devStatesMRG(); 
+	
+	// constructors
+	devStatesMRG(const size_t) ;
+	devStatesMRG(const size_t, const unsigned int, const unsigned int) ;
+	
+	// move constructor; necessitated by unique_ptr
+	devStatesMRG(devStatesMRG &&) ;  
+ 
+	// operator overload assignment = 
+	devStatesMRG &operator=(devStatesMRG &&) ;
+
+};
+	
+struct devStatesPhilox4_32_10_t {
+	// (data) members
+	std::unique_ptr<curandStatePhilox4_32_10_t[],del_curandStatePhilox4_32_10_t_struct> devStates; 
+
+	// default constructor
+	devStatesPhilox4_32_10_t(); 
+	
+	// constructors
+	devStatesPhilox4_32_10_t(const size_t) ;
+	devStatesPhilox4_32_10_t(const size_t, const unsigned int, const unsigned int) ;
+	
+	// move constructor; necessitated by unique_ptr
+	devStatesPhilox4_32_10_t(devStatesPhilox4_32_10_t &&) ;  
+ 
+	// operator overload assignment = 
+	devStatesPhilox4_32_10_t &operator=(devStatesPhilox4_32_10_t &&) ;
+
+	
+};
 
 #endif // END of __XORMRGGENS_H__

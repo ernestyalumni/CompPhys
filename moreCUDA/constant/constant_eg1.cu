@@ -183,7 +183,52 @@ S1_unique_struct & S1_unique_struct::operator=(S1_unique_struct && old_struct) {
 */
 __constant__ S1_unique_struct constS1_uniq_struct;  
 
+/* 
+ * struct with a constructor (but very trivial, or what CUDA doc calls "empty"  
+ * */
+struct S2 { 
+	float E; 
+	float M;
+	float T;
+	
+	// default constructor 
+//	S2();
+	// constructors
+//	S2(float, float, float);
+//	S2(float); // only given T
+};
 
+// error: dynamic initialization is not supported for __device__, __constant__ and __shared__ variables.
+
+/*
+S2::S2() : E {0.f}, M {0.f}, T {0.f} {};
+
+S2::S2(float E, float M, float T) : E{E}, M{M}, T{T} {};
+
+S2::S2(float T) : E{0.f}, M{0.f}, T{T} {};  
+*/
+
+// error: dynamic initialization is not supported for __device__, __constant__ and __shared__ variables.
+//S2::S2() { E = 0.f; M=0.f; T=0.f; } ;
+
+__constant__ S2 constS2 ;  
+
+struct S3 { 
+	// (data) members , no dynamic initialization, but then no suitable constructor 
+	std::array<float, 17> transProb; 
+
+	size_t Lx;		// 8 bytes
+	size_t Ly; 		// 8 bytes
+	unsigned long long Nx;	// 8 bytes
+	unsigned long long Ny;  // 8 bytes
+	float J; 
+	
+	// getting function
+	float get_by_DeltaE(int DeltaE) {
+		return transProb[DeltaE+8]; }
+};
+
+__constant__ S3 constS3; 
 
 int main(int argc, char* argv[]) {
 //	std::cout << " sizeof S1_unique_lambda : " << sizeof(S1_unique_lambda) << std::endl; 
@@ -211,6 +256,20 @@ int main(int argc, char* argv[]) {
 	for (int i =0; i<17; i++) {
 		std::cout << h_s1_uniq_struct.transProb[i]	<< " ";
 	}
+	std::cout << std::endl << std::endl;
+
+	/* "boilerplate" test values */
+	// on host
+	
+	S2 hS2 { 1.f }; 
+	
+	cudaMemcpyToSymbol(constS2, &hS2, sizeof(S2)); 
+	
+	/* ********** testing struct S3 ********** */
+	
+	S3 hS3 { h_transProb, 256,128,64,32, 1.0f }  ;
+
+	cudaMemcpyToSymbol(constS3, &hS3, sizeof(S3)); 
 
 
 }

@@ -72,6 +72,35 @@ int main(int argc, char* argv[]) {
 	}
 	std::cout << std::endl;
 
+	// testing function "factories"
+
+	auto u_instance = make_uniq_u( Lx) ; 
+
+	cudaMemcpy(u_instance.get(), h_vec.data(), Lx*sizeof(float), cudaMemcpyHostToDevice);
+
+	auto sh_instance = make_sh_u(Lx);
+
+	cudaMemcpy(sh_instance.get(), h_vec.data(), Lx*sizeof(float), cudaMemcpyHostToDevice);
+
+	// output results of cudaMemcpy
+	std::vector<float> out_vec1(Lx,0.f);
+	std::vector<float> out_vec2(Lx,0.f);
+	cudaMemcpy(out_vec1.data(), u_instance.get(), Lx*sizeof(float), cudaMemcpyDeviceToHost);
+	cudaMemcpy(out_vec2.data(), sh_instance.get(), Lx*sizeof(float), cudaMemcpyDeviceToHost);
+	
+	std::cout << " \n for unique_ptr on device : " << std::endl;
+	for (auto ele : out_vec1) {
+		std::cout << " " << ele ; 
+	}
+	std::cout << std::endl;
+	
+	std::cout << " \n for shared_ptr on device : " << std::endl;
+	for (auto ele : out_vec2) {
+		std::cout << " " << ele ; 
+	}
+	std::cout << std::endl;
+
+
 
 	/*
 	 * CUB

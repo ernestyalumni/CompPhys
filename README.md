@@ -160,3 +160,6 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib64
 echo _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED1Ev | c++filt
 
 ```    
+
+## Getting started with `tmux` - simultaneous multiple terminal sessions
+

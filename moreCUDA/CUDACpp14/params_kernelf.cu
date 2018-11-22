@@ -9,6 +9,7 @@
  * @author : Ernest Yeung <ernestyalumni@gmail.com>
  * @date   : 20171020  
  * @ref    : https://devtalk.nvidia.com/default/topic/487190/kernel-functions-as-parameters-/
+ * https://stackoverflow.com/questions/16498969/how-do-i-typedef-a-function-pointer-with-the-c11-using-syntax
  * 
  * https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ernestsaveschristmas%2bpaypal%40gmail%2ecom&lc=US&item_name=ernestyalumni&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted 
  * 
@@ -30,10 +31,17 @@
  * 
  * */
 #include <iostream>
+#include <functional> 	// std::function
+#include <type_traits> 	// std::add_pointer
+
+#include <map>			// std::map
+
 
 #include <stdio.h>
 
 #include <vector> // std::vector
+
+#include <memory> // std::unique_ptr
 
 #define BLOCK_COUNT  240
 #define THREAD_COUNT 128
@@ -42,7 +50,10 @@
  * @ref Scott Meyers, Effective Modern C++, pp. 63, Item 9
  * @details pointer to a function of 2 floats
  * */
-using pf = float (*)(float, float);
+// this WORKS
+// using pf = float (*)(float, float);
+
+using pf = std::add_pointer<float(float,float)>::type;
 
 __device__ float minimum(float a, float b)
 {
@@ -178,6 +189,68 @@ float findExtremum(float *x, int n, int findmin)
     return r;
 }
 
+/* =============== sunburntfish's increment, decrement test function =============== */
+// @ref https://stackoverflow.com/questions/25848690/should-i-use-stdfunction-or-a-function-pointer-in-c
+// @ref pp. 39, Item 5 of Scott Meyers, Effective Modern C++  
+
+// doesn't work, error: dynamic initialization not supported for __device__  
+//using funcpf = std::function<float(float,float)>;
+
+//  error: dynamic initialization is not supported for __device__, __constant__ and __shared__ variables.
+//__device__ funcpf funcfunc_d[2] = { maximum, minimum };
+
+/**
+ * @ref https://stackoverflow.com/questions/16498969/how-do-i-typedef-a-function-pointer-with-the-c11-using-syntax
+ * How do I typedef a function pointer with the C++11 using syntax?  answer from 0x499602D2
+ * */
+using pf1 = std::add_pointer<int(int)>::type;  
+
+__device__ int increment_k(int t) {
+	return t+ 1;
+}
+
+__device__ int decrement_k(int t) {
+	return t-1;
+}
+
+/**
+ * @fn incdecops
+ * @ref Stanley B. Lippman, Josee Lajoie, Barbara E. Moo. C++ Primer 
+ * */
+//  error: dynamic initialization is not supported for __device__, __constant__ and __shared__ variables.
+/* __device__ std::map<int, pf1> incdecops = {
+	{0, increment_k}, 
+	{1, decrement_k} };
+*/
+
+__device__ pf1 d_func[2] = { increment_k, decrement_k };
+
+__global__ void test_k(int *testArray, int funcId, uint numPoints ) {
+	unsigned int index = threadIdx.x + __umul24(blockIdx.x,blockDim.x); 
+	
+	if (index >= numPoints) { return ; }
+	
+	pf1 func = d_func[funcId];
+
+	// i=kx, kx + Nx*Mx, kx + 2*Nx*Mx, ... < n 
+	// the big idea is to make sure all values of x=x[i], i=0,1,...n-1, gets calculated
+	// this is because we worry about the case when n > Nx*Mx (or perhaps n >> Nx*Mx !!!)
+	int Mx = blockDim.x; 
+	int Nx = gridDim.x; 
+	for (int idx = index; idx < numPoints; idx += Nx*Mx) {
+		int temp = func(testArray[idx]);
+		testArray[idx] = temp;
+	}
+		
+}
+
+void test(int *testArray, int funcId, unsigned int numPoints, int numThreadsPerBlock) {
+	// define grid and block size
+	unsigned int numBlocks = (numPoints + numThreadsPerBlock -1)/numThreadsPerBlock;
+//	computeGridSize(numPoints, 256, numBlocks, numThreadsPerBlock);
+
+	test_k<<<numBlocks, numThreadsPerBlock>>>( testArray, funcId, numPoints); 
+}
 
 int main (void)
 {
@@ -193,6 +266,31 @@ int main (void)
     float maximum = findExtremum(x, ELEM_COUNT, 0);
 
     printf("min=% 13.6e  max=% 13.6e\n", minimum, maximum);
+
+	std::cout << std::endl << "increment, decrement " << std::endl ;
+
+	int numPoints = 10;
+	
+	// on host
+	std::vector<int> testArray(numPoints,0);
+	for (uint i=0; i<numPoints;i++) { testArray[i] = i; }
+	
+	auto deleterZZ_lambda=[&](int* ptr){ cudaFree(ptr); };
+	std::unique_ptr<int[], decltype(deleterZZ_lambda)> d_test(new int[numPoints], deleterZZ_lambda); // u for unique and unified
+	cudaMallocManaged((void **) &d_test, numPoints*sizeof(float));
+
+	std::cout << " Before : " << std::endl;
+	for (auto ele : testArray) { std::cout << ele << " " ; } std::cout << std::endl;
+
+	cudaMemcpy(d_test.get(),testArray.data(),numPoints*sizeof(int),cudaMemcpyHostToDevice); 
+	
+	test(d_test.get(), 0, numPoints, 16);
+	
+	cudaMemcpy(testArray.data(),d_test.get(), numPoints*sizeof(int),cudaMemcpyDeviceToHost); 
+	 
+	std::cout << " After : " << std::endl; 
+	for (auto ele : testArray) { std::cout << ele << " " ; } std::cout << std::endl;
+
 
     return EXIT_SUCCESS;
 }

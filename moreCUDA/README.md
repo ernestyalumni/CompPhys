@@ -15,6 +15,7 @@ to the CUDA programming model, Robert Hochberg](http://www.shodor.org/media/cont
 - **Hillis/Steele (inclusive)** and **Blelloch (i.e. Prefix, exclusive) scan(s)** in subdirectory `scan`
 - Texture memory explanation and some examples in [`./samples02`](https://github.com/ernestyalumni/CompPhys/tree/master/moreCUDA/samples02)   
 - Examples of using *cuBLAS*, *cuSolver* in `./CUBLAS/`, `./CUSOLVER/` subdirectories, respectively  
+- *Vector loads for higher memory access efficiency* examples in `./vectorloads/`  
 
 In this `README.md`:
 - `nvcc` - nVidia CUDA Compiler Driver   
@@ -57,7 +58,8 @@ In this `README.md`:
 | `./cudaMallocManaged.cu` | `cudaMallocManaged`, `strncpy` | Simple example, showing use of `cudaMallocManaged`, [J.2.1.1. Explicit Allocation Using cudaMallocManaged](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-explicit-allocation) |  
 | `./managed.cu` | `__managed__` | `__managed__` annotation to file scope and global scope CUDA `__device__` variables; [J.2.1.2. Global-Scope Managed Variables Using `__managed__`](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-gpu-exclusive) |  
 | `./unifiedcoherency.cu` | `__device__`, `__managed__`, `concurrentManagedAccess` | Testing architectures (GPU hardware dependent) on whether it supports concurrent access to managed memory or not; [J.2.2.1. GPU Exclusive Access To Managed Memory](http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-gpu-exclusive) |  
-
+| `./constant/` | `__constant__`, `__constant__ struct` | Using `__constant__` memory, `__constant__` specifier, with `struct`s |   
+| `./vectorloads/` | `int4`, `float4` | Vector loads for higher memory access efficiency |  
 
 
 | Samples (NVIDIA CUDA 8.0 Samples) associated with CUDA Runtime API list   |
