@@ -53,6 +53,6 @@ class GroupAxioms
     virtual ~GroupAxioms();
 };
 
-}
+} // namespace Groups
 
 #endif // _GROUPS_GROUP_AXIOMS_H_
