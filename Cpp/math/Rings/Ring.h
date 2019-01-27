@@ -25,6 +25,7 @@
 ///  g++ -std=c++17 Tuple2_main.cpp -o Tuple2_main
 //------------------------------------------------------------------------------
 #ifndef _RINGS_RING_H_
+#define _RINGS_RING_H_
 
 namespace Rings
 {
