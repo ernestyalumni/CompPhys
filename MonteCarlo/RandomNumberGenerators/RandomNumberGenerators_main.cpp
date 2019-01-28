@@ -23,12 +23,19 @@
 /// Peace out, never give up! -EY
 //------------------------------------------------------------------------------
 /// COMPILATION TIPS:
-///  g++ -std=c++17 RandomNumberGenerators_main.cpp -o RandomNumberGenerators_main
+///  g++ -std=c++17 RandomNumberGenerators.cpp RandomNumberGenerators_main.cpp -o RandomNumberGenerators_main
 //------------------------------------------------------------------------------
+#include "RandomNumberGenerators.h"
 
 #include <functional>
 #include <iostream>
 #include <memory>
+
+using MonteCarlo::RandomNumberGenerators::BaysDurhamShuffle;
+using MonteCarlo::RandomNumberGenerators::Details::MASK;
+using MonteCarlo::RandomNumberGenerators::LEcuyer;
+using MonteCarlo::RandomNumberGenerators::MinimalParkMiller;
+using MonteCarlo::RandomNumberGenerators::Uniform;
 
 double func(double x)
 {
@@ -134,4 +141,86 @@ int main()
     std::cout << function_float_to_float(5) << '\n';
   }
 
+  // MinimalParkMillerPlayground
+  std::cout << "\n MinimalParkMillerPlayground \n";
+  {
+    long idum {-1};
+
+    std::cout << " idum : " << idum << " &idum : " << &idum << '\n';
+
+    std::cout << " MASK : " << MASK << '\n';
+
+    std::cout << std::hexfloat << MASK << ' ' << std::hex << MASK << //std::dec <<
+      std::defaultfloat << '\n';
+
+    long* idum_test {&idum};
+
+    std::cout << " idum_test : " << idum_test << " *idum_test : " << *idum_test
+      << std::dec << ' ' << *idum_test << " &idum_test : " <<
+        &idum_test << '\n';
+
+    *idum_test ^= MASK;
+
+    std::cout << "\n After bit XOR with MASK \n ";
+
+    std::cout << " idum : " << idum << " &idum : " << &idum << '\n';
+
+    std::cout << " idum_test : " << idum_test << " *idum_test : " << std::hex <<
+      *idum_test << std::dec << ' ' << *idum_test << " &idum_test : " <<
+        &idum_test << '\n';
+  }
+
+  // MinimalParkMillerInterface
+  std::cout << "\n MinimalParkMillerInterface \n";
+  {
+    MinimalParkMiller minimal_random_number;
+
+    long idum {-1};
+
+    for (int i {0}; i < 20; ++i)
+    {
+      std::cout << std::defaultfloat << minimal_random_number(&idum) << ' ' <<
+        idum << ' ';
+    }
+
+  }
+
+  // BaysDurhamShuffleWorks
+  std::cout << " \n BaysDurhamShuffle \n";
+  {
+    BaysDurhamShuffle bays_durham_number;
+
+    long idum {-1};
+
+    for (int i {0}; i < 30; ++i)
+    {
+      std::cout << bays_durham_number(&idum) << ' ' << idum << ' ';
+    }
+  }
+
+  // LEcuyerWorks
+  std::cout << "\n LecuyerWorks\n";
+  {
+    LEcuyer lecuyer;
+
+    long idum {-1};
+
+    for (int i {0}; i < 30; ++i)
+    {
+      std::cout << lecuyer(&idum) << ' ' << idum << ' ';
+    }
+  }
+
+  // UniformWorks
+  std::cout << "\n UniformWorks\n";
+  {
+    Uniform uniform;
+
+    long idum {-1};
+
+    for (int i {0}; i < 30; ++i)
+    {
+      std::cout << uniform(&idum) << ' ' << idum << ' ';
+    }
+  }
 }
