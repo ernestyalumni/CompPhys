@@ -6497,6 +6497,115 @@ Topics in Geometric Topology (18.937)
 
 \href{http://www.math.harvard.edu/~lurie/937notes/937Lecture2.pdf}{Piecewise Linear Topology (Lecture 2)}
 
+\part{Monte Carlo methods}
+
+\section{Monte Carlo methods}
+
+cf. Sec. 11.1.3 \emph{Second Illustration, Particles in a Box},  Hjorth-Jensen (2015) \cite{Hjor2015}.
+
+Recall that a random variable $X: \Omega \to E$, $\Omega \equiv $ set of possible outcomes, $E \equiv $ measurable space, with $E = \mathbb{R}$ (usually).
+
+Probability that $X$ takes on value in measurable set $S \subseteq E$, 
+\[
+\text{Pr}(X \in S) = P( \lbrace \omega \in \Omega | X(\omega) \in S \rbrace)
+\]
+
+If we assume "all particles in left half have equal probabilities of going to the right half" (pp. 346, Sec. 11.1.3 of Hjorth-Jensen (2015) \cite{Hjor2015}), \\
+
+Let $\Omega_{LR, RL} = \lbrace L \to R, R\to L \rbrace$, where \\
+$L \to R \equiv$ particle is on left half and goes to the right, \\
+$R \to L \equiv$ particle is on right half and goes to the left, 
+
+Let $X_{LR,RL} : \Omega_{LR, RL} \to \mathbb{R}$ with \\
+$X_{LR,RL}: L\to R \mapsto 0$ \\
+$X_{LR,RL}: R\to L \mapsto 1$ 
+
+Let $\Omega_{LR} = \lbrace L, R \rbrace$, where \\
+$L \equiv $ particle on left half, \\
+$R \equiv $ particle on right half.
+
+Let $X_{LR} : \Omega_{LR} \to \lbrace 0 ,1 \rbrace$ where \\
+$X_{LR} : L \mapsto 0$ \\
+$X_{LR} : R \mapsto 1$.
+
+Let $n_l \equiv $ number of particles at any time on the left side, and \\
+let $n_r = N - n_l$ for those on the right side.
+
+The key insight is that at any time, 
+\[
+\begin{aligned}
+	& \text{Pr}(X_{LR} = 0) = P(\lbrace L \rbrace ) = \frac{n_l}{N} \\ 
+	& \text{Pr}(X_{LR} = 1) = P(\lbrace R \rbrace ) = \frac{n_r}{N} 
+\end{aligned}
+\]
+
+Assume particle must move at each time step.
+
+Let state of the system be characterized by $n_l = 0,1, \dots N$. 
+
+Consider $\forall t = 0,1,\dots $, 
+\[
+\begin{gathered}
+	n_l = n_l(t) = \begin{cases} n_l(t-1) - 1 & \text{ if } L \to R \\
+	n_l(t-1) + 1 & \text{ if } R \to L \end{cases} 
+\end{gathered}
+\]
+
+i.e. 
+\[
+\begin{gathered}
+n_l(t-1) \xmapsto{ X_{LR, RL}} \begin{cases} n_l(t-1) - 1 = n_l(t) & \text{ if } X_{LR,RL} = 0 \\
+n_l(t-1) + 1 = n_l(t) & \text{ if } X_{LR,RL} = 1 \end{cases}
+\end{gathered}
+\]
+
+Let a system's state $s$ be characterized by a finite number of state variables: $s=(s_1, s_2, \dots s_n)$. So for $s\in S$, $S$, the space of all possible states, can be infinite (infinite number of states $S$ that $s$ can be in), but $s$ is characterized by a finite number of variables (parameters), such as only energy and pressure, only.
+
+Consider time evolution operators in general: \\
+Consider system with state space $X$, time evolution $F_{t,s}$ is a mapping (for 2 different cases)
+\[
+\begin{gathered}
+F_{t,s} : X \to X \qquad \, \forall \, t, s \in \mathbb{R} \\ 
+F_{t,s} : X \to X \qquad \, \forall \, t, s \in \mathbb{Z} \\ 
+\end{gathered}
+\]
+s.t. 
+\[
+F_{u,t} (F_{t,s}(x)) = F_{u,s}(x)
+\]
+
+Time evolution $F$ is \textbf{homogeneous}, if
+\[
+F_{u,t} = F_{u-t,0} \qquad \, \forall \, u,t \in \mathbb{R} (\text{or } \mathbb{Z})
+\]
+
+In this case of a homogeneous system, mappings $G_t = F_{t,0}$ form a 1-parameter group of transformations of $X$, i.e.
+\[
+G_{t+s} = G_t G_s
+\]
+
+Specialize to homogeneous time evolution $G_t$, $t\in \mathbb{Z}$, so that $G_t = (G_1)^t$, $\forall \, t \in \mathbb{Z}$.
+
+Thus, consider $G_1 : S \to S$.  
+
+Let $\Omega_{S\to S} = \lbrace s \mapsto s' \rbrace$, $\forall \, s, s' \in S$, $s\mapsto s'$ that are allowed or considered.
+
+Let $X: \Omega_{S \to S} \to E$. 
+
+Assign $P(s\mapsto s') \quad \, \forall \, s \mapsto s' \in \Omega_{S \to S}$.
+
+Thus, apply $G_1: S \to S$ according to $X = X: \Omega_{S\to S} \to E$.
+
+Thus, given $S, \Omega_{S\to S}$ (all possible state transitions, not all permutations), random variable $X = X: \Omega_{S \to S} \to E$, where $E = \mathbb{R}$ (usually), and $P$ s.t. 
+\begin{equation}
+\text{Pr}(X \in S) = P(\lbrace \omega \in \Omega | X(\omega) \in S\rbrace) \text{ with } S \subseteq E
+\end{equation}
+then
+\begin{equation}
+\boxed{G_1 : S \to S}, \text{ governed by $X$ }
+\end{equation}
+
+
 \section{Ising Model}  
 
 EY : 20171223 Things to check from Hjorth-Jensen (2015) \cite{Hjor2015}:  
