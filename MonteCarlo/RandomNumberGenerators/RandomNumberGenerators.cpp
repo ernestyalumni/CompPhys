@@ -34,30 +34,28 @@ namespace MonteCarlo
 namespace RandomNumberGenerators
 {
 
-MinimalParkMiller::MinimalParkMiller():
-  idum_{-1}
+MinimalParkMiller::MinimalParkMiller()//:
+//  idum{nullptr}
 {}
 
-MinimalParkMiller::MinimalParkMiller(const long seed):
-  idum_{seed}
+MinimalParkMiller::MinimalParkMiller(const long seed)//:
+//  idum{nullptr}
 {}
 
-//double MinimalParkMiller::operator()
-
-//double MinimalParkMiller::operator()(long* idum)
-double MinimalParkMiller::operator()()
+double MinimalParkMiller::operator()(long* idum)
+//double MinimalParkMiller::operator()()
 {
-  *idum_ ^= MASK_;
-  long k {(*idum_) / IQ_};
-  *idum_ = IA_ * (*idum_ - k * IQ_) - IR_ * k;
+  *idum ^= MASK_;
+  long k {(*idum) / IQ_};
+  *idum = IA_ * (*idum - k * IQ_) - IR_ * k;
 
-  if (*idum_ < 0)
+  if (*idum < 0)
   {
-    *idum_ += IM_;
+    *idum += IM_;
   }
 
-  double ans {AM_ * (*idum_)};
-  *idum_ ^= MASK_;
+  double ans {AM_ * (*idum)};
+  *idum ^= MASK_;
 
   return ans;
 }
@@ -65,8 +63,8 @@ double MinimalParkMiller::operator()()
 BaysDurhamShuffle::BaysDurhamShuffle()
 {}
 
-//double BaysDurhamShuffle::operator()(long* idum)
-double BaysDurhamShuffle::operator()()
+double BaysDurhamShuffle::operator()(long* idum)
+//double BaysDurhamShuffle::operator()()
 {
   int j;
   long k;
@@ -76,38 +74,38 @@ double BaysDurhamShuffle::operator()()
 
   double temp;
 
-  if (*idum_ <= 0 || !iy)
+  if (*idum <= 0 || !iy)
   {
-    (-(*idum_) < 1) ? *idum_ = 1 : *idum_ = -(*idum_);
+    (-(*idum) < 1) ? *idum = 1 : *idum = -(*idum);
 
     for (j = NTAB_ + 7; j >= 0; j--)
     {
-      k = (*idum_) / IQ_;
-      *idum_ = IA_ * (*idum_ - k * IQ_) - IR_ * k;
-      if (*idum_ < 0)
+      k = (*idum) / IQ_;
+      *idum = IA_ * (*idum - k * IQ_) - IR_ * k;
+      if (*idum < 0)
       {
-        *idum_ += IM_;
+        *idum += IM_;
       }
 
       if (j < NTAB_)
       {
-        iv[j] = *idum_;
+        iv[j] = *idum;
       }
     }
     iy = iv[0];
   }
 
-  k = (*idum_) / IQ_;
-  *idum_ = IA_ * (*idum_ - k * IQ_) - IR_ * k;
+  k = (*idum) / IQ_;
+  *idum = IA_ * (*idum - k * IQ_) - IR_ * k;
 
-  if (*idum_ < 0)
+  if (*idum < 0)
   {
-    *idum_ += IM_;
+    *idum += IM_;
   }
 
   j = iy / NDIV_;
   iy = iv[j];
-  iv[j] = *idum_;
+  iv[j] = *idum;
 
   return ((AM_* iy) > RNMX_) ? RNMX_ : AM_ * iy;
 }
@@ -124,37 +122,37 @@ double LEcuyer::operator()(long* idum)
 
   static long iy {0};
 
-  if (*idum_ <= 0)
+  if (*idum <= 0)
   {
-    (-(*idum_) < 1) ? *idum_ = 1 : *idum_ = (-(*idum_));
+    (-(*idum) < 1) ? *idum = 1 : *idum = (-(*idum));
 
-    idum2 = (*idum_);
+    idum2 = (*idum);
 
     for (j = NTAB_ + 7; j >= 0; j--)
     {
-      k = (*idum_) / IQ1_;
-      *idum_ = IA1_ * (*idum_ - k * IQ1_) - k * IR1_;
+      k = (*idum) / IQ1_;
+      *idum = IA1_ * (*idum - k * IQ1_) - k * IR1_;
 
-      if (*idum_ < 0)
+      if (*idum < 0)
       {
-        *idum_ += IM1_;
+        *idum += IM1_;
       }
 
       if (j < NTAB_)
       {
-        iv[j] = *idum_;
+        iv[j] = *idum;
       }
     }
     iy = iv[0];
   }
 
-  k = (*idum_) / IQ1_;
+  k = (*idum) / IQ1_;
 
-  *idum_ = IA1_ * (*idum_ - k * IQ1_) - k * IR1_;
+  *idum = IA1_ * (*idum - k * IQ1_) - k * IR1_;
 
-  if (*idum_ < 0)
+  if (*idum < 0)
   {
-    *idum_ += IM1_;
+    *idum += IM1_;
   }
 
   k = idum2 / IQ2_;
@@ -170,7 +168,7 @@ double LEcuyer::operator()(long* idum)
 
   iy = iv[j] - idum2;
 
-  iv[j] = *idum_;
+  iv[j] = *idum;
 
   if (iy < 1)
   {
@@ -183,8 +181,8 @@ double LEcuyer::operator()(long* idum)
 Uniform::Uniform()
 {}
 
-//double Uniform::operator()(long *idum)
-double Uniform::operator()()
+double Uniform::operator()(long *idum)
+//double Uniform::operator()()
 {
   static int inext, inextp;
   static long ma[56]; // value 56 is special, do not modify
@@ -192,11 +190,11 @@ double Uniform::operator()()
 
   long mj;
 
-  if (*idum_ < 0 || iff == 0) // initialization
+  if (*idum < 0 || iff == 0) // initialization
   {
     iff = 1;
 
-    mj = MSEED_ - (*idum_ < 0 ? -*idum_ : *idum_);
+    mj = MSEED_ - (*idum < 0 ? -*idum : *idum);
     mj %= MBIG_;
     ma[55] = mj; // initialize ma[55]
 
@@ -227,7 +225,7 @@ double Uniform::operator()()
 
     inext = 0; // prepare indices for first generator number
     inextp = 31; // 31 is special
-    *idum_ = 1;
+    *idum = 1;
   }
 
   if (++inext == 56)

@@ -1,3 +1,30 @@
+//------------------------------------------------------------------------------
+/// \file unique_ptr.cpp
+/// \author Ernest Yeung
+/// \email  ernestyalumni@gmail.com
+/// \brief  demonstrate examples, usage of unique_ptr, in C++17  
+/// \url https://en.cppreference.com/w/cpp/memory/unique_ptr
+/// \ref Stanley B. Lippman, Josee Lajoie, Barbara E. Moo.  C++ Primer,
+/// Fifth Edition.  
+/// \details 
+/// \copyright If you find this code useful, feel free to donate directly
+/// (username ernestyalumni or email address above), going directly to:
+///
+/// paypal.me/ernestyalumni
+///
+/// which won't go through a 3rd. party like indiegogo, kickstarter, patreon.
+/// Otherwise, I receive emails and messages on how all my (free) material on
+/// physics, math, and engineering have helped students with their studies, and
+/// I know what it's like to not have money as a student, but love physics (or
+/// math, sciences, etc.), so I am committed to keeping all my material
+/// open-source and free, whether or not sufficiently crowdfunded, under the
+/// open-source MIT license: feel free to copy, edit, paste, make your own
+/// versions, share, use as you wish.
+/// Peace out, never give up! -EY
+//------------------------------------------------------------------------------
+/// COMPILATION TIPS:
+///  g++ -std=c++17 unique_ptr.cpp -o unique_ptr
+//------------------------------------------------------------------------------
 /**
  * @file   : unique_ptr.cpp
  * @brief  : demonstrate examples, usage of unique_ptr, in C++14  
@@ -5,22 +32,6 @@
  * @date   : 20170901
  * @ref    : http://en.cppreference.com/w/cpp/memory/unique_ptr
  *         : Stanley B. Lippman, Josee Lajoie, Barbara E. Moo.  C++ Primer, Fifth Edition.  
- * If you find this code useful, feel free to donate directly and easily at this direct PayPal link: 
- * 
- * https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ernestsaveschristmas%2bpaypal%40gmail%2ecom&lc=US&item_name=ernestyalumni&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted 
- * 
- * which won't go through a 3rd. party such as indiegogo, kickstarter, patreon.  
- * Otherwise, I receive emails and messages on how all my (free) material on 
- * physics, math, and engineering have helped students with their studies, 
- * and I know what it's like to not have money as a student, but love physics 
- * (or math, sciences, etc.), so I am committed to keeping all my material 
- * open-source and free, whether or not 
- * sufficiently crowdfunded, under the open-source MIT license: 
- * 	feel free to copy, edit, paste, make your own versions, share, use as you wish.  
- *  Just don't be an asshole and not give credit where credit is due.  
- * Peace out, never give up! -EY
- * 
- * */
 /* on g++ 5.3.1.
  * g++ -std=c++14 unique_ptr.cpp -o unique_ptr.exe
  * -std=c++14 flag needed for auto, etc.
@@ -32,14 +43,15 @@
 #include <vector> // std::vector
 #include <cassert> // assert
 
-#include <fstream> // std::ofstream
+#include <fstream> // std::ofstream, std::ifstream
 
 #include <string> // std::string
 
 // cf. http://en.cppreference.com/w/cpp/utility/forward
 #include <utility> // std::forward
 
-#include <fstream> // std::ifstream
+#include <type_traits> // std::add_lvalue_reference
+
 
 struct B {
     // virtual specifier specifies that non-static member function is virtual and supports dynamic binding
@@ -64,6 +76,62 @@ std::unique_ptr<D> pass_through(std::unique_ptr<D> p)
 std::unique_ptr<int> clone(int p) {
     // ok: explicitly create a unique_ptr<int> from int*
     return std::unique_ptr<int> (new int(p));
+};
+
+
+template <class T>
+class UniquePtrContainer
+{
+  public:
+
+    UniquePtrContainer():
+      u_ptr_{}
+    {}
+
+    explicit UniquePtrContainer(const T& x):
+      u_ptr_{std::make_unique<T>(x)}
+    {}
+
+    explicit UniquePtrContainer(T& x):
+      u_ptr_{std::make_unique<T>(x)}
+    {}
+
+    //--------------------------------------------------------------------------
+    /// \details Returns a pointer to the managed object, or nullptr if no
+    /// object is owned.
+    /// \url https://en.cppreference.com/w/cpp/memory/unique_ptr/get
+    //--------------------------------------------------------------------------
+    T* as_pointer()
+    {
+      return u_ptr_.get();
+    }    
+
+    explicit operator bool() const
+    {
+      return u_ptr_;
+    }
+
+    //--------------------------------------------------------------------------
+    /// \details operator* provides access to the object owned by this*
+    /// \url https://en.cppreference.com/w/cpp/memory/unique_ptr/operator*
+    //--------------------------------------------------------------------------
+    typename std::add_lvalue_reference<T>::type operator*() const
+    {
+      return *u_ptr_;
+    }
+
+    //--------------------------------------------------------------------------
+    /// \details operator-> provides access to the object owned by this*
+    /// \url https://en.cppreference.com/w/cpp/memory/unique_ptr/operator*
+    //--------------------------------------------------------------------------
+    typename std::unique_ptr<T>::pointer operator->() const noexcept
+    {
+      return u_ptr_.get();
+    }
+
+  private:
+
+    std::unique_ptr<T> u_ptr_;    
 };
 
 int main()

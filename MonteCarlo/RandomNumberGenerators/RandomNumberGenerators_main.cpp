@@ -209,7 +209,7 @@ int main()
       std::cout << minimal_random_number(&idum) << ' ';
     }
   }
-
+#if 0
   // BaysDurhamShuffleWorks
   std::cout << " \n BaysDurhamShuffle \n";
   {
@@ -248,4 +248,6 @@ int main()
       std::cout << uniform(&idum) << ' ' << idum << ' ';
     }
   }
+  #endif 
+
 }
