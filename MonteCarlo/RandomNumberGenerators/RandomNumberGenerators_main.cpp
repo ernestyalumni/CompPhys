@@ -182,7 +182,32 @@ int main()
       std::cout << std::defaultfloat << minimal_random_number(&idum) << ' ' <<
         idum << ' ';
     }
+  }
 
+  // MinimalParkMillerWorksMultipleTimesWithSameSeedValue
+  std::cout << "\n MinimalParkMillerWorksMultipleTimesSameSeedValue \n";
+  {
+    MinimalParkMiller minimal_random_number;
+
+    for (int i {0}; i < 30; ++i)
+    {
+      long idum {-1};
+
+      std::cout << minimal_random_number(&idum) << ' ';
+    }
+  }
+
+  // MinimalParkMillerWorksMultipleTimesWithDifferentSeedValue
+  std::cout << "\n MinimalParkMillerWorksMultipleTimesSameSeed \n";
+  {
+    MinimalParkMiller minimal_random_number;
+
+    long idum {-1};
+
+    for (int i {0}; i < 30; ++i)
+    {
+      std::cout << minimal_random_number(&idum) << ' ';
+    }
   }
 
   // BaysDurhamShuffleWorks

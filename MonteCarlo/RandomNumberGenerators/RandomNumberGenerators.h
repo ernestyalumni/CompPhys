@@ -44,9 +44,9 @@ class RandomNumberGenerator
 {
   public:
 
-//    virtual T operator()() = 0;
+    virtual T operator()() = 0;
 
-    virtual T operator()(SeedType*) = 0;
+//    virtual T operator()(SeedType*) = 0;
 };
 
 namespace Details
@@ -111,11 +111,15 @@ class MinimalParkMiller : public RandomNumberGenerator<double, long>
 
     MinimalParkMiller();
 
-//    double operator();
+    explicit MinimalParkMiller(const long seed);
 
-    double operator()(long*);
+    double operator()();
+
+//    double operator()(long*);
 
   protected:
+
+    long* idum_;
 
     static constexpr long IA_ {Details::IA};
     static constexpr long IM_ {Details::IM};
@@ -142,7 +146,10 @@ class BaysDurhamShuffle : protected MinimalParkMiller
 
     BaysDurhamShuffle();
 
-    double operator()(long*);
+    explicit BaysDurhamShuffle(const long seed);
+
+    double operator()();
+//    double operator()(long*);
 
   protected:
 
@@ -169,7 +176,10 @@ class LEcuyer: protected BaysDurhamShuffle
 
     LEcuyer();
 
-    double operator()(long*);
+    explicit LEcuyer(const long seed);
+
+    double operator()();
+//    double operator()(long*);
 
   protected:
 
@@ -200,9 +210,14 @@ class Uniform : public RandomNumberGenerator<double, long>
 
     Uniform();
 
-    double operator()(long*);
+    explicit Uniform(const long seed);
+
+    double operator()();
+//    double operator()(long*);
 
   private:
+
+    long* idum_;
 
     static constexpr long MBIG_ {Details::MBIG};
     static constexpr long MSEED_ {Details::MSEED};

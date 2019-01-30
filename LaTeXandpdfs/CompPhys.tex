@@ -6596,14 +6596,90 @@ Assign $P(s\mapsto s') \quad \, \forall \, s \mapsto s' \in \Omega_{S \to S}$.
 
 Thus, apply $G_1: S \to S$ according to $X = X: \Omega_{S\to S} \to E$.
 
-Thus, given $S, \Omega_{S\to S}$ (all possible state transitions, not all permutations), random variable $X = X: \Omega_{S \to S} \to E$, where $E = \mathbb{R}$ (usually), and $P$ s.t. 
+Thus, given $\boxed{ S, \Omega_{S\to S} }$ (all possible state transitions, not all permutations), random variable $\boxed{ X = X: \Omega_{S \to S} \to E }$, where $E = \mathbb{R}$ (usually), and $P$ s.t. 
 \begin{equation}
-\text{Pr}(X \in S) = P(\lbrace \omega \in \Omega | X(\omega) \in S\rbrace) \text{ with } S \subseteq E
+\boxed{ \text{Pr}(X \in S) = P(\lbrace \omega \in \Omega | X(\omega) \in S\rbrace) \text{ with } S \subseteq E }
 \end{equation}
 then
 \begin{equation}
 \boxed{G_1 : S \to S}, \text{ governed by $X$ }
 \end{equation}
+
+\subsection{Radioactive decay via Monte Carlo}
+
+Given $\omega \equiv $ transition probability. 
+\[
+\begin{gathered} 
+\frac{dN(t)}{dt} = -\omega N(t)
+N(t) = N(0) e^{-\omega t}
+\end{gathered} 
+\] 
+For single type of nuclei (called "$X$").
+
+Let $S_i = \lbrace 0 ,1 \rbrace = \mathbb{Z}_2$ (decay, no decay).
+\[
+\begin{gathered}
+	\Omega_{S_i \to S_i } = \lbrace 1 \to 0 , 1 \to 1 \rbrace \\ 
+	X_i = X_i : \Omega_{S_i \to S_i} \to E = \mathbb{R} \\
+	\begin{aligned}
+	& X_i : 1 \to 0 \mapsto 0 \\
+	& X_i : 1 \to 1 \mapsto 1 
+	\end{aligned} \\
+	\begin{aligned}
+	& \text{Pr}(X_i =0 ) = \omega \\ 
+	& \text{Pr}(X_i = 1) = 1- \omega 
+	\end{aligned}
+\end{gathered}
+\]
+\[
+\begin{aligned}
+& G_1 : S_i \to S_i \\
+& G_1 : 1 \mapsto \begin{cases} 0 & \text{ if } X = 0 \\
+1 & \text{if } X = 1 \end{cases} 
+\end{aligned}
+\]
+
+$\forall \, $ time $t$, 
+\[
+\begin{gathered} 
+\begin{aligned}
+& S_t = \lbrace N(t) \rbrace \\ 
+& S_{t+1} = \lbrace 0 , 1, \dots N(t) \rbrace 
+\end{aligned} \\
+\Omega_{S_t \to S_{t+1} }  = \lbrace N(t) \to 0 , N(t) \to 1, \dots N(t) \to N(t) \rbrace 
+\end{gathered} 
+\]
+\[
+\begin{gathered} 
+X = X: \Omega_{S_t \to S_{t+1} } \to E =\mathbb{R} \\
+\begin{aligned} 
+	& X : N(t) \to 0 \mapsto 0 \\ 
+	& X :N(t) \to 1 \mapsto 1 \\ 
+	& \vdots \\ 
+	& X:N(t) \to n(t) \mapsto N(t)
+\end{aligned} 
+\end{gathered} 
+\]
+\[
+\begin{gathered}
+\begin{aligned}
+& \text{Pr}(X =0) = \omega^{N(t)} \\
+& \text{Pr}(X=1) = \omega^{N(t) - 1} (1- \omega) \\
+& \vdots \\
+& \text{Pr}(X =N(t)) = (1- \omega)^{N(t)}
+\end{aligned} \\
+\begin{aligned}
+& G_1 : S_t \to S_{t+1} \\
+& G_1 : N(t) \to \begin{cases}0 & \text{ if } X = 0 \\
+1 & \text{ if } X = 1 \\ 
+\vdots & \\
+N(t) & \text{ if } X = N(t)  \end{cases} 
+\end{aligned}
+\end{gathered}
+\]
+
+Clearly, $X = \sum_{i=0}^{N(t)} X_i $ with $P(X) = \prod_{i=0}^{N(t)} P(X_i)$ and so simply sum the result of $X_i$'s to obtain $N(t+1)$. 
+
 
 
 \section{Ising Model}  
