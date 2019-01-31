@@ -32,6 +32,8 @@
 #include <vector>
 
 using MonteCarlo::RadioactiveDecay::DecayOf1Nuclei;
+using MonteCarlo::RadioactiveDecay::DecayOf2Nuclei;
+using MonteCarlo::RadioactiveDecay::Details::NumbersOf2Types;
 using MonteCarlo::RadioactiveDecay::TimeEvolution1;
 using MonteCarlo::RandomNumberGenerators::MinimalParkMiller;
 
@@ -66,7 +68,7 @@ int main()
     std::vector<unsigned long> runs;
 
     DecayOf1Nuclei<double, MinimalParkMiller> decay_of_1_nuclei {
-      {0.8, 100000, 1000}};
+      {0.1, 100000, 1000}};
 
     decay_of_1_nuclei.run();
 
@@ -77,4 +79,26 @@ int main()
       std::cout << runs[i] << ' ';
     }
   }
+
+  // DecayOf2NucleiWithMinimalParkMillerWorks
+  {
+    std::cout << "\n DecayOf2NucleiWithMinimalParkMillerWorks \n";
+
+    std::vector<NumbersOf2Types> runs;
+
+    DecayOf2Nuclei<double, MinimalParkMiller> decay_of_2_nuclei {
+      {0.2, 0.1, 100000, 100000, 1000}};
+
+    decay_of_2_nuclei.run();
+
+    runs = decay_of_2_nuclei.runs();
+
+    for (unsigned long i {0}; i < 100; ++i)
+    {
+      std::cout << runs[i].N_X_ << ',' << runs[i].N_Y_ << ' ';
+    }
+  }
+
+
+  std::cout << std::endl;
 }

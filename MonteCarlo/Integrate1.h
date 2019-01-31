@@ -69,6 +69,8 @@ class Integrate1 : public Integrate<Domain, Codomain>
 
     Integrate1(const F& f, const long total_number_of_samples);
 
+    Integrate1(const F& f, const long total_number_of_samples, const long seed);
+
     void reset(const long total_number_of_samples)
     {
       assert(total_number_of_samples > 0);
@@ -138,11 +140,24 @@ Integrate1<Domain, Codomain, RandomNumberGenerator>::Integrate1(
   assert(N_ > 0);
 }
 
+template <typename Domain, typename Codomain, class RandomNumberGenerator>
+Integrate1<Domain, Codomain, RandomNumberGenerator>::Integrate1(
+  const F& f,
+  const long total_number_of_samples,
+  const long seed
+  ):
+  rng_{seed},
+  f_{f},
+  N_{total_number_of_samples},
+  running_total_{},
+  sum_sigma_{}
+{
+  assert(N_ > 0);
+}
+
 template <class Domain, typename Codomain, class RandomNumberGenerator>
 void Integrate1<Domain, Codomain, RandomNumberGenerator>::run_Monte_Carlo()
 {
-  long idum {-1};
-
   for (int i {0}; i < N_; ++i)
   {
     // Partially for debug purposes only (can be combined)
@@ -156,7 +171,7 @@ void Integrate1<Domain, Codomain, RandomNumberGenerator>::run_Monte_Carlo()
     //domain_runs_.push_back(x);
     //codomain_runs_.push_back(f_x);
 
-    const Codomain f_x {f_(rng_(&idum))};
+    const Codomain f_x {f_(rng_())};
     running_total_ += f_x;
     sum_sigma_ += f_x * f_x;
   }

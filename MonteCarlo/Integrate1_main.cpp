@@ -53,7 +53,7 @@ int main()
 
     for (int i {0}; i < 30; ++i)
     {
-      std::cout << minimal_park_miller(&idum) << ' ';
+      std::cout << minimal_park_miller() << ' ';
     }
   }
 

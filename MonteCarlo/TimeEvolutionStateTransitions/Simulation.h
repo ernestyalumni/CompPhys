@@ -1,13 +1,12 @@
 //------------------------------------------------------------------------------
-/// \file TimeEvolution.h
+/// \file Simulation.h
 /// \author Ernest Yeung
 /// \email  ernestyalumni@gmail.com
-/// \brief  Discrete time evolution for a state of finite number of state
-/// variables.
-/// \url
+/// \brief  Do the actual Monte Carlo routine.
+/// \url https://en.wikipedia.org/wiki/Monte_Carlo_method
 /// \ref CompPhys.pdf
-/// \details Discrete time evolution for a system characterized by a finite
-/// number of state variables.
+/// \details A Monte Carlo simulation uses repeated sampling to obtain the
+/// statistical properties of some phenomenon (or behavior).
 /// \copyright If you find this code useful, feel free to donate directly
 /// (username ernestyalumni or email address above), going directly to:
 ///
@@ -27,8 +26,8 @@
 ///  g++ -std=c++17 RandomNumberGenerators.cpp RandomNumberGenerators_main.cpp \
 ///   -o RandomNumberGenerators_main
 //------------------------------------------------------------------------------
-#ifndef _MONTE_CARLO_TIME_EVOLUTION_STATE_TRANSITIONS_TIME_EVOLUTION_H_
-#define _MONTE_CARLO_TIME_EVOLUTION_STATE_TRANSITIONS_TIME_EVOLUTION_H_
+#ifndef _MONTE_CARLO_TIME_EVOLUTION_STATE_TRANSITIONS_SIMULATION_H_
+#define _MONTE_CARLO_TIME_EVOLUTION_STATE_TRANSITIONS_SIMULATION_H_
 
 namespace MonteCarlo
 {
@@ -36,16 +35,15 @@ namespace MonteCarlo
 namespace TimeEvolutionStateTransitions
 {
 
-template <class States>
-class TimeEvolution
+class Simulation
 {
   public:
 
-    virtual States operator()(States&) = 0;
-}; // class TimeEvolution
+    virtual void run() = 0;
+}; // class Simulation
 
 } // namespace TimeEvolutionStateTransitions
 
 } // namespace MonteCarlo
 
-#endif // _MONTE_CARLO_TIME_EVOLUTION_STATE_TRANSITIONS_TIME_EVOLUTION_H_
+#endif // _MONTE_CARLO_TIME_EVOLUTION_STATE_TRANSITIONS_SIMULATION_H_

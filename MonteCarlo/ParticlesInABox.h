@@ -6,6 +6,9 @@
 /// \url
 /// \ref
 /// \details Particles in a box.
+/// There is public inheritance of the interface (interface inheritance),
+/// separating the data collection and statistics from the actual Monte Carlo
+/// run.
 /// \copyright If you find this code useful, feel free to donate directly
 /// (username ernestyalumni or email address above), going directly to:
 ///
@@ -29,6 +32,7 @@
 #define _MONTE_CARLO_PARTICLES_IN_A_BOX_H_
 
 #include "RandomNumberGenerators/RandomNumberGenerators.h"
+#include "TimeEvolutionStateTransitions/Simulation.h"
 #include "TimeEvolutionStateTransitions/TimeEvolution.h"
 
 #include <cassert>
@@ -60,13 +64,16 @@ class ParticleTimeEvolution :
       N_{N}
     {}
 
+    ParticleTimeEvolution(const unsigned long N, const long seed):
+      rng_{seed},
+      N_{N}
+    {}
+
     unsigned long operator()(unsigned long& n_l)
     {
       assert(n_l <= N_);
 
-      long idum {-1};
-
-      const RR pr {rng_(&idum)}; // pr = probability
+      const RR pr {rng_()}; // pr = probability
 
       // boundary conditions
       if ((n_l != N_) && (n_l != 0))
@@ -95,7 +102,7 @@ class ParticleTimeEvolution :
 /// \class ParticlesInABox
 //------------------------------------------------------------------------------
 template <class RR, class RandomNumberGenerator>
-class ParticlesInABox
+class ParticlesInABox : public TimeEvolutionStateTransitions::Simulation
 {
   public:
 
@@ -104,6 +111,21 @@ class ParticlesInABox
     ParticlesInABox(const unsigned long N, const unsigned long T):
       runs_{},
       time_evolution_{N},
+      n_l_{N},
+      N_{N},
+      T_{T}
+    {
+      assert(N > 0);
+      assert(T > 0);
+    }
+
+    ParticlesInABox(
+      const unsigned long N,
+      const unsigned long T,
+      const long seed
+      ):
+      runs_{},
+      time_evolution_{N, seed},
       n_l_{N},
       N_{N},
       T_{T}
