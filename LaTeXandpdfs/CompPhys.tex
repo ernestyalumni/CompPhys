@@ -6680,7 +6680,47 @@ N(t) & \text{ if } X = N(t)  \end{cases}
 
 Clearly, $X = \sum_{i=0}^{N(t)} X_i $ with $P(X) = \prod_{i=0}^{N(t)} P(X_i)$ and so simply sum the result of $X_i$'s to obtain $N(t+1)$. 
 
+\subsubsection{2 nuclei radioactive decay with Monte Carlo method}
 
+If nucleus "X" decays to daughter nucleus "Y", which can also decay, then the system of first-order differential equations describing the system are
+\[
+\begin{aligned} 
+	& \frac{dN_X(t)}{dt} = -\omega_X N_X(t) \\ 
+	& \frac{dN_Y(t)}{dt} = -\omega_Y N_Y(t) + \omega_X N_X(t)
+\end{aligned} 
+\]
+
+Consider 
+\[
+\begin{gathered} 
+	\Omega_{S \to S} = \lbrace X \to X, X \to Y, Y \to 0, Y \to Y \rbrace \\ 
+\text{Pr}(X = X\to X) = 1- \omega_X 
+\end{gathered} 
+\]
+Let $s=(x,y) \in S = \lbrace (1,0), (0,1), (0,0) \rbrace$.
+
+\[
+\begin{gathered} 
+\Omega_{S \to S} = \lbrace X \to X, X\to Y, Y \to 0, Y \to Y \rbrace \equiv  \\
+ \lbrace (1,0) \to (1,0) , (1,0) \to (0,1) , (0,1) \to (0,0), (0,1) \to (0,1) \rbrace 
+\end{gathered}
+\]
+
+So for $X : \Omega_S \to S \to E = \mathbb{R}$, 
+\[
+\begin{gathered}
+\begin{aligned} 
+&	p(X\to X) = 1 - \omega_X \\ 
+& p(X\to Y) = \omega_X \\
+& p(Y \to 0) = \omega_Y \\
+& p(Y \to Y) = 1 - \omega_Y 
+\end{aligned}  \\
+\begin{aligned}
+& G_1 : (1,0) \mapsto \begin{cases} (1,0) & \text{ if } X = X \to X \\ (0,1) & \text{ if } X = X \to Y \end{cases} \\
+& G_1 : (0,1) \mapsto \begin{cases} (1,0) & \text{ if } Y = Y \to 0 \\ (0,1) & \text{ if } Y = Y \to Y \end{cases} 
+\end{aligned}
+\end{gathered} 
+\]
 
 \section{Ising Model}  
 

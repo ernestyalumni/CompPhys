@@ -168,6 +168,108 @@ int main()
     std::cout << " idum_test : " << idum_test << " *idum_test : " << std::hex <<
       *idum_test << std::dec << ' ' << *idum_test << " &idum_test : " <<
         &idum_test << '\n';
+
+    std::cout << "\n Check the steps of MinimalParkMiller \n";
+
+    {
+      long idum_test {-1};
+
+      // ran0(&idum_test) where ran0(long* idum)
+
+      std::cout << " idum_test : " << idum_test << " &idum_test : " <<
+        &idum_test << '\n';
+
+      idum_test ^= MASK;
+
+      std::cout << " idum_test : " << idum_test << " &idum_test : " <<
+          &idum_test << '\n';
+
+
+      long k {(idum_test) / MonteCarlo::RandomNumberGenerators::Details::IQ};
+      std::cout << " k : " << k << '\n';
+
+      idum_test = MonteCarlo::RandomNumberGenerators::Details::IA *
+        (idum_test - k * MonteCarlo::RandomNumberGenerators::Details::IQ) -
+          MonteCarlo::RandomNumberGenerators::Details::IR * k;
+
+      std::cout << " idum_test : " << idum_test << " &idum_test : " <<
+          &idum_test << '\n';
+
+      if (idum_test < 0)
+      {
+        idum_test += MonteCarlo::RandomNumberGenerators::Details::IM;
+      }
+
+      std::cout << " idum_test : " << idum_test << " &idum_test : " <<
+          &idum_test << '\n';
+
+      double ans {MonteCarlo::RandomNumberGenerators::Details::AM * (idum_test)};
+
+      std::cout << " ans : " << ans << '\n';
+
+      idum_test ^= MASK;
+
+      std::cout << " idum_test : " << idum_test << " &idum_test : " <<
+          &idum_test << '\n';
+
+      std::cout << " ans : " << ans << '\n';
+    }
+
+    std::cout << "\n Check, for a unique ptr, the steps of MinimalParkMiller \n";
+
+    {
+      std::unique_ptr<long> u_ptr_seed {std::make_unique<long>(-1)};
+
+      // cannot convert ‘u_ptr_seed’ (type ‘std::unique_ptr<long int>’) to type
+      // ‘const unsigned char*’
+
+      std::cout << " &u_ptr_seed " << &u_ptr_seed << " *u_ptr_seed : " <<
+        *u_ptr_seed << " u_ptr_seed.get() : " << u_ptr_seed.get() <<
+        " *u_ptr_seed.get() : " << *u_ptr_seed.get() << " *u_ptr_seed : " <<
+        *u_ptr_seed << '\n';
+
+      *u_ptr_seed ^= MASK;
+
+      std::cout << " &u_ptr_seed " << &u_ptr_seed << " *u_ptr_seed : " <<
+        *u_ptr_seed << " u_ptr_seed.get() : " << u_ptr_seed.get() <<
+        " *u_ptr_seed.get() : " << *u_ptr_seed.get() << " *u_ptr_seed : " <<
+        *u_ptr_seed << '\n';
+
+      long k {(*u_ptr_seed) / MonteCarlo::RandomNumberGenerators::Details::IQ};
+      std::cout << " k : " << k << '\n';
+
+      *u_ptr_seed = MonteCarlo::RandomNumberGenerators::Details::IA *
+        (*u_ptr_seed - k * MonteCarlo::RandomNumberGenerators::Details::IQ) -
+          MonteCarlo::RandomNumberGenerators::Details::IR * k;
+
+      std::cout << " &u_ptr_seed " << &u_ptr_seed << " *u_ptr_seed : " <<
+        *u_ptr_seed << " u_ptr_seed.get() : " << u_ptr_seed.get() <<
+        " *u_ptr_seed.get() : " << *u_ptr_seed.get() << " *u_ptr_seed : " <<
+        *u_ptr_seed << '\n';
+
+      if (*u_ptr_seed < 0)
+      {
+        *u_ptr_seed += MonteCarlo::RandomNumberGenerators::Details::IM;
+      }
+
+      std::cout << " &u_ptr_seed " << &u_ptr_seed << " *u_ptr_seed : " <<
+        *u_ptr_seed << " u_ptr_seed.get() : " << u_ptr_seed.get() <<
+        " *u_ptr_seed.get() : " << *u_ptr_seed.get() << " *u_ptr_seed : " <<
+        *u_ptr_seed << '\n';
+
+      double ans {MonteCarlo::RandomNumberGenerators::Details::AM * (*u_ptr_seed)};
+
+      std::cout << " ans : " << ans << '\n';
+
+      *u_ptr_seed ^= MASK;
+
+      std::cout << " &u_ptr_seed " << &u_ptr_seed << " *u_ptr_seed : " <<
+        *u_ptr_seed << " u_ptr_seed.get() : " << u_ptr_seed.get() <<
+        " *u_ptr_seed.get() : " << *u_ptr_seed.get() << " *u_ptr_seed : " <<
+        *u_ptr_seed << '\n';
+
+      std::cout << " ans : " << ans << '\n';
+    }
   }
 
   // MinimalParkMillerInterface
@@ -179,7 +281,7 @@ int main()
 
     for (int i {0}; i < 20; ++i)
     {
-      std::cout << std::defaultfloat << minimal_random_number(&idum) << ' ' <<
+      std::cout << std::defaultfloat << minimal_random_number() << ' ' <<
         idum << ' ';
     }
   }
@@ -187,18 +289,19 @@ int main()
   // MinimalParkMillerWorksMultipleTimesWithSameSeedValue
   std::cout << "\n MinimalParkMillerWorksMultipleTimesSameSeedValue \n";
   {
-    MinimalParkMiller minimal_random_number;
-
     for (int i {0}; i < 30; ++i)
     {
       long idum {-1};
-
-      std::cout << minimal_random_number(&idum) << ' ';
+      {
+        MinimalParkMiller minimal_random_number {idum};
+        std::cout << minimal_random_number() << ' ';
+      }
     }
   }
 
   // MinimalParkMillerWorksMultipleTimesWithDifferentSeedValue
-  std::cout << "\n MinimalParkMillerWorksMultipleTimesSameSeed \n";
+  std::cout <<
+    "\n MinimalParkMillerWorksMultipleTimesWithDifferentSeedValue \n";
   {
     MinimalParkMiller minimal_random_number;
 
@@ -206,10 +309,11 @@ int main()
 
     for (int i {0}; i < 30; ++i)
     {
-      std::cout << minimal_random_number(&idum) << ' ';
+      MinimalParkMiller minimal_random_number {idum + i};
+      std::cout << minimal_random_number() << ' ';
     }
   }
-#if 0
+
   // BaysDurhamShuffleWorks
   std::cout << " \n BaysDurhamShuffle \n";
   {
@@ -219,10 +323,9 @@ int main()
 
     for (int i {0}; i < 30; ++i)
     {
-      std::cout << bays_durham_number(&idum) << ' ' << idum << ' ';
+      std::cout << bays_durham_number() << ' ' << idum << ' ';
     }
   }
-
   // LEcuyerWorks
   std::cout << "\n LecuyerWorks\n";
   {
@@ -232,7 +335,7 @@ int main()
 
     for (int i {0}; i < 30; ++i)
     {
-      std::cout << lecuyer(&idum) << ' ' << idum << ' ';
+      std::cout << lecuyer() << ' ' << idum << ' ';
     }
   }
 
@@ -245,9 +348,8 @@ int main()
 
     for (int i {0}; i < 30; ++i)
     {
-      std::cout << uniform(&idum) << ' ' << idum << ' ';
+      std::cout << uniform() << ' ' << idum << ' ';
     }
   }
-  #endif 
 
 }

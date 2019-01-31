@@ -34,37 +34,50 @@ namespace MonteCarlo
 namespace RandomNumberGenerators
 {
 
-MinimalParkMiller::MinimalParkMiller()//:
-//  idum{nullptr}
+MinimalParkMiller::MinimalParkMiller():
+  seed_{std::make_unique<long>(-1)}
 {}
 
-MinimalParkMiller::MinimalParkMiller(const long seed)//:
-//  idum{nullptr}
+MinimalParkMiller::MinimalParkMiller(const long seed):
+  seed_{std::make_unique<long>(seed)}
 {}
 
-double MinimalParkMiller::operator()(long* idum)
-//double MinimalParkMiller::operator()()
+double MinimalParkMiller::operator()()
 {
-  *idum ^= MASK_;
-  long k {(*idum) / IQ_};
-  *idum = IA_ * (*idum - k * IQ_) - IR_ * k;
+  *seed_ ^= MASK_;
+  long k {(*seed_) / IQ_};
+  *seed_ = IA_ * (*seed_ - k * IQ_) - IR_ * k;
 
-  if (*idum < 0)
+  if (*seed_ < 0)
   {
-    *idum += IM_;
+    *seed_ += IM_;
   }
 
-  double ans {AM_ * (*idum)};
-  *idum ^= MASK_;
+  double ans {AM_ * (*seed_)};
+  *seed_ ^= MASK_;
 
   return ans;
 }
 
-BaysDurhamShuffle::BaysDurhamShuffle()
+//double MinimalParkMiller::operator()(const long seed)
+//{
+  // \brief Replaces the managed object.
+  // \url https://en.cppreference.com/w/cpp/memory/unique_ptr/reset
+//  seed_.reset(std::make_unique<long>(seed).get());
+
+//  return this->operator()();
+//}
+
+BaysDurhamShuffle::BaysDurhamShuffle():
+  MinimalParkMiller{}
 {}
 
-double BaysDurhamShuffle::operator()(long* idum)
-//double BaysDurhamShuffle::operator()()
+BaysDurhamShuffle::BaysDurhamShuffle(const long seed):
+  MinimalParkMiller{seed}
+{}
+
+//double BaysDurhamShuffle::operator()(long* idum)
+double BaysDurhamShuffle::operator()()
 {
   int j;
   long k;
@@ -74,46 +87,51 @@ double BaysDurhamShuffle::operator()(long* idum)
 
   double temp;
 
-  if (*idum <= 0 || !iy)
+  if (*seed() <= 0 || !iy)
   {
-    (-(*idum) < 1) ? *idum = 1 : *idum = -(*idum);
+    (-(*seed()) < 1) ? *seed() = 1 : *seed() = -(*seed());
 
     for (j = NTAB_ + 7; j >= 0; j--)
     {
-      k = (*idum) / IQ_;
-      *idum = IA_ * (*idum - k * IQ_) - IR_ * k;
-      if (*idum < 0)
+      k = (*seed()) / IQ_;
+      *seed() = IA_ * (*seed() - k * IQ_) - IR_ * k;
+      if (*seed() < 0)
       {
-        *idum += IM_;
+        *seed() += IM_;
       }
 
       if (j < NTAB_)
       {
-        iv[j] = *idum;
+        iv[j] = *seed();
       }
     }
     iy = iv[0];
   }
 
-  k = (*idum) / IQ_;
-  *idum = IA_ * (*idum - k * IQ_) - IR_ * k;
+  k = (*seed()) / IQ_;
+  *seed() = IA_ * (*seed() - k * IQ_) - IR_ * k;
 
-  if (*idum < 0)
+  if (*seed() < 0)
   {
-    *idum += IM_;
+    *seed() += IM_;
   }
 
   j = iy / NDIV_;
   iy = iv[j];
-  iv[j] = *idum;
+  iv[j] = *seed();
 
   return ((AM_* iy) > RNMX_) ? RNMX_ : AM_ * iy;
 }
 
-LEcuyer::LEcuyer()
+LEcuyer::LEcuyer():
+  BaysDurhamShuffle{}
 {}
 
-double LEcuyer::operator()(long* idum)
+LEcuyer::LEcuyer(const long seed):
+  BaysDurhamShuffle{seed}
+{}
+
+double LEcuyer::operator()()
 {
   int j;
   long k;
@@ -122,37 +140,37 @@ double LEcuyer::operator()(long* idum)
 
   static long iy {0};
 
-  if (*idum <= 0)
+  if (*seed() <= 0)
   {
-    (-(*idum) < 1) ? *idum = 1 : *idum = (-(*idum));
+    (-(*seed()) < 1) ? *seed() = 1 : *seed() = (-(*seed()));
 
-    idum2 = (*idum);
+    idum2 = (*seed());
 
     for (j = NTAB_ + 7; j >= 0; j--)
     {
-      k = (*idum) / IQ1_;
-      *idum = IA1_ * (*idum - k * IQ1_) - k * IR1_;
+      k = (*seed()) / IQ1_;
+      *seed() = IA1_ * (*seed() - k * IQ1_) - k * IR1_;
 
-      if (*idum < 0)
+      if (*seed() < 0)
       {
-        *idum += IM1_;
+        *seed() += IM1_;
       }
 
       if (j < NTAB_)
       {
-        iv[j] = *idum;
+        iv[j] = *seed();
       }
     }
     iy = iv[0];
   }
 
-  k = (*idum) / IQ1_;
+  k = (*seed()) / IQ1_;
 
-  *idum = IA1_ * (*idum - k * IQ1_) - k * IR1_;
+  *seed() = IA1_ * (*seed() - k * IQ1_) - k * IR1_;
 
-  if (*idum < 0)
+  if (*seed() < 0)
   {
-    *idum += IM1_;
+    *seed() += IM1_;
   }
 
   k = idum2 / IQ2_;
@@ -168,7 +186,7 @@ double LEcuyer::operator()(long* idum)
 
   iy = iv[j] - idum2;
 
-  iv[j] = *idum;
+  iv[j] = *seed();
 
   if (iy < 1)
   {
@@ -178,10 +196,15 @@ double LEcuyer::operator()(long* idum)
   return ((AM1_ * iy) > RNMX_) ? RNMX_ : AM1_ * iy;
 }
 
-Uniform::Uniform()
+Uniform::Uniform():
+  seed_{std::make_unique<long>(-1)}
 {}
 
-double Uniform::operator()(long *idum)
+Uniform::Uniform(const long seed):
+  seed_{std::make_unique<long>(seed)}
+{}
+
+double Uniform::operator()()
 //double Uniform::operator()()
 {
   static int inext, inextp;
@@ -190,11 +213,11 @@ double Uniform::operator()(long *idum)
 
   long mj;
 
-  if (*idum < 0 || iff == 0) // initialization
+  if (*seed_ < 0 || iff == 0) // initialization
   {
     iff = 1;
 
-    mj = MSEED_ - (*idum < 0 ? -*idum : *idum);
+    mj = MSEED_ - (*seed_ < 0 ? -*seed_ : *seed_);
     mj %= MBIG_;
     ma[55] = mj; // initialize ma[55]
 
@@ -225,7 +248,7 @@ double Uniform::operator()(long *idum)
 
     inext = 0; // prepare indices for first generator number
     inextp = 31; // 31 is special
-    *idum = 1;
+    *seed_ = 1;
   }
 
   if (++inext == 56)

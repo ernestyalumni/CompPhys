@@ -29,6 +29,9 @@
 #ifndef _MONTE_CARLO_RANDOM_NUMBER_GENERATORS_H_
 #define _MONTE_CARLO_RANDOM_NUMBER_GENERATORS_H_
 
+#include <memory>
+#include <type_traits> // std::add_lvalue_reference
+
 namespace MonteCarlo
 {
 
@@ -39,14 +42,12 @@ namespace RandomNumberGenerators
 /// \class RandomNumberGenerator
 /// \details Follow interface inheritance hierarchy.
 //------------------------------------------------------------------------------
-template <typename T, typename SeedType>
+template <typename T>
 class RandomNumberGenerator
 {
   public:
 
-//    virtual T operator()() = 0;
-
-    virtual T operator()(SeedType*) = 0;
+    virtual T operator()() = 0;
 };
 
 namespace Details
@@ -105,7 +106,7 @@ constexpr double FAC {1.0 / static_cast<double>(MBIG)};
 /// between calls for successive deviates in a sequence.
 /// The function returns a uniform deviate between 0.0 and 1.0.
 //------------------------------------------------------------------------------
-class MinimalParkMiller : public RandomNumberGenerator<double, long>
+class MinimalParkMiller : public RandomNumberGenerator<double>
 {
   public:
 
@@ -113,13 +114,32 @@ class MinimalParkMiller : public RandomNumberGenerator<double, long>
 
     explicit MinimalParkMiller(const long seed);
 
-//    double operator()();
+    double operator()();
 
-    double operator()(long*);
+    //double operator()(const long seed);
+
+    // Accessors
+
+    //--------------------------------------------------------------------------
+    /// \details operator* provides access to the object owned by this*
+    /// \url https://en.cppreference.com/w/cpp/memory/unique_ptr/operator*
+    //--------------------------------------------------------------------------
+    std::add_lvalue_reference<long>::type seed_value() const
+    {
+      return *seed_;
+    }
 
   protected:
 
-//    long* idum_;
+    //--------------------------------------------------------------------------
+    /// \details Returns a pointer to the managed object, or nullptr if no
+    /// object is owned.
+    /// \url https://en.cppreference.com/w/cpp/memory/unique_ptr/get
+    //--------------------------------------------------------------------------
+    long* seed()
+    {
+      return seed_.get();
+    }
 
     static constexpr long IA_ {Details::IA};
     static constexpr long IM_ {Details::IM};
@@ -127,6 +147,10 @@ class MinimalParkMiller : public RandomNumberGenerator<double, long>
     static constexpr long IR_ {Details::IR};
     static constexpr long MASK_ {Details::MASK};
     static constexpr double AM_ {Details::AM};
+
+  private:
+
+    std::unique_ptr<long> seed_;
 }; // class MinimalParkMiller
 
 //------------------------------------------------------------------------------
@@ -148,8 +172,8 @@ class BaysDurhamShuffle : protected MinimalParkMiller
 
     explicit BaysDurhamShuffle(const long seed);
 
-//    double operator()();
-    double operator()(long*);
+    double operator()();
+//    double operator()(long*);
 
   protected:
 
@@ -178,8 +202,7 @@ class LEcuyer: protected BaysDurhamShuffle
 
     explicit LEcuyer(const long seed);
 
-//    double operator()();
-    double operator()(long*);
+    double operator()();
 
   protected:
 
@@ -204,7 +227,7 @@ class LEcuyer: protected BaysDurhamShuffle
 /// the sequence. Any large MBIG, and any small (but still large) MSEED can be
 /// substituted for the present values.
 //------------------------------------------------------------------------------
-class Uniform : public RandomNumberGenerator<double, long>
+class Uniform : public RandomNumberGenerator<double>
 {
   public:
 
@@ -212,12 +235,20 @@ class Uniform : public RandomNumberGenerator<double, long>
 
     explicit Uniform(const long seed);
 
-//    double operator()();
-    double operator()(long*);
+    double operator()();
+
+    //--------------------------------------------------------------------------
+    /// \details operator* provides access to the object owned by this*
+    /// \url https://en.cppreference.com/w/cpp/memory/unique_ptr/operator*
+    //--------------------------------------------------------------------------
+    std::add_lvalue_reference<long>::type seed_value() const
+    {
+      return *seed_;
+    }
 
   private:
 
-    long* idum_;
+    std::unique_ptr<long> seed_;
 
     static constexpr long MBIG_ {Details::MBIG};
     static constexpr long MSEED_ {Details::MSEED};
