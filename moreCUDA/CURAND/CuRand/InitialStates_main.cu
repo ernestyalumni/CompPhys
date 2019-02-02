@@ -1,13 +1,13 @@
 //------------------------------------------------------------------------------
-/// \file HandleErrors.h
+/// \file InitialStates_main.cu
 /// \author Ernest Yeung
 /// \email  ernestyalumni@gmail.com
-/// \brief Error Handling functions.
-/// \url https://docs.nvidia.com/cuda/cuda-runtime-api/
-/// \ref 5.3. Error Handling, 5. Modules, CUDA Runtime API, CUDA Toolkit Doc. 
-/// https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__ERROR.html
-/// \details Error handling function wrappers of CUDA runtime application
-/// programming interface.
+/// \brief  Initial states for pseudorandom numbers main driver file.
+/// \url https://docs.nvidia.com/cuda/curand/device-api-overview.html#device-api-overview
+/// \ref 
+/// \details Setup the initial states, wrapping curand_init() function.
+/// Note that CUDA source files need to be named with the .cu suffix.
+/// https://stackoverflow.com/questions/15288621/error-blockidx-was-not-declared-in-this-scope
 /// \copyright If you find this code useful, feel free to donate directly
 /// (username ernestyalumni or email address above), going directly to:
 ///
@@ -24,47 +24,20 @@
 /// Peace out, never give up! -EY
 //------------------------------------------------------------------------------
 /// COMPILATION TIPS:
-///  nvcc --std=c++14 ErrorHandling_main.cpp ErrorHandling.cpp -o
-///    ErrorHandling_main
+/// nvcc -std=c++14 -lcurand -I ../../Utilities/ ../../Utilities/ErrorHandling.cpp InitialStates_main.cu -o InitialStates_main
 //------------------------------------------------------------------------------
-#include "ErrorHandling.h"
+#include "InitialStates.h"
 
-#include <cuda_runtime_api.h> 
-#include <stdexcept> // std::runtime_error
+#include <cstddef> // std::size_t 
+#include <iostream>
 
-namespace Utilities
+using Curand::RawStates;
+
+int main()
 {
-
-namespace ErrorHandling
-{
-
-namespace CUDA
-{
-
-HandleError::HandleError():
-  error_{}
-{}
-
-HandleError::HandleError(const cudaError_t error):
-  error_{error}
-{
-  HandleError::operator()(error_);
-}
-
-void HandleError::operator()(const cudaError_t error)
-{
-  error_ = error;
-
-  if (error != cudaSuccess)
+  // RawStatesDefaultConstructsWithcurandState_t
   {
-    throw std::runtime_error(std::string{cudaGetErrorName(error)} + " " +
-      std::string{cudaGetErrorString(error)});
+    RawStates<64> raw_states {16};
   }
-  return;
+
 }
-
-} // namespace CUDA
-
-} // namespace ErrorHandling
-
-} // namespace Utilities

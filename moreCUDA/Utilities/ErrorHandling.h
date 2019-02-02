@@ -43,7 +43,7 @@ namespace CUDA
 
 
 //------------------------------------------------------------------------------
-/// \class HandleError
+/// \class HandleErrorInterface
 /// \brief Virtual base class for C++ functor for checking the result of a
 /// CUDA function call.
 /// Typically, it deals with the return value of cudaMalloc:
@@ -51,7 +51,7 @@ namespace CUDA
 /// and which can return 3 things:
 /// cudaSuccess, cudaErrorInvalidValue, cudaErrorMemoryAllocation
 //------------------------------------------------------------------------------
-class HandleError
+class HandleErrorInterface
 {
   public:
 
@@ -81,13 +81,13 @@ class HandleError
     }
 };
 
-class HandleMalloc : public HandleError
+class HandleError : public HandleErrorInterface
 {
   public:
 
-    HandleMalloc();
+    HandleError();
 
-    HandleMalloc(const cudaError_t error);
+    HandleError(const cudaError_t error);
 
     void operator()(const cudaError_t error);
 
@@ -111,6 +111,39 @@ class HandleMalloc : public HandleError
   private:
 
     cudaError_t error_;
+};
+
+class HandleMalloc : public HandleError
+{
+  public:
+
+    // need to inherit a ctor.
+    using HandleError::HandleError;
+};
+
+
+class HandleFree : public HandleError
+{
+  public:
+
+    // need to inherit a ctor.
+    using HandleError::HandleError;  
+};
+
+class HandleMemset : public HandleError
+{
+  public:
+
+    // need to inherit a ctor.
+    using HandleError::HandleError;  
+};
+
+class HandleMemcpy : public HandleError
+{
+  public:
+
+    // need to inherit a ctor.
+    using HandleError::HandleError;  
 };
 
 } // namespace CUDA
