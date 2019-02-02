@@ -29,17 +29,19 @@ MTGP32 generator is adaptation of code developed at [Hiroshima University](http:
 For MTGP32 generator, 2 host functions are provided to help set up parameters for different sequences in device memory, and to set up initial state.  
 
 ```  
-__host__ curandStateust curandMakeMTG32Constants(mtgp32paramsfastt params[], 
-													mtgp32kernelparamst *p)  
+__host__ curandStateust curandMakeMTG32Constants(
+	mtgp32paramsfastt params[],
+	mtgp32kernelparamst *p)  
 ```   
 
 ```  
 __host__ curandStatus_t 
-curandMakeMTGP32KernelState(curandStateMtgp32_t *s, 
-							mtg32_params_fast_t params[], 
-							mtgp32_kernel_params_t *k,
-							int n, 
-							unsigned long long seed)  
+curandMakeMTGP32KernelState(
+	curandStateMtgp32_t *s, 
+	mtg32_params_fast_t params[], 
+	mtgp32_kernel_params_t *k,
+	int n, 
+	unsigned long long seed)  
 ```  
 
 and 2 kernel functions  
