@@ -203,6 +203,9 @@ class RawStates
 }; // class RawStates
 
 
+/// TODO: Implement separate class for device use:
+/// \url https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#data-aggregation-class
+
 //template <std::size_t L, typename StateType>
 //RawStates<L, StateType>::RawStates(const std::size_t default_N_x):
 //  default_N_x_{default_N_x},
