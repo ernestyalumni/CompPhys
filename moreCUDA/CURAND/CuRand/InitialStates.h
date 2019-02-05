@@ -103,7 +103,10 @@ class RawStates
     RawStates() = delete;
 
     //--------------------------------------------------------------------------
+    /// \fn Constructor with default seed.
     /// \param default_N_x Default number of threads in a single block.
+    /// \brief Constructor with default seed; note that states are not
+    /// initialized; must be initialized manually.
     /// \details EY (20190202) I would like to know how to write this ctor
     /// with the correct template arguments, outside the class template
     /// definition. I tried to Google search for the answer; I got this
@@ -123,6 +126,11 @@ class RawStates
         raw_states_);
     }
 
+    //--------------------------------------------------------------------------
+    /// \fn Constructor with variable seed.
+    /// \brief Constructor with default seed; note that states are not
+    /// initialized; must be initialized manually.
+    //--------------------------------------------------------------------------
     RawStates(const std::size_t default_N_x, const unsigned long long seed):
       default_N_x_{default_N_x},
       default_M_x_{(L + default_N_x_ - 1)/ default_N_x_},
@@ -148,6 +156,27 @@ class RawStates
         const cudaError_t error {cudaFree(raw_states_)};
         HandleFree{}(error);
       }
+    }
+
+    //--------------------------------------------------------------------------
+    /// \fn initialize
+    /// \brief __global__ function wrapper for curand_init
+    //--------------------------------------------------------------------------
+    void initialize()
+    {
+      Details::setup_kernel<StateType, L><<<default_M_x_, default_N_x_>>>(
+        raw_states_);      
+    }
+
+    //--------------------------------------------------------------------------
+    /// \fn initialize
+    /// \brief __device__ function wrapper for curand_init
+    //--------------------------------------------------------------------------
+    __device__ void initialize(
+      const std::size_t tid,
+      unsigned long long offset = 0)
+    {
+      curand_init(seed_, tid, offset, &raw_states_[tid]);
     }
 
     //--------------------------------------------------------------------------

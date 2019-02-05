@@ -57,6 +57,8 @@ int main()
 
     Uniform<L> uniform {N_x};
 
+    uniform();
+
     {
       uniform.copy_to_host(h_sequence);
 

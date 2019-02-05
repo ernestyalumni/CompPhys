@@ -40,4 +40,12 @@ int main()
     RawStates<64> raw_states {16};
   }
 
+  // RawStatesDefaultConstructsWithcurandState_tAndGloballyInitializes
+  {
+    std::cout <<
+      "\n RawStatesDefaultConstructsWithcurandState_tAndGloballyInitializes\n";
+    RawStates<64> raw_states {16};
+
+    raw_states.initialize();
+  }
 }

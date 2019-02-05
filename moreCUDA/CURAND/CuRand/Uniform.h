@@ -37,9 +37,13 @@
 #include <cstddef> // std::size_t
 #include <curand_kernel.h>
 #include <cuda_runtime_api.h> // blockIdx.x
+#include <type_traits>
 
 namespace Curand
 {
+
+template <std::size_t L, typename StateType = curandState_t>
+class Uniform;
 
 namespace Details
 {
@@ -75,6 +79,29 @@ __global__ void generate_uniform_kernel(StateType* states, float* sequence)
   }
 }
 
+//--------------------------------------------------------------------------
+/// \fn initialize_and_generate_uniform_kernel
+/// \brief Function wrapper for curand_init and curand_uniform
+//--------------------------------------------------------------------------
+template <typename StateType, std::size_t L>
+__global__ void initialize_and_generate_uniform_kernel(
+  RawStates<L, StateType>& raw_states,
+  Uniform<L, StateType>& uniform)
+{
+  // Get our global thread ID.
+  std::size_t k_x {blockIdx.x * blockDim.x + threadIdx.x};
+
+  // Make sure we don't go out of bounds.
+  if (k_x >= L) { return; }  
+
+  for (std::size_t tid {k_x}; tid < L; tid += gridDim.x * blockDim.x)
+  {
+//    raw_states.initialize(tid, 0);
+
+//    uniform.generate(tid);
+  }
+}
+
 } // namespace Details
 
 //------------------------------------------------------------------------------
@@ -87,10 +114,8 @@ __global__ void generate_uniform_kernel(StateType* states, float* sequence)
 /// consumed is not guaranteed to be fixed.
 /// \ref 3.1.4. Distributions, CUDA Toolkit Documentation, cuRAND
 //------------------------------------------------------------------------------
-template <
-  std::size_t L,
-  typename StateType = curandState_t
-  >
+//template <std::size_t L, typename StateType = curandState_t>
+template <std::size_t L, typename StateType>
 class Uniform
 {
   public:
@@ -118,6 +143,38 @@ class Uniform
       }
     }
 
+    __device__ void generate(const std::size_t tid)
+    {
+      float x;
+
+      // Copy state to local memory for efficiency
+      StateType local_state = (raw_states_.raw_states())[tid]; 
+
+      // Generate pseudo-random uniform
+      x = curand_uniform(&local_state);
+
+      // Copy state back to global memory
+      (raw_states_.raw_states())[tid] = local_state;
+
+      // Store results
+      dev_sequence_[tid] = x;      
+    }
+
+//    __device__ void operator()(const std::size_t tid)
+    __device__ void initialize_and_generate(const std::size_t tid)
+    //  typename std::enable_if_t<!is_initialized_, const std::size_t> tid)
+    {
+      raw_states_.initialize(tid);
+
+      generate(tid);
+    }
+
+    //__device__ void operator()(
+    //  typename std::enable_if_t<is_initialized_, const std::size_t> tid)
+    //{
+    //  generate(tid);
+    //}
+
     //--------------------------------------------------------------------------
     /// \fn operator()()
     /// \brief Function call operator overload to generate uniform pseudo-random
@@ -125,11 +182,23 @@ class Uniform
     //--------------------------------------------------------------------------
     void operator()()
     {
-      Details::generate_uniform_kernel<
-        StateType,
-        L>
-        <<<default_M_x_, default_N_x_>>>(
-          raw_states_.raw_states(), dev_sequence_);      
+      if (is_initialized_)
+      {
+        Details::generate_uniform_kernel<
+          StateType,
+          L>
+          <<<default_M_x_, default_N_x_>>>(
+            raw_states_.raw_states(), dev_sequence_);
+      }
+      else
+      {
+        Details::initialize_and_generate_uniform_kernel<
+          StateType,
+          L>
+          <<<default_M_x_, default_N_x_>>>(raw_states_, *this);       
+
+        is_initialized_ = true;
+      }
     }
 
     // Copy device memory to host
@@ -141,6 +210,8 @@ class Uniform
       
       HandleMemcpy{}(error);
     }
+
+    // Accessors
 
     float* dev_sequence()
     {
@@ -157,9 +228,10 @@ class Uniform
 
     RawStates<L, StateType> raw_states_;
 
+    bool is_initialized_;
+
     float* dev_sequence_;
 //    float* host_sequence_;
-
 }; // class Uniform
 
 template <std::size_t L, typename StateType>
@@ -169,7 +241,8 @@ Uniform<L, StateType>::Uniform(
   ):
   default_N_x_{default_N_x},
   default_M_x_{(L + default_N_x_ - 1)/ default_N_x_},
-  raw_states_{default_N_x, seed}
+  raw_states_{default_N_x, seed},
+  is_initialized_{false}
 {
   // Allocate space for results on device.
   cudaError_t error {cudaMalloc((void**)&dev_sequence_, L * sizeof(float))};
