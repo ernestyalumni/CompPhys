@@ -31,7 +31,9 @@
 #include <cstddef> // std::size_t 
 #include <iostream>
 
+using Curand::GenerateUniform;
 using Curand::Uniform;
+using Curand::UniformDistribution;
 
 int main()
 {
@@ -97,6 +99,97 @@ int main()
 
       free(h_sequence);
     }
+  }
+
+  // UniformWorksMultipleTimes
+  {
+    std::cout << "\n UniformWorksMultipleTimes \n";
+
+    // size or "length" L of the tuple or linear memory array.
+    constexpr std::size_t L {128};
+    // number of threads in a single thread block.
+    constexpr std::size_t N_x {16};
+
+    // Host input vectors
+    float *h_sequence;
+
+    h_sequence = (float*)malloc(L * sizeof(float));
+
+    Uniform<L> uniform {N_x, 4321};
+    {
+      uniform.copy_to_host(h_sequence);
+
+      for (int i {0}; i < 100; ++i)
+      {
+        std::cout << h_sequence[i] << ' ';
+      }
+    }
+
+    {
+      std::cout << "\n Second time \n";
+
+      uniform();
+
+      uniform.copy_to_host(h_sequence);
+
+      for (int i {0}; i < 100; ++i)
+      {
+        std::cout << h_sequence[i] << ' ';
+      }  
+    }
+
+    free(h_sequence);
+  }
+
+
+  // GenerateUniformDefaultConstructsWithcurandState_t
+  {
+    std::cout << "\n GenerateUniformDefaultConstructsWithcurandState_t \n";
+//    GenerateUniform<64> generate_uniform {16};
+  }
+
+  // GenerateUniformWorksWithcurandState_t
+  {
+    std::cout << "\n GenerateUniformWorksWithcurandState_t \n";
+
+    // size or "length" L of the tuple or linear memory array.
+    constexpr std::size_t L {128};
+    // number of threads in a single thread block.
+//    constexpr std::size_t N_x {16};
+
+    // Host input vectors
+    float *h_sequence;
+
+    h_sequence = (float*)malloc(L * sizeof(float));
+
+  //  GenerateUniform<L> generate_uniform {N_x};
+
+//    terminate called after throwing an instance of 'std::runtime_error'
+//  what():  cudaErrorIllegalAddress an illegal memory access was encountered
+//Aborted (core dumped)
+// for this following command:
+//    generate_uniform();
+
+    {
+  //    generate_uniform.copy_to_host(h_sequence);
+
+    //  for (int i {0}; i < 100; ++i)
+      //{
+        //std::cout << h_sequence[i] << ' ';
+      //}
+
+      free(h_sequence);
+    }
+  }
+
+  // UniformDistributionDefaultConstructsWithcurandState_t
+  {
+    std::cout << "\n UniformDistributionDefaultConstructsWithcurandState_t \n";
+ 
+    //terminate called after throwing an instance of 'std::runtime_error'
+    //  what():  cudaErrorIllegalAddress an illegal memory access was encountered
+    //Aborted (core dumped)
+//    UniformDistribution<64> uniform_distribution {16};
   }
 
 }

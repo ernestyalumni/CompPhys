@@ -79,7 +79,7 @@ __global__ void setup_kernel(
 } // namespace Details
 
 //------------------------------------------------------------------------------
-/// \class
+/// \class RawStates
 /// \details Use RAII (Resource Acquisition Is Initialization) for a raw pointer
 /// to the initial states, i.e. pnrg (pseudorandom number generator) states
 /// \tparam State Parameter is meant to be 
@@ -187,7 +187,6 @@ class RawStates
       return raw_states_;
     }
 
-
   private:
 
     // Default number of threads in a single thread block.
@@ -199,9 +198,7 @@ class RawStates
     unsigned long long seed_;
 
     StateType* raw_states_; 
-
 }; // class RawStates
-
 
 /// TODO: Implement separate class for device use:
 /// \url https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#data-aggregation-class
@@ -215,6 +212,142 @@ class RawStates
 //    raw_states_);
 //}
 
-} // namespace Curand
+template <
+  std::size_t L,
+  typename StateType = curandState_t,
+  typename std::enable_if_t<
+      (std::is_same<StateType, curandState_t>::value ||
+        std::is_same<StateType, curandStatePhilox4_32_10_t>::value ||
+          std::is_same<StateType, curandStateMRG32k3a>::value ||
+            std::is_same<StateType, curandState>::value)>* = nullptr
+  >
+class Initialize
+{
+  public:
+
+    Initialize() = delete;
+
+    //--------------------------------------------------------------------------
+    /// \fn Constructor with variable seed.
+    /// \brief Constructor with default seed; note that states are not
+    /// initialized; must be initialized manually.
+    //--------------------------------------------------------------------------
+    Initialize(const std::size_t N_x, const unsigned long long seed):
+      N_x_{N_x},
+      M_x_{(L + N_x_ - 1) / N_x_},
+      seed_{seed}
+    {
+      const cudaError_t error {cudaMalloc((void**)&states_, L)};
+      HandleMalloc{}(error);
+    }
+
+    explicit Initialize(const std::size_t N_x):
+      Initialize{N_x, 1234}
+    {}    
+
+    // Not copyable, not moveable (can be changed, if defined carefully)
+    Initialize(const Initialize&) = delete;
+    Initialize& operator=(const Initialize&) = delete;
+
+    Initialize(Initialize&&) = delete;
+    Initialize& operator=(Initialize&&) = delete;
+
+    ~Initialize()
+    {
+      if (states_ != nullptr)
+      {
+        const cudaError_t error {cudaFree(states_)};
+        HandleFree{}(error);
+      }
+    }
+
+//    __device__ void operator()(
+    __device__ void do_initialize(
+      const std::size_t tid,
+      unsigned long long offset = 0)
+    {
+      curand_init(seed_, tid, offset, &states_[tid]);
+    }
+
+    //--------------------------------------------------------------------------
+    /// \brief Accessor to underlying CUDA C-style array
+    //--------------------------------------------------------------------------
+    __device__ StateType* states()
+    {
+      return states_;
+    }
+
+
+  private:
+
+    using HandleFree = Utilities::ErrorHandling::CUDA::HandleFree;
+    using HandleMalloc = Utilities::ErrorHandling::CUDA::HandleMalloc;
+
+    // Default number of threads in a single thread block.
+    const std::size_t N_x_;
+
+    // Default number of thread blocks in a grid.
+    const std::size_t M_x_;
+
+    unsigned long long seed_;
+
+    StateType* states_; 
+}; // class Initialize
+
+template <
+  typename StateType = curandState_t//,
+//  typename std::enable_if_t<
+  //    (std::is_same<StateType, curandState_t>::value ||
+    //    std::is_same<StateType, curandStatePhilox4_32_10_t>::value ||
+      //    std::is_same<StateType, curandStateMRG32k3a>::value ||
+        //    std::is_same<StateType, curandState>::value)>* = nullptr
+  >
+class InitialState
+{
+  public:
+
+    InitialState() = default;
+
+    // Not movable, not copyable.
+    InitialState(const InitialState&) = delete; // copy ctor
+    InitialState(InitialState&&) = delete; // move ctor
+    InitialState& operator=(const InitialState&) = delete; // copy assignment ctor
+    InitialState& operator=(InitialState&&) = delete; // move assignment ctor
+
+    ~InitialState() = default;
+
+    __device__ void operator()(
+//    __device__ void do_initialize(
+      const unsigned long long seed,
+      const std::size_t tid,
+      unsigned long long offset = 0)
+    {
+      curand_init(seed, tid, offset, &state_);
+    }
+
+    //--------------------------------------------------------------------------
+    /// \brief Accessor to underlying StateType or cuRand state type.
+    //--------------------------------------------------------------------------
+    __device__ StateType& state()
+    {
+      return state_;
+    }
+
+//    __device__ const StateType state() const
+  //  {
+    //  return state_;
+    //}
+
+    __device__ void set_state(const StateType& state)
+    {
+      state_ = state;
+    }
+
+  private:
+
+    StateType state_; 
+}; // class Initialize
+
+}; // namespace Curand
 
 #endif // _CURAND_INITIAL_STATES_H_

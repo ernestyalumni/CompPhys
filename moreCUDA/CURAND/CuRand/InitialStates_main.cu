@@ -31,6 +31,7 @@
 #include <cstddef> // std::size_t 
 #include <iostream>
 
+using Curand::Initialize;
 using Curand::RawStates;
 
 int main()
@@ -48,4 +49,6 @@ int main()
 
     raw_states.initialize();
   }
+
+
 }
