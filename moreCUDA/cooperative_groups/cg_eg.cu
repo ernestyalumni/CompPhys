@@ -75,7 +75,7 @@ __global__ void sum_kernel_block(int *sum, int *input, int n)
 	int my_sum = thread_sum(input, n); 
 	
 	extern __shared__ int temp[];
-	auto g = cg::this_thread_block();
+	cg::thread_block g = cg::this_thread_block();
 //	cg::thread_block g = cg::this_thread
 	int block_sum = reduce_sum(g,temp,my_sum); 
 	
