@@ -29,6 +29,7 @@ Coursera's Heterogeneous Parallel Programming (taught by Wen-mei W. Hwu) suggest
 -    http://gd.tuwien.ac.at/languages/c/cref-mleslie/CONTRIB/SAWTELL/intro.html
 -    http://en.wikibooks.org/wiki/C_Programming
 -    http://www.cprogramming.com/
+-    https://www.scaler.com/topics/c/
 
 I also found this pdf from [Fitzpatrick, "Computational Physics"](http://farside.ph.utexas.edu/teaching/329/329.pdf).  It has fully working code.  So I will try to implement some of the code.  
 
