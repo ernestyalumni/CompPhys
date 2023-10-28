@@ -46,7 +46,8 @@ struct GPUAnimBitmap {
 	
 		// trick GLUT into thinking we're passing an argument; hence soo and foo
 		int soo = 1;
-		char *foo = '\0';
+    char* foo = new char{};
+		*foo = 'x';
 		glutInit( &soo, &foo );
 		glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
 		glutInitWindowSize( width, height );

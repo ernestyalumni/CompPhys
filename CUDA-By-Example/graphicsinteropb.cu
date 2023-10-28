@@ -32,7 +32,6 @@ __global__ void kernel( uchar4 *ptr ) {
 /* important thing to realize is that this image will be handed directly to OpenGL */
 }
 
-
 int main( int argc, char **argv) {
 	GPUBitmap bitmap(DIM, DIM );							
 	
@@ -41,8 +40,6 @@ int main( int argc, char **argv) {
 	kernel<<<grids,threads>>>( bitmap.devPtr );
 		
 	bitmap.display_and_exit();
-
-	
 };
 												
 	

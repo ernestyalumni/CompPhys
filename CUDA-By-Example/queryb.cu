@@ -58,8 +58,5 @@ int main(void) {
     printf("   --- Other Information for device %d ---\n", i);
     printf("Max. 3D textures dimensions: (%d, %d, %d) \n",
 	   prop.maxTexture3D[0], prop.maxTexture3D[1], prop.maxTexture3D[2] );
-    
-    
-
   }
 }

@@ -3,6 +3,8 @@
  * make OpenGL bitmaps on the GPU
  * Ernest Yeung ernestyalumni@gmail.com
  * 20160616
+ * Build as follows:
+ * $ nvcc -lglut -lGL gpujuliac.cu -o gpujuliac
  * */
 #ifndef __GPU_BITMAP_H__
 #define __GPU_BITMAP_H__
@@ -31,7 +33,8 @@ struct GPUBitmap {
 	 * we can tell CUDA runtime that we intend to use device for CUDA AND OpenGL */
 		cudaDeviceProp prop;
 		int dev;
-	
+
+    /*	
 		memset( &prop, 0, sizeof( cudaDeviceProp) );
 		prop.major = 2; // major version set to 2
 		prop.minor = 1; // minor version set to 1
@@ -39,8 +42,10 @@ struct GPUBitmap {
 			cudaChooseDevice( &dev, &prop) ); /* instructs runtime to select GPU
 											   * that satisfies constraints specified by
 											   * cudaDeviceProp */
-		HANDLE_ERROR( 
+		/*
+    HANDLE_ERROR( 
 			cudaGLSetGLDevice( dev ) );
+    */
 		/* We've prepared our CUDA runtime to play nicely with OpenGL driver with 
 		 * cudaGLSetGLDevice */ 
 		
@@ -48,7 +53,8 @@ struct GPUBitmap {
 		// these GLUT calls need to be made before the other GL calls
 		// soo and foo are "boiler plate"
 		int soo = 1;
-		char* foo = '\0';
+    char* foo = new char{};
+		*foo = 'x';
 		glutInit( &soo, &foo );
 		glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
 		glutInitWindowSize( width, height );
@@ -87,7 +93,6 @@ struct GPUBitmap {
 		glDeleteBuffers( 1, &bufferObj );
 	}
 
-		
 	static GPUBitmap** get_bitmap_ptr( void ) {
 		static GPUBitmap *gBitmap;
 		return &gBitmap;
